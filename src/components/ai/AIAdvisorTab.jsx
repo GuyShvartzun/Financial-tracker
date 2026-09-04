@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Sparkles, Send } from 'lucide-react';
 import { callGeminiAPI } from '../../utils/gemini';
 import { FormattedText } from '../../utils/textParser';
 import { getAccountTotalsForMonth } from '../../utils/calculations';
@@ -159,7 +160,8 @@ ${personalBreakdownStr}
               </>
             ) : (
               <>
-                <span>✦ הפק דוח ייעוץ פיננסי מלא</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>הפק דוח ייעוץ פיננסי מלא</span>
               </>
             )}
           </button>
@@ -217,9 +219,10 @@ ${personalBreakdownStr}
             type="button"
             onClick={() => handleSendMessage()}
             disabled={isSendingMessage || !userInput.trim()}
-            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs transition disabled:opacity-50 cursor-pointer shrink-0"
+            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs transition disabled:opacity-50 cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            שלח
+            <Send className="w-3.5 h-3.5" />
+            <span>שלח</span>
           </button>
         </div>
       </div>

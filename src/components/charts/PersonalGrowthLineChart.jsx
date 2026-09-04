@@ -71,7 +71,7 @@ export default function PersonalGrowthLineChart({ userId, monthsList, currentNet
               return (
                 <g key={idx}>
                   <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="#F2ECE1" strokeDasharray="3 3" />
-                  <text x={width - padding + 5} y={y + 3} fill="#A8A29E" fontSize="9" textAnchor="start">
+                  <text x={width - padding + 5} y={y + 3} fill="#A8A29E" fontSize="9" textAnchor="start" className="privacy-blur">
                     ₪{fmtILS(val).replace('₪', '').trim()}
                   </text>
                 </g>

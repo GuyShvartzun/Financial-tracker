@@ -21,6 +21,8 @@ import DataExport from '../components/data/DataExport';
 import RoomLobby from '../components/room/RoomLobby';
 import RoomSettingsModal from '../components/room/RoomSettingsModal';
 import CalculatorsModule from '../components/calculators/CalculatorsModule';
+import QuickLogModal from '../components/common/QuickLogModal';
+import FloatingActionButton from '../components/common/FloatingActionButton';
 
 import { DEFAULT_BUDGET, DEFAULT_CALCULATORS_DATA } from '../constants/initialData';
 
@@ -504,3 +506,106 @@ describe('RoomLobby & RoomSettingsModal', () => {
     expect(handleClose).toHaveBeenCalled();
   });
 });
+
+describe('Privacy Mode & Floating Action Button', () => {
+  it('renders privacy toggle button and triggers onTogglePrivacyMode', () => {
+    const handleToggle = vi.fn();
+    render(
+      <Header
+        authUser={{ uid: 'u1', email: 'test@gmail.com', displayName: 'משתמש' }}
+        isCloudSynced={true}
+        activeTab="shared_dash"
+        setActiveTab={vi.fn()}
+        onLogout={vi.fn()}
+        currentRoom={{ id: 'r1', name: 'חדר', members: [] }}
+        onSwitchRoom={vi.fn()}
+        onOpenManageRoom={vi.fn()}
+        isPrivacyMode={false}
+        onTogglePrivacyMode={handleToggle}
+      />
+    );
+
+    const privacyBtn = screen.getByRole('button', { name: /טשטש והסתר סכומים/i });
+    expect(privacyBtn).toBeInTheDocument();
+    fireEvent.click(privacyBtn);
+    expect(handleToggle).toHaveBeenCalled();
+  });
+
+  it('renders FloatingActionButton and triggers onClick', () => {
+    const handleClick = vi.fn();
+    render(<FloatingActionButton onClick={handleClick} />);
+
+    const fabBtn = screen.getByRole('button', { name: /הזנה מהירה/i });
+    expect(fabBtn).toBeInTheDocument();
+    fireEvent.click(fabBtn);
+    expect(handleClick).toHaveBeenCalled();
+  });
+});
+
+describe('QuickLogModal Component', () => {
+  const mockAccounts = [
+    { id: 'acc1', name: 'עו״ש בנק הפועלים', category: 'short', balances: { '08/2026': 15000 } },
+    { id: 'acc2', name: 'קרן כספית', category: 'medium', balances: { '08/2026': 45000 } }
+  ];
+
+  it('renders and updates account balance', () => {
+    const handleUpdateBalance = vi.fn();
+    const handleClose = vi.fn();
+
+    render(
+      <QuickLogModal
+        isOpen={true}
+        onClose={handleClose}
+        accounts={mockAccounts}
+        selectedMonth="08/2026"
+        onUpdateAccountBalance={handleUpdateBalance}
+        budget={{ incomes: [], fixedExpenses: [], variableExpenses: [], savings: [] }}
+        onUpdateBudget={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('הזנה מהירה')).toBeInTheDocument();
+    expect(screen.getByText('עדכון יתרת חשבון')).toBeInTheDocument();
+
+    const balanceInput = screen.getByPlaceholderText('הזן יתרה...');
+    fireEvent.change(balanceInput, { target: { value: '22000' } });
+
+    const submitBtn = screen.getByRole('button', { name: /שמור יתרה/i });
+    fireEvent.click(submitBtn);
+
+    expect(handleUpdateBalance).toHaveBeenCalledWith('acc1', '08/2026', 22000);
+  });
+
+  it('switches to budget tab and adds new budget item', () => {
+    const handleUpdateBudget = vi.fn();
+
+    render(
+      <QuickLogModal
+        isOpen={true}
+        onClose={vi.fn()}
+        accounts={mockAccounts}
+        selectedMonth="08/2026"
+        onUpdateAccountBalance={vi.fn()}
+        budget={{ incomes: [], fixedExpenses: [], variableExpenses: [], savings: [] }}
+        onUpdateBudget={handleUpdateBudget}
+      />
+    );
+
+    const budgetTabBtn = screen.getByRole('button', { name: /הוספה לתקציב/i });
+    fireEvent.click(budgetTabBtn);
+
+    const nameInput = screen.getByPlaceholderText(/קניות סופר/i);
+    fireEvent.change(nameInput, { target: { value: 'מכולת שכונתית' } });
+
+    const amountInput = screen.getByPlaceholderText('0');
+    fireEvent.change(amountInput, { target: { value: '450' } });
+
+    const addBtn = screen.getByRole('button', { name: /הוסף לתקציב/i });
+    fireEvent.click(addBtn);
+
+    expect(handleUpdateBudget).toHaveBeenCalled();
+    const updatedBudget = handleUpdateBudget.mock.calls[0][0];
+    expect(updatedBudget.variableExpenses.some(i => i.name === 'מכולת שכונתית' && i.amount === 450)).toBe(true);
+  });
+});
+

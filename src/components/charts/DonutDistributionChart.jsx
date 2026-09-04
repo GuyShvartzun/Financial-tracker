@@ -45,7 +45,7 @@ export default function DonutDistributionChart({ personalStats }) {
 
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-[10px] text-stone-500 font-bold">סך נכסים</span>
-            <span className="text-xs font-black text-stone-900">{fmtILS(sum)}</span>
+            <span className="text-xs font-black text-stone-900 privacy-blur">{fmtILS(sum)}</span>
           </div>
         </div>
 
@@ -56,7 +56,7 @@ export default function DonutDistributionChart({ personalStats }) {
               <span className="font-bold text-stone-800">טווח קצר</span>
             </div>
             <div className="text-left">
-              <strong className="text-[#E65100] block">{fmtILS(short)}</strong>
+              <strong className="text-[#E65100] block privacy-blur">{fmtILS(short)}</strong>
               <span className="text-[10px] text-stone-500">{fmtPct(shortPct)}</span>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function DonutDistributionChart({ personalStats }) {
               <span className="font-bold text-stone-800">טווח בינוני</span>
             </div>
             <div className="text-left">
-              <strong className="text-[#1976D2] block">{fmtILS(medium)}</strong>
+              <strong className="text-[#1976D2] block privacy-blur">{fmtILS(medium)}</strong>
               <span className="text-[10px] text-stone-500">{fmtPct(mediumPct)}</span>
             </div>
           </div>
@@ -78,7 +78,7 @@ export default function DonutDistributionChart({ personalStats }) {
               <span className="font-bold text-stone-800">טווח ארוך</span>
             </div>
             <div className="text-left">
-              <strong className="text-[#7B1FA2] block">{fmtILS(long)}</strong>
+              <strong className="text-[#7B1FA2] block privacy-blur">{fmtILS(long)}</strong>
               <span className="text-[10px] text-stone-500">{fmtPct(longPct)}</span>
             </div>
           </div>

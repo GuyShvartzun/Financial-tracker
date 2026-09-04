@@ -121,7 +121,7 @@ export default function PersonalDashboard({
                         {acc.category === 'short' ? 'טווח קצר' : acc.category === 'medium' ? 'טווח בינוני' : acc.category === 'long' ? 'טווח ארוך' : 'התחייבות'}
                       </span>
                     </td>
-                    <td className="py-2.5 px-2 text-left font-black text-[#2E7D32]">
+                    <td className="py-2.5 px-2 text-left font-black text-[#2E7D32] privacy-blur">
                       {fmtILS(acc.balances?.[selectedMonth] || 0)}
                     </td>
                   </tr>
