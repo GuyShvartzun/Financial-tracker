@@ -31,6 +31,8 @@ export const DEFAULT_CALCULATORS_DATA = {
     propertyValue: '',
     monthlyIncome: '',
     expectedInflation: '',
+    constructionInflation: '',
+    forexInflation: '',
     tracks: []
   }
 };

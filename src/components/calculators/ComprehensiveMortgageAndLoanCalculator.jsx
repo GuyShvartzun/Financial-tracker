@@ -173,6 +173,37 @@ export function calcTrackSimulation(track, annualInflation) {
 
 export const calcTrackMetrics = calcTrackSimulation;
 
+export function getTrackLinkageRate(track, safeData = {}) {
+  const typeId = track?.trackType;
+  if (typeId === 'construction_linked') {
+    return parseFloat(safeData.constructionInflation) || 0;
+  }
+  if (typeId === 'forex_linked') {
+    return parseFloat(safeData.forexInflation) || 0;
+  }
+  if (typeId === 'cpi_linked' || typeId === 'fixed_linked' || typeId === 'variable_5_linked' || typeId === 'variable_linked') {
+    return parseFloat(safeData.expectedInflation) || 0;
+  }
+  return 0;
+}
+
+export function getTrackLinkageInfo(track, safeData = {}) {
+  const typeId = track?.trackType;
+  if (typeId === 'construction_linked') {
+    const rate = parseFloat(safeData.constructionInflation) || 0;
+    return { name: 'תשומות הבנייה', rate, isLinked: true, color: 'text-[#1565C0] bg-[#E3F2FD] border-[#90CAF9]' };
+  }
+  if (typeId === 'forex_linked') {
+    const rate = parseFloat(safeData.forexInflation) || 0;
+    return { name: 'שער חליפין (מט"ח)', rate, isLinked: true, color: 'text-[#7B1FA2] bg-[#F3E5F5] border-[#CE93D8]' };
+  }
+  if (typeId === 'cpi_linked' || typeId === 'fixed_linked' || typeId === 'variable_5_linked' || typeId === 'variable_linked') {
+    const rate = parseFloat(safeData.expectedInflation) || 0;
+    return { name: 'מדד המחירים לצרכן', rate, isLinked: true, color: 'text-[#E65100] bg-[#FFF3E0] border-[#FFE0B2]' };
+  }
+  return { name: 'ללא הצמדה', rate: 0, isLinked: false, color: 'text-[#455A64] bg-[#ECEFF1] border-[#CFD8DC]' };
+}
+
 export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUpdate }) {
   const safeData = data || {};
   const [openSchedules, setOpenSchedules] = useState({});
@@ -240,8 +271,9 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
     const trackDetails = tracks.map(t => {
       const amt = parseFloat(t.amount) || 0;
       const rate = parseFloat(t.interest) || 0;
+      const linkageRate = getTrackLinkageRate(t, safeData);
       
-      const metrics = calcTrackSimulation(t, safeData.expectedInflation);
+      const metrics = calcTrackSimulation(t, linkageRate);
 
       totalMortgage += amt;
       totalInitialMonthly += (metrics?.initialMonthly || 0);
@@ -250,7 +282,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
       totalInterestAndLinkage += (metrics?.totalInterestAndLinkage || 0);
       weightedInterestNumerator += (amt * rate);
 
-      return { ...t, metrics };
+      return { ...t, metrics, linkageRate };
     });
 
     const weightedAvgInterest = totalMortgage > 0 ? weightedInterestNumerator / totalMortgage : 0;
@@ -263,13 +295,25 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
       totalMortgage, totalInitialMonthly, totalPeakMonthly, totalPaidOverall,
       totalInterestAndLinkage, weightedAvgInterest, ltvRatio, ptiRatio, trackDetails
     };
-  }, [tracks, safeData.propertyValue, safeData.monthlyIncome, safeData.expectedInflation]);
+  }, [tracks, safeData.propertyValue, safeData.monthlyIncome, safeData.expectedInflation, safeData.constructionInflation, safeData.forexInflation]);
 
-  const hasLinkedTracks = tracks.some(t => {
-    const typeDef = TRACK_TYPES.find(tt => tt.id === t.trackType);
-    return typeDef?.isLinked;
-  });
-  const showInflationWarning = hasLinkedTracks && (!safeData.expectedInflation || parseFloat(safeData.expectedInflation) <= 0);
+  const unconfiguredLinkedTracks = useMemo(() => {
+    const missing = [];
+    const hasCpi = tracks.some(t => t.trackType === 'cpi_linked' || t.trackType === 'fixed_linked' || t.trackType === 'variable_5_linked' || t.trackType === 'variable_linked');
+    const hasConst = tracks.some(t => t.trackType === 'construction_linked');
+    const hasForex = tracks.some(t => t.trackType === 'forex_linked');
+
+    if (hasCpi && (!safeData.expectedInflation || parseFloat(safeData.expectedInflation) <= 0)) {
+      missing.push('מדד המחירים לצרכן');
+    }
+    if (hasConst && (!safeData.constructionInflation || parseFloat(safeData.constructionInflation) <= 0)) {
+      missing.push('מדד תשומות הבנייה');
+    }
+    if (hasForex && (!safeData.forexInflation || parseFloat(safeData.forexInflation) <= 0)) {
+      missing.push('שער חליפין/מט"ח');
+    }
+    return missing;
+  }, [tracks, safeData.expectedInflation, safeData.constructionInflation, safeData.forexInflation]);
 
   return (
     <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl space-y-6 shadow-xs">
@@ -284,54 +328,131 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
 
       <div className="space-y-6">
         {/* Core Parameters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-[#FAF7F2] p-4 rounded-xl border border-[#E8E2D8]">
-          <div>
-            <label className="text-xs text-stone-700 font-bold block mb-1">
-              שווי בטוחה / נכס (₪) <span className="text-stone-400 font-normal">(אופציונלי)</span>:
-            </label>
-            <input 
-              type="number" 
-              step="any"
-              value={safeData.propertyValue ?? ''} 
-              onChange={(e) => handleChange('propertyValue', e.target.value)} 
-              placeholder="לחישוב אחוז מימון (LTV)" 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
-            />
+        <div className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-stone-700 font-bold block mb-1">
+                שווי בטוחה / נכס (₪) <span className="text-stone-400 font-normal">(אופציונלי)</span>:
+              </label>
+              <input 
+                type="number" 
+                step="any"
+                value={safeData.propertyValue ?? ''} 
+                onChange={(e) => handleChange('propertyValue', e.target.value)} 
+                placeholder="לחישוב אחוז מימון (LTV)" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl p-2.5 outline-none focus:border-[#4A90E2]" 
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-stone-700 font-bold block mb-1">
+                הכנסה חודשית פנויה נטו (₪) <span className="text-stone-400 font-normal">(אופציונלי)</span>:
+              </label>
+              <input 
+                type="number" 
+                step="any"
+                value={safeData.monthlyIncome ?? ''} 
+                onChange={(e) => handleChange('monthlyIncome', e.target.value)} 
+                placeholder="לחישוב יחס החזר (PTI)" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] text-xs font-bold rounded-xl p-2.5 outline-none focus:border-[#4A90E2]" 
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="text-xs text-stone-700 font-bold block mb-1">
-              הכנסה חודשית פנויה נטו (₪) <span className="text-stone-400 font-normal">(אופציונלי)</span>:
-            </label>
-            <input 
-              type="number" 
-              step="any"
-              value={safeData.monthlyIncome ?? ''} 
-              onChange={(e) => handleChange('monthlyIncome', e.target.value)} 
-              placeholder="לחישוב יחס החזר (PTI)" 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] text-xs font-bold rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
-            />
-          </div>
+          <div className="pt-3 border-t border-[#E8E2D8]">
+            <div className="text-xs font-bold text-stone-800 mb-2.5 flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-1.5">
+                <span>📊</span>
+                <span>הנחות מדדים והצמדות שנתיות צפויות (%):</span>
+              </div>
+              <span className="text-[11px] font-normal text-stone-500">
+                כל מסלול הלוואה מוצמד למדד הייעודי שהוגדר עבורו
+              </span>
+            </div>
 
-          <div>
-            <label className="text-xs text-stone-700 font-bold block mb-1">
-              מדד אינפלציה שנתי צפוי (%):
-            </label>
-            <input 
-              type="number" 
-              step="any" 
-              value={safeData.expectedInflation ?? ''} 
-              onChange={(e) => handleChange('expectedInflation', e.target.value)} 
-              placeholder="למסלולים צמודים למדד"
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* CPI Inflation */}
+              <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#DDD6CA] space-y-1.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] text-stone-800 font-bold block">
+                    מדד המחירים לצרכן:
+                  </label>
+                  <span className="text-[9px] bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2] px-1.5 py-0.5 rounded-full font-bold">
+                    אינפלציה
+                  </span>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    step="any" 
+                    value={safeData.expectedInflation ?? ''} 
+                    onChange={(e) => handleChange('expectedInflation', e.target.value)} 
+                    placeholder="למשל 2.5"
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2] font-mono font-bold" 
+                  />
+                  <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
+                </div>
+                <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודים למדד</span>
+              </div>
+
+              {/* Construction Inflation */}
+              <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#DDD6CA] space-y-1.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] text-stone-800 font-bold block">
+                    מדד תשומות הבנייה:
+                  </label>
+                  <span className="text-[9px] bg-[#E3F2FD] text-[#1565C0] border border-[#BBDEFB] px-1.5 py-0.5 rounded-full font-bold">
+                    תשומות בנייה
+                  </span>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    step="any" 
+                    value={safeData.constructionInflation ?? ''} 
+                    onChange={(e) => handleChange('constructionInflation', e.target.value)} 
+                    placeholder="למשל 2.5"
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2] font-mono font-bold" 
+                  />
+                  <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
+                </div>
+                <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודי תשומות בנייה</span>
+              </div>
+
+              {/* Forex Change */}
+              <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#DDD6CA] space-y-1.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] text-stone-800 font-bold block">
+                    שינוי שער חליפין (מט"ח):
+                  </label>
+                  <span className="text-[9px] bg-[#F3E5F5] text-[#7B1FA2] border border-[#E1BEE7] px-1.5 py-0.5 rounded-full font-bold">
+                    מט"ח
+                  </span>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    step="any" 
+                    value={safeData.forexInflation ?? ''} 
+                    onChange={(e) => handleChange('forexInflation', e.target.value)} 
+                    placeholder="למשל 1.5"
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2] font-mono font-bold" 
+                  />
+                  <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
+                </div>
+                <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודי שער חליפין</span>
+              </div>
+            </div>
           </div>
         </div>
-        
-        {showInflationWarning && (
-          <div className="bg-[#FFF3E0] border border-[#FFCC80] p-3 rounded-lg text-[11px] text-[#E65100] font-bold flex items-center gap-2">
-            <span>⚠️</span>
-            <span>שים לב: קיימים מסלולים צמודים למדד, אך אינפלציה שנתית צפויה עומדת על 0. השפעת ההצמדה תבוא לידי ביטוי כאשר תוזן אינפלציה גדולה מ-0.</span>
+
+        {unconfiguredLinkedTracks.length > 0 && (
+          <div className="bg-[#FFF3E0] border border-[#FFCC80] p-3 rounded-xl text-xs text-[#E65100] font-bold flex items-start gap-2">
+            <span className="text-base leading-none mt-0.5">⚠️</span>
+            <span className="leading-relaxed">
+              שים לב: קיימים מסלולים צמודים אשר שיעור המדד הצפוי שלהם עומד על 0% ({unconfiguredLinkedTracks.join(', ')}). 
+              השפעת ההצמדה ולוחות הסילוקין יחושבו במדויק כאשר יוזן שיעור מדד הגדול מ-0%.
+            </span>
           </div>
         )}
 
@@ -466,17 +587,19 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       onChange={(e) => handleUpdateTrack(track.id, 'name', e.target.value)}
                       className="bg-[#FFFFFF] border border-[#DDD6CA] focus:border-[#4A90E2] text-stone-900 font-bold text-xs rounded-lg px-2.5 py-1.5 flex-1 outline-none transition"
                     />
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      !isLinked 
-                        ? 'bg-[#ECEFF1] text-[#455A64] border-[#CFD8DC]' 
-                        : trackTypeObj?.id === 'construction_linked'
-                        ? 'bg-[#E3F2FD] text-[#1565C0] border-[#90CAF9]'
-                        : trackTypeObj?.id === 'forex_linked'
-                        ? 'bg-[#F3E5F5] text-[#7B1FA2] border-[#CE93D8]'
-                        : 'bg-[#FFF3E0] text-[#E65100] border-[#FFE0B2]'
-                    }`}>
-                      {trackTypeObj?.name || (isLinked ? 'צמוד מדד' : 'לא צמוד')}
-                    </span>
+                    {(() => {
+                      const linkInfo = getTrackLinkageInfo(track, safeData);
+                      return (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${linkInfo.color}`}>
+                          <span>{trackTypeObj?.name || linkInfo.name}</span>
+                          {linkInfo.isLinked && (
+                            <span className="font-mono bg-white/70 px-1 rounded text-[9px] border border-black/5">
+                              {linkInfo.rate}%
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   <button 
