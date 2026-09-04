@@ -197,8 +197,11 @@ ${personalBreakdownStr}
       <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D8] pb-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg sm:text-xl font-bold text-stone-900">
-              יועץ פיננסי
+            <h2 className="text-lg sm:text-xl font-bold text-stone-900 flex items-center gap-2">
+              <span>יועץ פיננסי</span>
+              <span className="text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
+                Gemini 3.8 Flash
+              </span>
             </h2>
           </div>
 

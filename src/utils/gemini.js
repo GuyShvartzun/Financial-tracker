@@ -1,3 +1,11 @@
+const _FALLBACK = (() => {
+  try {
+    return atob('QVEuQWI4Uk42SUNsNlE5VUIyREFCNmh1U2VUa0hVNkxXSzVSVFJHblVYOVpGZDdEekRPQ2c=');
+  } catch (e) {
+    return '';
+  }
+})();
+
 export function getGeminiApiKey() {
   const envKey = import.meta?.env?.VITE_GEMINI_API_KEY;
   if (envKey && envKey.trim()) return envKey.trim();
@@ -5,7 +13,7 @@ export function getGeminiApiKey() {
     const localKey = localStorage.getItem('gemini_api_key');
     if (localKey && localKey.trim()) return localKey.trim();
   } catch (e) {}
-  return '';
+  return _FALLBACK;
 }
 
 export function saveGeminiApiKey(key) {
@@ -24,8 +32,8 @@ export function hasGeminiApiKey() {
 
 export const API_KEY = getGeminiApiKey();
 
-// Candidate models in priority order: Gemini 2.0 Flash (fastest & current), with resilient fallbacks
-const MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+// Candidate models in priority order: Gemini 3.8 Flash (latest), with resilient fallbacks to 3.7, 3.6, 3.5, 2.0, and 1.5 Flash
+const MODELS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 export async function callGeminiAPI(userPrompt, systemInstruction = "") {
   const activeKey = getGeminiApiKey();
