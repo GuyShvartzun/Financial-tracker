@@ -240,8 +240,8 @@ export default function RoomSettingsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 font-['Calibri',sans-serif] dir-rtl text-right select-none" dir="rtl">
-      <div className="bg-white rounded-3xl shadow-2xl border border-[#E8E2D8] max-w-xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-['Calibri',sans-serif] dir-rtl text-right select-none" dir="rtl">
+      <div className="bg-white rounded-3xl shadow-2xl border border-[#E8E2D8] max-w-xl w-full p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[90vh] overflow-y-auto">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-[#E8E2D8] pb-3">

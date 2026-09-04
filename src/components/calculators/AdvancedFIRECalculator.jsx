@@ -281,7 +281,7 @@ export default function AdvancedFIRECalculator({
   return (
     <div className="space-y-6">
       {/* Header and User Profile Selection */}
-      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 sm:p-6 rounded-2xl shadow-xs space-y-5">
+      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-4">
           <div>
             <h2 className="text-xl font-bold text-stone-900">מחשבון עצמאות כלכלית (Advanced FIRE)</h2>

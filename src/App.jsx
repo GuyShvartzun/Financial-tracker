@@ -22,7 +22,7 @@ import {
   DEFAULT_BUDGET, 
   DEFAULT_CALCULATORS_DATA 
 } from './constants/initialData';
-import { getAccountTotalsForMonth, sortMonths } from './utils/calculations';
+import { getAccountTotalsForMonth, sortMonths, sortAccountsByDataEntryOrder } from './utils/calculations';
 
 import LoginView from './components/auth/LoginView';
 import RoomLobby from './components/room/RoomLobby';
@@ -181,7 +181,8 @@ export default function App() {
     const unsubAccounts = onSnapshot(accountsRef, (snapshot) => {
       if (!snapshot.empty) {
         const cloudAccs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        setAccounts(cloudAccs);
+        const sortedAccs = sortAccountsByDataEntryOrder(cloudAccs);
+        setAccounts(sortedAccs);
         setIsCloudSynced(true);
       } else {
         setAccounts([]);
@@ -384,7 +385,8 @@ export default function App() {
   // Personal Statistics for Selected Member
   const personalStats = useMemo(() => {
     const targetUserId = selectedPersonalUserId || roomMembers[0]?.uid || roomMembers[0]?.id;
-    const userAccs = isSingleMember ? accounts : accounts.filter(a => a.ownerId === targetUserId);
+    const rawUserAccs = isSingleMember ? accounts : accounts.filter(a => a.ownerId === targetUserId);
+    const userAccs = sortAccountsByDataEntryOrder(rawUserAccs);
     const baseMonth = monthsList[0] || selectedMonth;
     const currentTotals = getAccountTotalsForMonth(userAccs, selectedMonth);
     const baseTotals = getAccountTotalsForMonth(userAccs, baseMonth);
@@ -488,16 +490,115 @@ export default function App() {
     }));
   };
 
+  const handleAccountCategoryChange = (accId, newCategory) => {
+    setAccounts(prev => {
+      const targetAcc = prev.find(a => a.id === accId);
+      if (!targetAcc || targetAcc.category === newCategory) return prev;
+      
+      const newCategoryAccs = prev.filter(a => a.category === newCategory);
+      const maxOrder = newCategoryAccs.reduce((max, a) => Math.max(max, a.order ?? 0), -1);
+      
+      const updated = { ...targetAcc, category: newCategory, order: maxOrder + 1 };
+      syncAccountToCloud(updated);
+      
+      const newAccs = prev.map(a => a.id === accId ? updated : a);
+      return sortAccountsByDataEntryOrder(newAccs);
+    });
+  };
+
+  const handleReorderAccount = (accId, direction) => {
+    setAccounts(prev => {
+      const targetAcc = prev.find(a => a.id === accId);
+      if (!targetAcc) return prev;
+
+      const catAccs = prev
+        .filter(a => a.category === targetAcc.category)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      const idx = catAccs.findIndex(a => a.id === accId);
+      if (idx === -1) return prev;
+      if (direction === 'up' && idx === 0) return prev;
+      if (direction === 'down' && idx === catAccs.length - 1) return prev;
+
+      const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+      const otherAcc = catAccs[swapIdx];
+
+      const currentOrders = catAccs.map((a, i) => ({ id: a.id, order: i }));
+      const targetOrderItem = currentOrders.find(item => item.id === targetAcc.id);
+      const otherOrderItem = currentOrders.find(item => item.id === otherAcc.id);
+
+      const targetNewOrder = otherOrderItem.order;
+      const otherNewOrder = targetOrderItem.order;
+
+      const updatedTarget = { ...targetAcc, order: targetNewOrder };
+      const updatedOther = { ...otherAcc, order: otherNewOrder };
+
+      syncAccountToCloud(updatedTarget);
+      syncAccountToCloud(updatedOther);
+
+      const newAccounts = prev.map(a => {
+        if (a.id === targetAcc.id) return updatedTarget;
+        if (a.id === otherAcc.id) return updatedOther;
+        return a;
+      });
+      return sortAccountsByDataEntryOrder(newAccounts);
+    });
+  };
+
+  const handleMoveAccountToPosition = (accId, targetCategory, targetIndex) => {
+    setAccounts(prev => {
+      const targetAcc = prev.find(a => a.id === accId);
+      if (!targetAcc) return prev;
+
+      const isSameCategory = targetAcc.category === targetCategory;
+      const targetCatAccs = prev
+        .filter(a => a.category === targetCategory && a.id !== accId)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      const validIndex = Math.max(0, Math.min(targetIndex, targetCatAccs.length));
+      targetCatAccs.splice(validIndex, 0, { ...targetAcc, category: targetCategory });
+
+      const updatedCategoryAccs = targetCatAccs.map((a, idx) => {
+        const updated = { ...a, order: idx };
+        syncAccountToCloud(updated);
+        return updated;
+      });
+
+      let updatedPrevCatAccs = [];
+      if (!isSameCategory) {
+        const prevCatAccs = prev
+          .filter(a => a.category === targetAcc.category && a.id !== accId)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        updatedPrevCatAccs = prevCatAccs.map((a, idx) => {
+          const updated = { ...a, order: idx };
+          syncAccountToCloud(updated);
+          return updated;
+        });
+      }
+
+      const updatedMap = new Map();
+      updatedCategoryAccs.forEach(a => updatedMap.set(a.id, a));
+      updatedPrevCatAccs.forEach(a => updatedMap.set(a.id, a));
+
+      const updatedAccounts = prev.map(a => updatedMap.get(a.id) || a);
+      return sortAccountsByDataEntryOrder(updatedAccounts);
+    });
+  };
+
   // Requirement 5: Every financial account created will have ownerId: authUser.uid
   const handleAddAccount = (category) => {
+    const catAccounts = accounts.filter(a => a.category === category);
+    const maxOrder = catAccounts.reduce((max, a) => Math.max(max, a.order ?? 0), -1);
+
     const newAcc = {
       id: 'acc_' + Date.now(),
       ownerId: authUser.uid,
       category,
       name: 'חשבון חדש',
-      balances: { [selectedMonth]: 0 }
+      balances: { [selectedMonth]: 0 },
+      order: maxOrder + 1
     };
-    setAccounts(prev => [...prev, newAcc]);
+    setAccounts(prev => sortAccountsByDataEntryOrder([...prev, newAcc]));
     syncAccountToCloud(newAcc);
   };
 
@@ -572,7 +673,7 @@ export default function App() {
         onOpenManageRoom={() => setShowManageRoomModal(true)}
       />
 
-      <main className="max-w-7xl mx-auto px-4 pt-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6">
         <MonthSelector
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
@@ -645,6 +746,9 @@ export default function App() {
             activeRoomAccounts={accounts}
             users={roomMembers}
             handleAccountNameChange={handleAccountNameChange}
+            handleAccountCategoryChange={handleAccountCategoryChange}
+            handleReorderAccount={handleReorderAccount}
+            handleMoveAccountToPosition={handleMoveAccountToPosition}
             handleBalanceChange={handleBalanceChange}
             handleRemoveAccountFromMonth={handleRemoveAccountFromMonth}
             handleDeleteAccountCompletely={handleDeleteAccountCompletely}

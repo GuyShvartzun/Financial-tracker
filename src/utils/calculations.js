@@ -10,6 +10,29 @@ export function getDynamicHistoricalReturn(track, yearsHorizon) {
   return Number((track.base20 + factor * (track.base30 - track.base20)).toFixed(1));
 }
 
+export const CATEGORY_ORDER = {
+  short: 0,
+  medium: 1,
+  long: 2,
+  liability: 3
+};
+
+export const sortAccountsByDataEntryOrder = (accs) => {
+  if (!Array.isArray(accs)) return [];
+  return [...accs].sort((a, b) => {
+    const catA = CATEGORY_ORDER[a.category] ?? 99;
+    const catB = CATEGORY_ORDER[b.category] ?? 99;
+    if (catA !== catB) {
+      return catA - catB;
+    }
+    const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+    if (orderDiff !== 0) {
+      return orderDiff;
+    }
+    return (a.id || '').localeCompare(b.id || '');
+  });
+};
+
 export const getAccountTotalsForMonth = (accs, month) => {
   let liquid = 0, nonLiquid = 0, liabilities = 0, short = 0, medium = 0, long = 0;
   accs.forEach(acc => {

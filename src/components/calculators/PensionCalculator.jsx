@@ -91,7 +91,7 @@ export default function PensionCalculator({
   }, [pensionData, remainingYears, nominalReturnRate]);
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl space-y-6 shadow-xs">
+    <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl space-y-6 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-3">
         <div>
           <h3 className="text-lg font-bold text-stone-900">סימולטור פנסיוני</h3>

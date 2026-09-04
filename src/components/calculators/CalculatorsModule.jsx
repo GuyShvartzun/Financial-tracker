@@ -19,10 +19,11 @@ export default function CalculatorsModule({
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 bg-[#FFFFFF] p-2 rounded-2xl border border-[#E8E2D8] shadow-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-[#FFFFFF] p-1.5 sm:p-2 rounded-2xl border border-[#E8E2D8] shadow-xs">
         <button
+          type="button"
           onClick={() => setCalcMode('pension')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition border cursor-pointer ${
+          className={`py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs transition border cursor-pointer text-center ${
             calcMode === 'pension' 
               ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
@@ -31,8 +32,9 @@ export default function CalculatorsModule({
           סימולטור פנסיוני
         </button>
         <button
+          type="button"
           onClick={() => setCalcMode('mortgage')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition border cursor-pointer ${
+          className={`py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs transition border cursor-pointer text-center ${
             calcMode === 'mortgage' 
               ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
@@ -41,14 +43,15 @@ export default function CalculatorsModule({
           מחשבון הלוואות ומשכנתה
         </button>
         <button
+          type="button"
           onClick={() => setCalcMode('fire')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition border cursor-pointer ${
+          className={`py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs transition border cursor-pointer text-center ${
             calcMode === 'fire' 
               ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
           }`}
         >
-          מחשבון עצמאות כלכלית
+          מחשבון עצמאות כלכלית (FIRE)
         </button>
       </div>
 

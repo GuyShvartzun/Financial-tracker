@@ -106,35 +106,35 @@ export default function RoomLobby({
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-stone-800 font-['Calibri',sans-serif] dir-rtl text-right flex flex-col" dir="rtl">
       {/* Top Header */}
-      <header className="bg-[#FFFFFF]/90 border-b border-[#E8E2D8] sticky top-0 z-40 backdrop-blur-md px-6 py-4 shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] p-2 rounded-2xl shadow-sm font-black text-xl flex items-center justify-center w-10 h-10">
+      <header className="bg-[#FFFFFF]/90 border-b border-[#E8E2D8] sticky top-0 z-40 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
+        <div className="max-w-6xl mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] p-1.5 sm:p-2 rounded-2xl shadow-sm font-black text-lg sm:text-xl flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10">
               ₪
             </div>
             <div>
-              <h1 className="text-xl font-black text-stone-900">מעקב פיננסי</h1>
-              <p className="text-xs text-stone-500">לובי החדרים המשותפים</p>
+              <h1 className="text-lg sm:text-xl font-black text-stone-900">מעקב פיננסי</h1>
+              <p className="text-[10px] sm:text-xs text-stone-500">לובי החדרים המשותפים</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-[#FAF7F2] p-1.5 rounded-xl border border-[#E8E2D8]">
-            <div className="flex items-center gap-2 px-2">
+          <div className="flex items-center gap-2 sm:gap-3 bg-[#FAF7F2] p-1 sm:p-1.5 rounded-xl border border-[#E8E2D8]">
+            <div className="flex items-center gap-2 px-1 sm:px-2">
               {authUser?.photoURL ? (
-                <img src={authUser.photoURL} alt="profile" className="w-8 h-8 rounded-full shadow-sm" />
+                <img src={authUser.photoURL} alt="profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-sm" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-[#81C784] text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#81C784] text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm">
                   {authUser?.displayName?.[0] || 'U'}
                 </div>
               )}
               <div className="text-xs">
-                <div className="font-semibold text-stone-800">{authUser?.displayName || authUser?.email}</div>
-                <div className="text-stone-500 text-[10px]">{authUser?.email}</div>
+                <div className="font-semibold text-stone-800 text-[11px] sm:text-xs truncate max-w-[120px] sm:max-w-none">{authUser?.displayName || authUser?.email}</div>
+                <div className="text-stone-500 text-[10px] hidden sm:block">{authUser?.email}</div>
               </div>
             </div>
             <button
               onClick={onLogout}
-              className="text-xs bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] font-bold px-3 py-1.5 rounded-lg border border-[#EF9A9A] transition shadow-xs cursor-pointer"
+              className="text-xs bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-[#EF9A9A] transition shadow-xs cursor-pointer"
             >
               התנתק
             </button>
@@ -143,11 +143,11 @@ export default function RoomLobby({
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-10 flex-1 w-full">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex-1 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h2 className="text-2xl font-black text-stone-900">החדרים שלי</h2>
-            <p className="text-sm text-stone-500 mt-1">
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">החדרים שלי</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">
               בחר חדר קיים כדי לצפות ולנהל את הנתונים, או צור חדר פיננסי חדש.
             </p>
           </div>

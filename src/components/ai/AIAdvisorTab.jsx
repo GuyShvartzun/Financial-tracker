@@ -135,12 +135,12 @@ ${personalBreakdownStr}
   return (
     <div className="space-y-6">
       {/* Main AI Advisor Panel */}
-      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl shadow-xs space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E2D8] pb-4">
+      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D8] pb-4">
           <div>
-            <h2 className="text-xl font-bold text-stone-900 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-stone-900 flex items-center gap-2">
               <span>יועץ פיננסי אישי (AI)</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
+              <span className="text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
                 Gemini 3.8 Flash
               </span>
             </h2>
@@ -150,9 +150,10 @@ ${personalBreakdownStr}
           </div>
 
           <button
+            type="button"
             onClick={generateFullAudit}
             disabled={isGeneratingAudit}
-            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-5 py-2.5 rounded-xl text-xs shadow-xs transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs shadow-xs transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
           >
             {isGeneratingAudit ? (
               <>
@@ -168,25 +169,25 @@ ${personalBreakdownStr}
         </div>
 
         {aiAuditReport && (
-          <div className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#E8E2D8] space-y-3">
-            <h3 className="text-md font-bold text-stone-900 border-b border-[#E8E2D8] pb-2">דוח אבחון וייעוץ פיננסי</h3>
+          <div className="bg-[#FAF7F2] p-4 sm:p-6 rounded-2xl border border-[#E8E2D8] space-y-3">
+            <h3 className="text-sm sm:text-base font-bold text-stone-900 border-b border-[#E8E2D8] pb-2">דוח אבחון וייעוץ פיננסי</h3>
             <FormattedText text={aiAuditReport} />
           </div>
         )}
       </div>
 
       {/* Interactive Chat */}
-      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl shadow-xs space-y-4">
-        <h3 className="text-base font-bold text-stone-900">צ'אט ייעוץ פיננסי אישי</h3>
+      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-4">
+        <h3 className="text-sm sm:text-base font-bold text-stone-900">צ'אט ייעוץ פיננסי אישי</h3>
 
         <div
           ref={chatContainerRef}
-          className="bg-[#FAF7F2] border border-[#E8E2D8] rounded-2xl p-4 max-h-96 overflow-y-auto space-y-4"
+          className="bg-[#FAF7F2] border border-[#E8E2D8] rounded-2xl p-3 sm:p-4 max-h-96 overflow-y-auto space-y-3 sm:space-y-4"
         >
           {chatMessages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-2xl p-4 rounded-2xl text-xs leading-relaxed ${
+                className={`max-w-2xl p-3 sm:p-4 rounded-2xl text-xs leading-relaxed ${
                   msg.role === 'user' 
                     ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] font-bold' 
                     : 'bg-[#FFFFFF] text-stone-900 border border-[#E8E2D8] shadow-xs'
@@ -213,12 +214,13 @@ ${personalBreakdownStr}
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="flex-1 min-w-0 bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-4 py-3 outline-none focus:border-[#4A90E2]"
+            className="flex-1 min-w-0 bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs sm:text-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 outline-none focus:border-[#4A90E2]"
           />
           <button
+            type="button"
             onClick={() => handleSendMessage()}
             disabled={isSendingMessage || !userInput.trim()}
-            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-5 py-3 rounded-xl text-xs transition disabled:opacity-50 cursor-pointer"
+            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs transition disabled:opacity-50 cursor-pointer shrink-0"
           >
             שלח
           </button>

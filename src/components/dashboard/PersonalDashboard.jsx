@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import MetricCards from './MetricCards';
 import GrowthSummaryCards from './GrowthSummaryCards';
 import EmergencyFundCard from './EmergencyFundCard';
@@ -7,6 +7,7 @@ import DonutDistributionChart from '../charts/DonutDistributionChart';
 import PersonalGrowthLineChart from '../charts/PersonalGrowthLineChart';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
 import { fmtILS } from '../../utils/formatters';
+import { sortAccountsByDataEntryOrder } from '../../utils/calculations';
 
 export default function PersonalDashboard({
   personalStats,
@@ -23,11 +24,15 @@ export default function PersonalDashboard({
   const activeUser = users.find(u => (u.uid || u.id) === selectedPersonalUserId) || users[0];
   const activeUid = activeUser?.uid || activeUser?.id;
 
+  const sortedUserAccs = useMemo(() => {
+    return sortAccountsByDataEntryOrder(personalStats?.userAccs || []);
+  }, [personalStats?.userAccs]);
+
   return (
     <div className="space-y-6">
       {!isSingleMember && users.length > 1 && (
-        <div className="flex items-center justify-between bg-[#FFFFFF] p-3 rounded-2xl border border-[#E8E2D8] shadow-xs">
-          <span className="text-sm font-bold text-stone-700">בחר פרופיל אישי לצפייה:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFFFFF] p-3 sm:p-3.5 rounded-2xl border border-[#E8E2D8] shadow-xs">
+          <span className="text-xs sm:text-sm font-bold text-stone-700">בחר פרופיל אישי לצפייה:</span>
           <div className="flex flex-wrap gap-2">
             {users.map(u => {
               const uUid = u.uid || u.id;
@@ -35,8 +40,9 @@ export default function PersonalDashboard({
               return (
                 <button
                   key={uUid}
+                  type="button"
                   onClick={() => setSelectedPersonalUserId(uUid)}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                  className={`px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
                     isSelected
                       ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs'
                       : 'bg-[#FAF7F2] text-stone-700 hover:bg-[#F2ECE1] border-[#DDD6CA]'
@@ -77,7 +83,7 @@ export default function PersonalDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DonutDistributionChart personalStats={personalStats} />
 
-        <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl shadow-xs">
+        <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs">
           <h3 className="text-lg font-bold text-stone-900 mb-4">
             {isSingleMember 
               ? 'פירוט חשבונות ונכסים' 
@@ -93,14 +99,14 @@ export default function PersonalDashboard({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E8E2D8]">
-                {personalStats.userAccs.length === 0 && (
+                {sortedUserAccs.length === 0 && (
                   <tr>
                     <td colSpan="3" className="py-4 text-center text-stone-500">
                       לא נמצאו חשבונות עבור פרופיל זה. היכנסו ל"הזנת נתונים" כדי להוסיף חשבון חדש.
                     </td>
                   </tr>
                 )}
-                {personalStats.userAccs.map(acc => (
+                {sortedUserAccs.map(acc => (
                   <tr key={acc.id} className="hover:bg-[#FAF7F2]">
                     <td className="py-2.5 px-2 font-bold text-stone-800">{acc.name}</td>
                     <td className="py-2.5 px-2">

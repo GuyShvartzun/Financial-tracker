@@ -64,6 +64,7 @@ export default function DataExport({
         const ownerMember = users.find(u => (u.uid || u.id) === a.ownerId);
         const ownerLabel = ownerMember ? `${ownerMember.displayName || ownerMember.name} (${a.ownerId})` : a.ownerId;
         const row = { 
+          'סדר': a.order !== undefined ? a.order : 0,
           'שם החשבון': a.name, 
           'סוג החשבון': catToHeb[a.category] || a.category, 
           'שיוך למשתמש': a.ownerId,
@@ -274,7 +275,7 @@ export default function DataExport({
       const defaultAdminUid = users[0]?.uid || users[0]?.id || '';
 
       // 1. Transform accounts with mapped real UIDs
-      const newAccounts = rawAccounts.map(row => {
+      const newAccounts = rawAccounts.map((row, idx) => {
         const rawOwner = extractRawOwner(row);
         let resolvedUid = userMapping[rawOwner];
 
@@ -292,11 +293,14 @@ export default function DataExport({
           Object.assign(balances, row.balances);
         }
 
+        const explicitOrder = row['סדר'] !== undefined ? Number(row['סדר']) : (row.order !== undefined ? Number(row.order) : idx);
+
         return {
           id: 'acc_' + Date.now() + Math.random().toString(36).substr(2, 9),
           name: row['שם החשבון'] || row['Name'] || row.name || 'חשבון מיובא',
           category: hebToCat[row['סוג החשבון']] || row['סוג החשבון'] || row.category || 'short',
           ownerId: resolvedUid,
+          order: isNaN(explicitOrder) ? idx : explicitOrder,
           balances
         };
       });
