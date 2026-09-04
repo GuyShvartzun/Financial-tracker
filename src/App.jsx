@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   signInWithPopup, 
   signOut, 
@@ -308,6 +308,22 @@ export default function App() {
   }));
 
   const isSingleMember = roomMembers.length <= 1;
+
+  // Set default dashboard when entering a room:
+  // Shared dashboard if multiple members exist, or Personal dashboard if single member.
+  const lastEnteredRoomIdRef = useRef(null);
+
+  useEffect(() => {
+    if (currentRoom) {
+      if (lastEnteredRoomIdRef.current !== currentRoom.id) {
+        lastEnteredRoomIdRef.current = currentRoom.id;
+        const isSingle = (currentRoom.members || []).length <= 1;
+        setActiveTab(isSingle ? 'personal_dash' : 'shared_dash');
+      }
+    } else {
+      lastEnteredRoomIdRef.current = null;
+    }
+  }, [currentRoom?.id]);
 
   // Auto-switch to personal dashboard when there is only one member
   useEffect(() => {
@@ -653,7 +669,11 @@ export default function App() {
       <RoomLobby
         authUser={authUser}
         rooms={userRooms}
-        onSelectRoom={(room) => setCurrentRoom(room)}
+        onSelectRoom={(room) => {
+          const isSingle = (room?.members?.length || 1) <= 1;
+          setActiveTab(isSingle ? 'personal_dash' : 'shared_dash');
+          setCurrentRoom(room);
+        }}
         onLogout={logoutGoogle}
       />
     );
