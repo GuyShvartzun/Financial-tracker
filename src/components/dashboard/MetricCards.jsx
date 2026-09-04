@@ -11,7 +11,9 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
         <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] tracking-tight">{fmtILS(netWorth)}</div>
         <div className="mt-2 text-xs text-stone-600 flex items-center gap-1">
           <span>צמיחה מתחילת מעקב:</span>
-          <strong className="text-[#2E7D32]">+{fmtPct(growthPct)}</strong>
+          <strong className={growthPct < 0 ? 'text-[#C62828]' : 'text-[#2E7D32]'}>
+            {growthPct < 0 ? fmtPct(growthPct) : (growthPct > 0 ? `+${fmtPct(growthPct)}` : fmtPct(growthPct))}
+          </strong>
         </div>
       </div>
 
