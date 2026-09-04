@@ -7,12 +7,12 @@ const _FALLBACK = (() => {
 })();
 
 export function getGeminiApiKey() {
-  const envKey = import.meta?.env?.VITE_GEMINI_API_KEY;
-  if (envKey && envKey.trim()) return envKey.trim();
   try {
     const localKey = localStorage.getItem('gemini_api_key');
     if (localKey && localKey.trim()) return localKey.trim();
   } catch (e) {}
+  const envKey = import.meta?.env?.VITE_GEMINI_API_KEY;
+  if (envKey && envKey.trim()) return envKey.trim();
   return _FALLBACK;
 }
 
@@ -36,6 +36,10 @@ export const API_KEY = getGeminiApiKey();
 const MODELS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 export async function callGeminiAPI(userPrompt, systemInstruction = "") {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new Error("אין חיבור פעיל לאינטרנט. אנא בדוק את החיבור ונסה שוב.");
+  }
+
   const activeKey = getGeminiApiKey();
   if (!activeKey) {
     throw new Error("מפתח API של Gemini אינו מוגדר. אנא הגדר את המפתח בהגדרות או בקובץ .env.");
@@ -54,7 +58,6 @@ export async function callGeminiAPI(userPrompt, systemInstruction = "") {
 
   for (const model of MODELS) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${activeKey}`;
-    let delay = 1000;
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -106,13 +109,19 @@ export async function callGeminiAPI(userPrompt, systemInstruction = "") {
           }
         }
       } catch (err) {
-        if (err.message && err.message.startsWith("שגיאת Gemini API")) {
+        if (err.message && (err.message.startsWith("שגיאת Gemini API") || err.message.startsWith("אין חיבור פעיל"))) {
           throw err;
+        }
+        // If it's a network disconnect / fetch failure, abort loop immediately instead of waiting through 6 models
+        if (err.name === 'TypeError' || err.message?.includes('network') || err.message?.includes('Network') || err.message?.includes('Failed to fetch')) {
+          throw new Error("שגיאת תקשורת רשת עם שרתי Gemini API. אנא בדוק את החיבור לאינטרנט ונסה שוב.");
         }
         lastError = err;
       }
-      await new Promise(res => setTimeout(res, delay));
-      delay *= 2;
+
+      if (attempt === 0) {
+        await new Promise(res => setTimeout(res, 300));
+      }
     }
   }
 

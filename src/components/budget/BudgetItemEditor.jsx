@@ -188,7 +188,7 @@ export default function BudgetItemEditor({
                 {/* Category Dropdown Selector */}
                 <select
                   value={categoryKey}
-                  onChange={(e) => onMoveCategory && onMoveCategory(item.id, e.target.value)}
+                  onChange={(e) => onMoveCategory && onMoveCategory(categoryKey, item.id, e.target.value)}
                   className="bg-white border border-[#DDD6CA] text-[10px] sm:text-xs font-bold text-stone-600 rounded-lg px-1 sm:px-1.5 py-1 outline-none focus:border-[#4A90E2] cursor-pointer"
                   title="העבר לקטגוריה אחרת"
                 >
