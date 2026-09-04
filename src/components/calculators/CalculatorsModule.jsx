@@ -12,7 +12,8 @@ export default function CalculatorsModule({
   users,
   roomStats,
   budgetTotals,
-  isSingleMember = false
+  isSingleMember = false,
+  activeUserId = ''
 }) {
   const [calcMode, setCalcMode] = useState('pension');
 
@@ -63,6 +64,7 @@ export default function CalculatorsModule({
           selectedMonth={selectedMonth}
           users={users}
           isSingleMember={isSingleMember}
+          activeUserId={activeUserId}
         />
       )}
 
@@ -83,6 +85,7 @@ export default function CalculatorsModule({
           roomStats={roomStats}
           budgetTotals={budgetTotals}
           isSingleMember={isSingleMember}
+          activeUserId={activeUserId}
         />
       )}
     </div>

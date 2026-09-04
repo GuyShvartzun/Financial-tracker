@@ -393,7 +393,7 @@ describe('DataEntryModule Component', () => {
     // Click add account button for short assets
     const addShortBtn = screen.getByText('הוסף חשבון לקבוצה זו (נכסים לטווח קצר)');
     fireEvent.click(addShortBtn);
-    expect(handleAddAccount).toHaveBeenCalledWith('short');
+    expect(handleAddAccount).toHaveBeenCalledWith('short', 'u1');
   });
 });
 

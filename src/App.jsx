@@ -319,11 +319,12 @@ export default function App() {
         lastEnteredRoomIdRef.current = currentRoom.id;
         const isSingle = (currentRoom.members || []).length <= 1;
         setActiveTab(isSingle ? 'personal_dash' : 'shared_dash');
+        setSelectedPersonalUserId(authUser?.uid || currentRoom.members?.[0]?.uid || '');
       }
     } else {
       lastEnteredRoomIdRef.current = null;
     }
-  }, [currentRoom?.id]);
+  }, [currentRoom?.id, authUser?.uid]);
 
   // Auto-switch to personal dashboard when there is only one member
   useEffect(() => {
@@ -400,7 +401,7 @@ export default function App() {
 
   // Personal Statistics for Selected Member
   const personalStats = useMemo(() => {
-    const targetUserId = selectedPersonalUserId || roomMembers[0]?.uid || roomMembers[0]?.id;
+    const targetUserId = selectedPersonalUserId || authUser?.uid || roomMembers[0]?.uid || roomMembers[0]?.id;
     const rawUserAccs = isSingleMember ? accounts : accounts.filter(a => a.ownerId === targetUserId);
     const userAccs = sortAccountsByDataEntryOrder(rawUserAccs);
     const baseMonth = monthsList[0] || selectedMonth;
@@ -432,7 +433,7 @@ export default function App() {
       avgMonthlyTotalGrowth, 
       avgMonthlyLiquidGrowth 
     };
-  }, [accounts, selectedPersonalUserId, selectedMonth, monthsList, roomMembers, isSingleMember]);
+  }, [accounts, selectedPersonalUserId, selectedMonth, monthsList, roomMembers, isSingleMember, authUser?.uid]);
 
   // Budget Aggregates
   const budgetTotals = useMemo(() => {
@@ -522,13 +523,14 @@ export default function App() {
     });
   };
 
-  const handleReorderAccount = (accId, direction) => {
+  const handleReorderAccount = (accId, direction, targetOwnerId) => {
     setAccounts(prev => {
       const targetAcc = prev.find(a => a.id === accId);
       if (!targetAcc) return prev;
 
+      const owner = targetOwnerId || targetAcc.ownerId;
       const catAccs = prev
-        .filter(a => a.category === targetAcc.category)
+        .filter(a => a.category === targetAcc.category && (!owner || a.ownerId === owner))
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
       const idx = catAccs.findIndex(a => a.id === accId);
@@ -539,36 +541,31 @@ export default function App() {
       const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
       const otherAcc = catAccs[swapIdx];
 
-      const currentOrders = catAccs.map((a, i) => ({ id: a.id, order: i }));
-      const targetOrderItem = currentOrders.find(item => item.id === targetAcc.id);
-      const otherOrderItem = currentOrders.find(item => item.id === otherAcc.id);
+      const newCatAccs = [...catAccs];
+      newCatAccs[idx] = otherAcc;
+      newCatAccs[swapIdx] = targetAcc;
 
-      const targetNewOrder = otherOrderItem.order;
-      const otherNewOrder = targetOrderItem.order;
-
-      const updatedTarget = { ...targetAcc, order: targetNewOrder };
-      const updatedOther = { ...otherAcc, order: otherNewOrder };
-
-      syncAccountToCloud(updatedTarget);
-      syncAccountToCloud(updatedOther);
-
-      const newAccounts = prev.map(a => {
-        if (a.id === targetAcc.id) return updatedTarget;
-        if (a.id === otherAcc.id) return updatedOther;
-        return a;
+      const updatedMap = new Map();
+      newCatAccs.forEach((a, i) => {
+        const updated = { ...a, order: i };
+        syncAccountToCloud(updated);
+        updatedMap.set(a.id, updated);
       });
+
+      const newAccounts = prev.map(a => updatedMap.get(a.id) || a);
       return sortAccountsByDataEntryOrder(newAccounts);
     });
   };
 
-  const handleMoveAccountToPosition = (accId, targetCategory, targetIndex) => {
+  const handleMoveAccountToPosition = (accId, targetCategory, targetIndex, targetOwnerId) => {
     setAccounts(prev => {
       const targetAcc = prev.find(a => a.id === accId);
       if (!targetAcc) return prev;
 
+      const owner = targetOwnerId || targetAcc.ownerId;
       const isSameCategory = targetAcc.category === targetCategory;
       const targetCatAccs = prev
-        .filter(a => a.category === targetCategory && a.id !== accId)
+        .filter(a => a.category === targetCategory && (!owner || a.ownerId === owner) && a.id !== accId)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
       const validIndex = Math.max(0, Math.min(targetIndex, targetCatAccs.length));
@@ -583,7 +580,7 @@ export default function App() {
       let updatedPrevCatAccs = [];
       if (!isSameCategory) {
         const prevCatAccs = prev
-          .filter(a => a.category === targetAcc.category && a.id !== accId)
+          .filter(a => a.category === targetAcc.category && (!owner || a.ownerId === owner) && a.id !== accId)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         updatedPrevCatAccs = prevCatAccs.map((a, idx) => {
           const updated = { ...a, order: idx };
@@ -601,14 +598,14 @@ export default function App() {
     });
   };
 
-  // Requirement 5: Every financial account created will have ownerId: authUser.uid
-  const handleAddAccount = (category) => {
-    const catAccounts = accounts.filter(a => a.category === category);
+  const handleAddAccount = (category, targetOwnerId) => {
+    const owner = targetOwnerId || authUser?.uid || roomMembers[0]?.uid || 'default_user';
+    const catAccounts = accounts.filter(a => a.category === category && (!owner || a.ownerId === owner));
     const maxOrder = catAccounts.reduce((max, a) => Math.max(max, a.order ?? 0), -1);
 
     const newAcc = {
       id: 'acc_' + Date.now(),
-      ownerId: authUser.uid,
+      ownerId: owner,
       category,
       name: 'חשבון חדש',
       balances: { [selectedMonth]: 0 },
@@ -672,6 +669,7 @@ export default function App() {
         onSelectRoom={(room) => {
           const isSingle = (room?.members?.length || 1) <= 1;
           setActiveTab(isSingle ? 'personal_dash' : 'shared_dash');
+          setSelectedPersonalUserId(authUser?.uid || room?.members?.[0]?.uid || '');
           setCurrentRoom(room);
         }}
         onLogout={logoutGoogle}
@@ -719,6 +717,7 @@ export default function App() {
             isSingleMember={isSingleMember}
             roomStats={roomStats}
             budgetTotals={budgetTotals}
+            activeUserId={authUser?.uid}
           />
         )}
 
@@ -743,6 +742,7 @@ export default function App() {
             roomStats={roomStats}
             budgetTotals={budgetTotals}
             isSingleMember={isSingleMember}
+            activeUserId={authUser?.uid}
           />
         )}
 
@@ -765,6 +765,8 @@ export default function App() {
             onDeleteMonth={handleDeleteMonth}
             activeRoomAccounts={accounts}
             users={roomMembers}
+            activeUserId={authUser?.uid}
+            isSingleMember={isSingleMember}
             handleAccountNameChange={handleAccountNameChange}
             handleAccountCategoryChange={handleAccountCategoryChange}
             handleReorderAccount={handleReorderAccount}

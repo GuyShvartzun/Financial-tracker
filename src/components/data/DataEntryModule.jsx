@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fmtILS } from '../../utils/formatters';
 import { getNextMonth } from '../../utils/calculations';
 
@@ -9,7 +9,9 @@ export default function DataEntryModule({
   onAddNewMonth,
   onDeleteMonth,
   activeRoomAccounts,
-  users,
+  users = [],
+  activeUserId = '',
+  isSingleMember = false,
   handleAccountNameChange,
   handleAccountCategoryChange,
   handleReorderAccount,
@@ -24,6 +26,29 @@ export default function DataEntryModule({
   const [newMonthInput, setNewMonthInput] = useState('');
   const [showAddMonthModal, setShowAddMonthModal] = useState(false);
   const [showDeleteMonthConfirm, setShowDeleteMonthConfirm] = useState(false);
+
+  // Multi-user Data Entry selector state
+  const isMultiUser = !isSingleMember && users.length > 1;
+  const preferredUserUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
+    ? activeUserId
+    : (users[0]?.uid || users[0]?.id || '');
+  const [selectedUserId, setSelectedUserId] = useState(preferredUserUid);
+
+  useEffect(() => {
+    const preferred = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
+      ? activeUserId
+      : (users[0]?.uid || users[0]?.id || '');
+    if (preferred && (!selectedUserId || !users.some(u => (u.uid || u.id) === selectedUserId))) {
+      setSelectedUserId(preferred);
+    }
+  }, [activeUserId, users]);
+
+  const currentSelectedUser = users.find(u => (u.uid || u.id) === selectedUserId) || users[0];
+  const currentUserId = currentSelectedUser?.uid || currentSelectedUser?.id || selectedUserId;
+
+  const displayedAccounts = isMultiUser
+    ? activeRoomAccounts.filter(a => a.ownerId === currentUserId)
+    : activeRoomAccounts;
 
   // Drag & Drop State
   const [draggedAccId, setDraggedAccId] = useState(null);
@@ -74,7 +99,7 @@ export default function DataEntryModule({
     if (!accId) return;
 
     if (handleMoveAccountToPosition) {
-      handleMoveAccountToPosition(accId, targetGroupKey, targetAccsCount);
+      handleMoveAccountToPosition(accId, targetGroupKey, targetAccsCount, currentUserId);
     } else if (handleAccountCategoryChange) {
       handleAccountCategoryChange(accId, targetGroupKey);
     }
@@ -92,7 +117,7 @@ export default function DataEntryModule({
     }
 
     if (handleMoveAccountToPosition) {
-      handleMoveAccountToPosition(accId, targetGroupKey, targetIndex);
+      handleMoveAccountToPosition(accId, targetGroupKey, targetIndex, currentUserId);
     }
 
     handleDragEnd();
@@ -156,9 +181,63 @@ export default function DataEntryModule({
         </div>
       </div>
 
+      {/* User Selector Bar for Multi-Member Rooms */}
+      {isMultiUser && (
+        <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-5 rounded-2xl shadow-xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8E2D8] pb-3">
+            <div>
+              <span className="text-sm font-bold text-stone-900 block">עריכת נתונים לפי משתמש</span>
+              <span className="text-xs text-stone-500">
+                בחר את המשתמש שעבורו תרצה לערוך ולהזין חשבונות ויתרות בנפרד
+              </span>
+            </div>
+            <div className="text-xs font-bold text-stone-600 bg-[#FAF7F2] px-3 py-1 rounded-xl border border-[#DDD6CA]">
+              עורך כעת חשבונות של: <span className="text-[#2E7D32] font-black">{currentSelectedUser?.displayName || currentSelectedUser?.name}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {users.map(u => {
+              const uUid = u.uid || u.id;
+              const isSelected = currentUserId === uUid;
+              const isAuthUser = uUid === activeUserId;
+              const userAccountsCount = activeRoomAccounts.filter(a => a.ownerId === uUid).length;
+
+              return (
+                <button
+                  key={uUid}
+                  type="button"
+                  onClick={() => setSelectedUserId(uUid)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition border cursor-pointer flex items-center gap-2 ${
+                    isSelected
+                      ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#81C784] shadow-xs ring-2 ring-[#2E7D32]/20'
+                      : 'bg-[#FAF7F2] text-stone-700 hover:bg-[#F2ECE1] border-[#DDD6CA]'
+                  }`}
+                >
+                  <span className="text-base leading-none">👤</span>
+                  <span>{u.displayName || u.name}</span>
+                  {isAuthUser && (
+                    <span className="text-[10px] bg-white text-stone-600 border border-stone-300 px-1.5 py-0.5 rounded-md font-normal">
+                      אני
+                    </span>
+                  )}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    isSelected 
+                      ? 'bg-[#2E7D32] text-white' 
+                      : 'bg-[#E8E2D8] text-stone-700'
+                  }`}>
+                    {userAccountsCount} חשבונות
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Account Categories Groups */}
       {accountGroups.map(group => {
-        const groupAccounts = activeRoomAccounts
+        const groupAccounts = displayedAccounts
           .filter(a => a.category === group.key)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
@@ -193,7 +272,9 @@ export default function DataEntryModule({
               <div 
                 className="py-8 text-center bg-[#FAF7F2] border border-dashed border-[#DDD6CA] rounded-xl text-stone-500 text-xs"
               >
-                אין חשבונות בקטגוריה זו. לחץ על הכפתור למטה או גרור לכאן חשבון מקבוצה אחרת.
+                {isMultiUser
+                  ? `אין חשבונות עבור ${currentSelectedUser?.displayName || currentSelectedUser?.name} בקטגוריה זו. לחץ על הכפתור למטה להוספת חשבון.`
+                  : 'אין חשבונות בקטגוריה זו. לחץ על הכפתור למטה או גרור לכאן חשבון מקבוצה אחרת.'}
               </div>
             ) : (
               <div className="space-y-3">
@@ -235,7 +316,7 @@ export default function DataEntryModule({
                           <div className="flex flex-col gap-0.5">
                             <button
                               type="button"
-                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'up')}
+                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'up', currentUserId)}
                               disabled={idx === 0}
                               className="w-5 h-4 bg-white hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white text-stone-600 rounded border border-[#DDD6CA] text-[9px] flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
                               title="הזז למעלה"
@@ -244,7 +325,7 @@ export default function DataEntryModule({
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'down')}
+                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'down', currentUserId)}
                               disabled={idx === groupAccounts.length - 1}
                               className="w-5 h-4 bg-white hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white text-stone-600 rounded border border-[#DDD6CA] text-[9px] flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
                               title="הזז למטה"
@@ -370,7 +451,7 @@ export default function DataEntryModule({
                           <div className="flex items-center gap-1 shrink-0">
                             <button
                               type="button"
-                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'up')}
+                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'up', currentUserId)}
                               disabled={idx === 0}
                               className="w-8 h-8 bg-white hover:bg-stone-100 disabled:opacity-30 text-stone-700 font-bold rounded-lg border border-[#DDD6CA] text-xs flex items-center justify-center transition cursor-pointer"
                               title="הזז למעלה"
@@ -379,7 +460,7 @@ export default function DataEntryModule({
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'down')}
+                              onClick={() => handleReorderAccount && handleReorderAccount(acc.id, 'down', currentUserId)}
                               disabled={idx === groupAccounts.length - 1}
                               className="w-8 h-8 bg-white hover:bg-stone-100 disabled:opacity-30 text-stone-700 font-bold rounded-lg border border-[#DDD6CA] text-xs flex items-center justify-center transition cursor-pointer"
                               title="הזז למטה"
@@ -475,11 +556,15 @@ export default function DataEntryModule({
             {/* Add Account Button */}
             <button
               type="button"
-              onClick={() => handleAddAccount(group.key)}
+              onClick={() => handleAddAccount(group.key, currentUserId)}
               className="w-full py-2.5 bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-dashed border-[#DDD6CA] text-stone-700 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
             >
               <span>+</span>
-              <span>הוסף חשבון לקבוצה זו ({group.shortTitle})</span>
+              <span>
+                {isMultiUser
+                  ? `הוסף חשבון לקבוצה זו עבור ${currentSelectedUser?.displayName || currentSelectedUser?.name || 'המשתמש'}`
+                  : `הוסף חשבון לקבוצה זו (${group.shortTitle})`}
+              </span>
             </button>
           </div>
         );

@@ -23,19 +23,29 @@ export default function PensionCalculator({
   accounts,
   selectedMonth,
   users = [],
-  isSingleMember = false
+  isSingleMember = false,
+  activeUserId = ''
 }) {
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || '';
-  const [activePensionUser, setActivePensionUser] = useState(isSingleUser ? singleUserUid : (users[0]?.uid || users[0]?.id || ''));
+  const preferredUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
+    ? activeUserId
+    : (users[0]?.uid || users[0]?.id || '');
+
+  const [activePensionUser, setActivePensionUser] = useState(isSingleUser ? singleUserUid : preferredUid);
 
   useEffect(() => {
     if (isSingleUser && singleUserUid && activePensionUser !== singleUserUid) {
       setActivePensionUser(singleUserUid);
-    } else if (!isSingleUser && (!activePensionUser || !users.some(u => (u.uid || u.id) === activePensionUser)) && users.length > 0) {
-      setActivePensionUser(users[0].uid || users[0].id);
+    } else if (!isSingleUser) {
+      const target = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
+        ? activeUserId
+        : (users[0]?.uid || users[0]?.id || '');
+      if (target && (!activePensionUser || !users.some(u => (u.uid || u.id) === activePensionUser))) {
+        setActivePensionUser(target);
+      }
     }
-  }, [users, activePensionUser, isSingleUser, singleUserUid]);
+  }, [users, activePensionUser, isSingleUser, singleUserUid, activeUserId]);
 
   const pensionData = calculatorsData.pension?.[activePensionUser] || DEFAULT_PENSION;
 

@@ -9,12 +9,17 @@ export default function AdvancedFIRECalculator({
   accounts = [],
   selectedMonth = '',
   users = [],
-  isSingleMember = false
+  isSingleMember = false,
+  activeUserId = ''
 }) {
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || 'single';
+  const preferredFireUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
+    ? activeUserId
+    : (users[0]?.uid || users[0]?.id || 'shared');
+
   const [activeFireUser, setActiveFireUser] = useState(
-    isSingleUser ? singleUserUid : (users[0]?.uid || users[0]?.id || 'shared')
+    isSingleUser ? singleUserUid : preferredFireUid
   );
 
   useEffect(() => {
@@ -23,11 +28,14 @@ export default function AdvancedFIRECalculator({
         setActiveFireUser(singleUserUid);
       }
     } else {
-      if (activeFireUser !== 'shared' && (!activeFireUser || !users.some(u => (u.uid || u.id) === activeFireUser)) && users.length > 0) {
-        setActiveFireUser(users[0].uid || users[0].id);
+      const preferred = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
+        ? activeUserId
+        : (users[0]?.uid || users[0]?.id || 'shared');
+      if (!activeFireUser || (activeFireUser !== 'shared' && !users.some(u => (u.uid || u.id) === activeFireUser))) {
+        setActiveFireUser(preferred);
       }
     }
-  }, [users, activeFireUser, isSingleUser, singleUserUid]);
+  }, [users, activeFireUser, isSingleUser, singleUserUid, activeUserId]);
 
   // Support per-user profiles with backward compatibility for legacy flat fire objects
   const rawFire = calculatorsData?.fire || {};

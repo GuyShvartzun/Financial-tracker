@@ -19,9 +19,12 @@ export default function PersonalDashboard({
   users = [],
   isSingleMember = false,
   roomStats,
-  budgetTotals
+  budgetTotals,
+  activeUserId = ''
 }) {
-  const activeUser = users.find(u => (u.uid || u.id) === selectedPersonalUserId) || users[0];
+  const activeUser = users.find(u => (u.uid || u.id) === selectedPersonalUserId) 
+    || users.find(u => (u.uid || u.id) === activeUserId) 
+    || users[0];
   const activeUid = activeUser?.uid || activeUser?.id;
 
   const sortedUserAccs = useMemo(() => {
