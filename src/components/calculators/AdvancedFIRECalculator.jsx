@@ -284,9 +284,9 @@ export default function AdvancedFIRECalculator({
       <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-4">
           <div>
-            <h2 className="text-xl font-bold text-stone-900">מחשבון עצמאות כלכלית (Advanced FIRE)</h2>
+            <h2 className="text-xl font-bold text-stone-900">מחשבון עצמאות כלכלית</h2>
             <p className="text-xs text-stone-500 mt-1">
-              סימולציית צבירה נומינלית, היוון ריאלי, גילום מס רווח הון ושימור הון בפרישה
+              חישוב היעד ומשך הזמן הנדרש להשגת עצמאות כלכלית ופרישה מוקדמת
             </p>
           </div>
 
@@ -544,41 +544,55 @@ export default function AdvancedFIRECalculator({
       <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 sm:p-6 rounded-2xl shadow-xs space-y-4">
         <div>
           <h3 className="text-base font-bold text-stone-900">מטריצת רגישות — זמן ליעד (שנים)</h3>
-          <span className="text-[11px] text-stone-500 block mt-0.5">תשואת צבירה נומינלית × הפקדה חודשית התחלתית</span>
+          <span className="text-[11px] text-stone-500 block mt-0.5">תשואת צבירה נומינלית × הפקדה חודשית</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-center border-collapse">
-            <thead>
-              <tr className="border-b border-[#E8E2D8] text-stone-600">
-                <th className="py-2.5 px-3 text-right">תשואה \ הפקדה</th>
-                {sensitivityData.deposits.map((d, idx) => (
-                  <th key={idx} className="py-2.5 px-3">{fmtILS(d)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E8E2D8]">
-              {sensitivityData.matrix.map((row, rIdx) => (
-                <tr key={rIdx} className="hover:bg-[#FAF7F2]">
-                  <td className="py-2.5 px-3 font-bold text-right text-stone-900">{row.returnRate.toFixed(1)}%</td>
-                  {row.cells.map((val, cIdx) => {
-                    let bgStyle = 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]';
-                    if (val > 55) bgStyle = 'bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2]';
-                    else if (val > 40) bgStyle = 'bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2]';
-                    else if (val > 25) bgStyle = 'bg-[#FFF9C4] text-[#F57F17] border border-[#FFF59D]';
-                    
-                    return (
-                      <td key={cIdx} className="py-2 px-2">
-                        <div className={`py-1.5 px-2 rounded-xl text-xs font-black ${bgStyle}`}>
-                          {val}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {(() => {
+            const allVals = sensitivityData.matrix.flatMap(r => r.cells);
+            const minV = allVals.length ? Math.min(...allVals) : 0;
+            const maxV = allVals.length ? Math.max(...allVals) : 100;
+            const span = maxV - minV;
+
+            return (
+              <table className="w-full text-xs text-center border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E8E2D8] text-stone-600">
+                    <th className="py-2.5 px-3 text-right">תשואה \ הפקדה</th>
+                    {sensitivityData.deposits.map((d, idx) => (
+                      <th key={idx} className="py-2.5 px-3">{fmtILS(d)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E8E2D8]">
+                  {sensitivityData.matrix.map((row, rIdx) => (
+                    <tr key={rIdx} className="hover:bg-[#FAF7F2]">
+                      <td className="py-2.5 px-3 font-bold text-right text-stone-900">{row.returnRate.toFixed(1)}%</td>
+                      {row.cells.map((val, cIdx) => {
+                        const ratio = span > 0 ? (val - minV) / span : 0;
+                        let bgStyle = 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'; // Low = Green
+                        if (ratio > 0.75) {
+                          bgStyle = 'bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2]'; // High = Red
+                        } else if (ratio > 0.5) {
+                          bgStyle = 'bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2]'; // Mid-high = Orange
+                        } else if (ratio > 0.25) {
+                          bgStyle = 'bg-[#FFFDE7] text-[#F57F17] border border-[#FFF9C4]'; // Mid-low = Yellow
+                        }
+                        
+                        return (
+                          <td key={cIdx} className="py-2 px-2">
+                            <div className={`py-1.5 px-2 rounded-xl text-xs font-black ${bgStyle}`}>
+                              {val}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
       </div>
 

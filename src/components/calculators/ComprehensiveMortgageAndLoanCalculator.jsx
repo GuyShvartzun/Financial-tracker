@@ -2,16 +2,21 @@ import React, { useState, useMemo } from 'react';
 import { fmtILS } from '../../utils/formatters';
 
 export const TRACK_TYPES = [
-  { id: 'fixed_unlinked', name: 'קבועה לא צמודה (קל"צ)', isLinked: false, desc: 'החזר קבוע וודאי לכל אורך התקופה ללא השפעת מדד' },
-  { id: 'fixed_linked', name: 'קבועה צמודה למדד (ק"צ)', isLinked: true, desc: 'ריבית קבועה, הקרן וההחזר צמודים למדד המחירים לצרכן' },
-  { id: 'prime', name: 'פריים (P, לא צמודה)', isLinked: false, desc: 'לפי ריבית בנק ישראל + מרווח, ללא הצמדה' },
-  { id: 'variable_5_linked', name: 'משתנה כל 5 שנים צמודה (מ"צ)', isLinked: true, desc: 'ריבית מתעדכנת אחת ל-5 שנים, צמודה למדד' },
-  { id: 'variable_5_unlinked', name: 'משתנה כל 5 שנים לא צמודה (מל"צ)', isLinked: false, desc: 'ריבית מתעדכנת אחת ל-5 שנים, ללא הצמדה' },
-  { id: 'commercial_fixed', name: 'הלוואה מסחרית / צרכנית / רכב', isLinked: false, desc: 'הלוואה בנקאית/חוץ-בנקאית לטווח קצר-בינוני בריבית קבועה' },
+  { id: 'unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, desc: 'קרן והחזרים ללא הצמדה לשום מדד' },
+  { id: 'cpi_linked', name: 'צמודה למדד המחירים לצרכן', isLinked: true, desc: 'קרן והחזר חודשי צמודים למדד המחירים לצרכן (אינפלציה)' },
+  { id: 'construction_linked', name: 'צמודה למדד תשומות הבנייה', isLinked: true, desc: 'קרן והחזר חודשי צמודים למדד תשומות הבנייה (רכישה מקבלן)' },
+  { id: 'forex_linked', name: 'צמודה למט"ח (שער חליפין)', isLinked: true, desc: 'קרן והחזר חודשי צמודים לשער חליפין (דולר/אירו)' },
+
   // Backward compatibility aliases
-  { id: 'variable_linked', name: 'משתנה צמודה (מ"צ)', isLinked: true, hidden: true },
-  { id: 'variable_unlinked', name: 'משתנה לא צמודה (מל"צ)', isLinked: false, hidden: true },
-  { id: 'other', name: 'הלוואה כללית / רכב', isLinked: false, hidden: true }
+  { id: 'fixed_unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
+  { id: 'prime', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
+  { id: 'variable_5_unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
+  { id: 'commercial_fixed', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
+  { id: 'fixed_linked', name: 'צמודה למדד המחירים לצרכן', isLinked: true, hidden: true },
+  { id: 'variable_5_linked', name: 'צמודה למדד המחירים לצרכן', isLinked: true, hidden: true },
+  { id: 'variable_linked', name: 'צמודה למדד המחירים לצרכן', isLinked: true, hidden: true },
+  { id: 'variable_unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
+  { id: 'other', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true }
 ];
 
 export const SCHEDULE_TYPES = [
@@ -189,7 +194,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         amount: '',
         years: '25',
         months: '300',
-        trackType: 'fixed_unlinked',
+        trackType: 'unlinked',
         interest: '',
         scheduleType: 'spitzer',
         graceMonths: ''
@@ -272,7 +277,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         <div>
           <h3 className="text-lg font-bold text-stone-900">מחשבון הלוואות</h3>
           <p className="text-xs text-stone-500 mt-1">
-            תכנון וניהול כלל התחייבויות האשראי של משק הבית – משכנתאות, הלוואות רכב, הלוואות צרכניות ובלון, לפי פרקטיקת הבנקאות בישראל.
+            חישוב, תכנון והשוואת לוחות סילוקין להלוואות ומשכנתאות
           </p>
         </div>
       </div>
@@ -462,11 +467,15 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       className="bg-[#FFFFFF] border border-[#DDD6CA] focus:border-[#4A90E2] text-stone-900 font-bold text-xs rounded-lg px-2.5 py-1.5 flex-1 outline-none transition"
                     />
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      isLinked 
-                        ? 'bg-[#FFF3E0] text-[#E65100] border-[#FFE0B2]' 
-                        : 'bg-[#ECEFF1] text-[#455A64] border-[#CFD8DC]'
+                      !isLinked 
+                        ? 'bg-[#ECEFF1] text-[#455A64] border-[#CFD8DC]' 
+                        : trackTypeObj?.id === 'construction_linked'
+                        ? 'bg-[#E3F2FD] text-[#1565C0] border-[#90CAF9]'
+                        : trackTypeObj?.id === 'forex_linked'
+                        ? 'bg-[#F3E5F5] text-[#7B1FA2] border-[#CE93D8]'
+                        : 'bg-[#FFF3E0] text-[#E65100] border-[#FFE0B2]'
                     }`}>
-                      {isLinked ? 'צמוד מדד' : 'לא צמוד'}
+                      {trackTypeObj?.name || (isLinked ? 'צמוד מדד' : 'לא צמוד')}
                     </span>
                   </div>
 
@@ -520,11 +529,17 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div>
                     <label className="text-[10px] text-stone-600 font-bold block mb-1">סוג מסלול / הצמדה:</label>
                     <select 
-                      value={track.trackType} 
+                      value={
+                        (track.trackType === 'fixed_unlinked' || track.trackType === 'prime' || track.trackType === 'variable_5_unlinked' || track.trackType === 'commercial_fixed' || track.trackType === 'variable_unlinked' || track.trackType === 'other')
+                          ? 'unlinked'
+                          : (track.trackType === 'fixed_linked' || track.trackType === 'variable_5_linked' || track.trackType === 'variable_linked')
+                          ? 'cpi_linked'
+                          : (track.trackType || 'unlinked')
+                      } 
                       onChange={(e) => handleUpdateTrack(track.id, 'trackType', e.target.value)} 
                       className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none cursor-pointer focus:border-[#4A90E2]" 
                     >
-                      {TRACK_TYPES.map(tt => <option key={tt.id} value={tt.id}>{tt.name}</option>)}
+                      {TRACK_TYPES.filter(tt => !tt.hidden).map(tt => <option key={tt.id} value={tt.id}>{tt.name}</option>)}
                     </select>
                   </div>
 

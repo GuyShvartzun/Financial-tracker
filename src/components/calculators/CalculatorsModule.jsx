@@ -51,7 +51,7 @@ export default function CalculatorsModule({
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
           }`}
         >
-          מחשבון עצמאות כלכלית (FIRE)
+          מחשבון עצמאות כלכלית
         </button>
       </div>
 
