@@ -32,7 +32,6 @@ export const DEFAULT_CALCULATORS_DATA = {
     monthlyIncome: '',
     expectedInflation: '',
     constructionInflation: '',
-    forexInflation: '',
     tracks: []
   }
 };

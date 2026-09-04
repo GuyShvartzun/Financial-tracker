@@ -141,7 +141,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.balance ?? ''}
                 onChange={(e) => handlePensionChange('balance', e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#7B1FA2] font-black rounded-xl p-3 text-sm outline-none focus:border-[#4A90E2]"
+                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#7B1FA2] font-black rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]"
               />
             </div>
 
@@ -152,7 +152,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.monthlyDeposit ?? ''}
                 onChange={(e) => handlePensionChange('monthlyDeposit', e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-black rounded-xl p-3 text-sm outline-none focus:border-[#4A90E2]"
+                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-black rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]"
               />
             </div>
 

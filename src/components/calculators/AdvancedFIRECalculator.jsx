@@ -351,7 +351,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.initialCapital ?? ''} 
               onChange={(e) => handleFireChange('initialCapital', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-bold rounded-xl p-2.5 text-sm outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
             />
           </div>
 
@@ -362,7 +362,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.monthlyDeposit ?? ''} 
               onChange={(e) => handleFireChange('monthlyDeposit', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-bold rounded-xl p-2.5 text-sm outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
             />
           </div>
 
@@ -373,7 +373,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.desiredNetMonthlyWithdrawal ?? ''} 
               onChange={(e) => handleFireChange('desiredNetMonthlyWithdrawal', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-sm outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
             />
           </div>
 
@@ -384,7 +384,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualDepositGrowth ?? ''} 
               onChange={(e) => handleFireChange('annualDepositGrowth', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-sm outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
             />
           </div>
 
@@ -395,7 +395,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.lumpSumAmount ?? ''} 
               onChange={(e) => handleFireChange('lumpSumAmount', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-sm outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
             />
           </div>
 
@@ -406,7 +406,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.lumpSumYears ?? ''} 
               onChange={(e) => handleFireChange('lumpSumYears', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-sm outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
             />
           </div>
 

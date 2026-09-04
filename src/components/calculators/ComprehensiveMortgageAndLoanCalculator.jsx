@@ -5,9 +5,9 @@ export const TRACK_TYPES = [
   { id: 'unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, desc: 'קרן והחזרים ללא הצמדה לשום מדד' },
   { id: 'cpi_linked', name: 'צמודה למדד המחירים לצרכן', isLinked: true, desc: 'קרן והחזר חודשי צמודים למדד המחירים לצרכן (אינפלציה)' },
   { id: 'construction_linked', name: 'צמודה למדד תשומות הבנייה', isLinked: true, desc: 'קרן והחזר חודשי צמודים למדד תשומות הבנייה (רכישה מקבלן)' },
-  { id: 'forex_linked', name: 'צמודה למט"ח (שער חליפין)', isLinked: true, desc: 'קרן והחזר חודשי צמודים לשער חליפין (דולר/אירו)' },
 
   // Backward compatibility aliases
+  { id: 'forex_linked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
   { id: 'fixed_unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
   { id: 'prime', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
   { id: 'variable_5_unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, hidden: true },
@@ -178,9 +178,6 @@ export function getTrackLinkageRate(track, safeData = {}) {
   if (typeId === 'construction_linked') {
     return parseFloat(safeData.constructionInflation) || 0;
   }
-  if (typeId === 'forex_linked') {
-    return parseFloat(safeData.forexInflation) || 0;
-  }
   if (typeId === 'cpi_linked' || typeId === 'fixed_linked' || typeId === 'variable_5_linked' || typeId === 'variable_linked') {
     return parseFloat(safeData.expectedInflation) || 0;
   }
@@ -192,10 +189,6 @@ export function getTrackLinkageInfo(track, safeData = {}) {
   if (typeId === 'construction_linked') {
     const rate = parseFloat(safeData.constructionInflation) || 0;
     return { name: 'תשומות הבנייה', rate, isLinked: true, color: 'text-[#1565C0] bg-[#E3F2FD] border-[#90CAF9]' };
-  }
-  if (typeId === 'forex_linked') {
-    const rate = parseFloat(safeData.forexInflation) || 0;
-    return { name: 'שער חליפין (מט"ח)', rate, isLinked: true, color: 'text-[#7B1FA2] bg-[#F3E5F5] border-[#CE93D8]' };
   }
   if (typeId === 'cpi_linked' || typeId === 'fixed_linked' || typeId === 'variable_5_linked' || typeId === 'variable_linked') {
     const rate = parseFloat(safeData.expectedInflation) || 0;
@@ -295,13 +288,12 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
       totalMortgage, totalInitialMonthly, totalPeakMonthly, totalPaidOverall,
       totalInterestAndLinkage, weightedAvgInterest, ltvRatio, ptiRatio, trackDetails
     };
-  }, [tracks, safeData.propertyValue, safeData.monthlyIncome, safeData.expectedInflation, safeData.constructionInflation, safeData.forexInflation]);
+  }, [tracks, safeData.propertyValue, safeData.monthlyIncome, safeData.expectedInflation, safeData.constructionInflation]);
 
   const unconfiguredLinkedTracks = useMemo(() => {
     const missing = [];
     const hasCpi = tracks.some(t => t.trackType === 'cpi_linked' || t.trackType === 'fixed_linked' || t.trackType === 'variable_5_linked' || t.trackType === 'variable_linked');
     const hasConst = tracks.some(t => t.trackType === 'construction_linked');
-    const hasForex = tracks.some(t => t.trackType === 'forex_linked');
 
     if (hasCpi && (!safeData.expectedInflation || parseFloat(safeData.expectedInflation) <= 0)) {
       missing.push('מדד המחירים לצרכן');
@@ -309,11 +301,8 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
     if (hasConst && (!safeData.constructionInflation || parseFloat(safeData.constructionInflation) <= 0)) {
       missing.push('מדד תשומות הבנייה');
     }
-    if (hasForex && (!safeData.forexInflation || parseFloat(safeData.forexInflation) <= 0)) {
-      missing.push('שער חליפין/מט"ח');
-    }
     return missing;
-  }, [tracks, safeData.expectedInflation, safeData.constructionInflation, safeData.forexInflation]);
+  }, [tracks, safeData.expectedInflation, safeData.constructionInflation]);
 
   return (
     <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl space-y-6 shadow-xs">
@@ -354,7 +343,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 value={safeData.monthlyIncome ?? ''} 
                 onChange={(e) => handleChange('monthlyIncome', e.target.value)} 
                 placeholder="לחישוב יחס החזר (PTI)" 
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] text-xs font-bold rounded-xl p-2.5 outline-none focus:border-[#4A90E2]" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl p-2.5 outline-none focus:border-[#4A90E2]" 
               />
             </div>
           </div>
@@ -370,7 +359,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* CPI Inflation */}
               <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#DDD6CA] space-y-1.5 shadow-2xs">
                 <div className="flex items-center justify-between">
@@ -417,30 +406,6 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
                 </div>
                 <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודי תשומות בנייה</span>
-              </div>
-
-              {/* Forex Change */}
-              <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#DDD6CA] space-y-1.5 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] text-stone-800 font-bold block">
-                    שינוי שער חליפין (מט"ח):
-                  </label>
-                  <span className="text-[9px] bg-[#F3E5F5] text-[#7B1FA2] border border-[#E1BEE7] px-1.5 py-0.5 rounded-full font-bold">
-                    מט"ח
-                  </span>
-                </div>
-                <div className="relative">
-                  <input 
-                    type="number" 
-                    step="any" 
-                    value={safeData.forexInflation ?? ''} 
-                    onChange={(e) => handleChange('forexInflation', e.target.value)} 
-                    placeholder="למשל 1.5"
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2] font-mono font-bold" 
-                  />
-                  <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
-                </div>
-                <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודי שער חליפין</span>
               </div>
             </div>
           </div>
@@ -653,7 +618,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     <label className="text-[10px] text-stone-600 font-bold block mb-1">סוג מסלול / הצמדה:</label>
                     <select 
                       value={
-                        (track.trackType === 'fixed_unlinked' || track.trackType === 'prime' || track.trackType === 'variable_5_unlinked' || track.trackType === 'commercial_fixed' || track.trackType === 'variable_unlinked' || track.trackType === 'other')
+                        (track.trackType === 'fixed_unlinked' || track.trackType === 'prime' || track.trackType === 'variable_5_unlinked' || track.trackType === 'commercial_fixed' || track.trackType === 'variable_unlinked' || track.trackType === 'other' || track.trackType === 'forex_linked')
                           ? 'unlinked'
                           : (track.trackType === 'fixed_linked' || track.trackType === 'variable_5_linked' || track.trackType === 'variable_linked')
                           ? 'cpi_linked'
