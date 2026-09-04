@@ -286,7 +286,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <h2 className="text-xl font-bold text-stone-900">מחשבון עצמאות כלכלית</h2>
             <p className="text-xs text-stone-500 mt-1">
-              חישוב היעד ומשך הזמן הנדרש להשגת עצמאות כלכלית ופרישה מוקדמת
+              חישוב היעד ומשך הזמן הנדרש להשגת עצמאות כלכלית ופרישה
             </p>
           </div>
 

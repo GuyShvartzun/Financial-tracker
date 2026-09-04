@@ -277,7 +277,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         <div>
           <h3 className="text-lg font-bold text-stone-900">מחשבון הלוואות</h3>
           <p className="text-xs text-stone-500 mt-1">
-            חישוב, תכנון והשוואת לוחות סילוקין להלוואות ומשכנתאות
+            חישוב, תכנון והשוואת לוחות סילוקין להלוואות
           </p>
         </div>
       </div>
