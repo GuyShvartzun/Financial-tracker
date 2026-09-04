@@ -22,7 +22,7 @@ export default function Header({
     ),
     { id: 'budget', label: 'תקציב' },
     { id: 'calculators', label: 'מחשבונים פיננסיים' },
-    { id: 'ai_advisor', label: 'יועץ פיננסי AI' },
+    { id: 'ai_advisor', label: 'יועץ פיננסי' },
     { id: 'data_entry', label: 'הזנת נתונים' },
     { id: 'export', label: 'ייצוא וייבוא אקסל' },
   ];

@@ -41,10 +41,10 @@ export default function DataEntryModule({
   };
 
   const accountGroups = [
-    { key: 'short', title: 'נכסים לטווח קצר (עו"ש, פקדונות, מזומן)', shortTitle: 'טווח קצר', color: 'border-[#FFE0B2]' },
-    { key: 'medium', title: 'נכסים לטווח בינוני (תיק השקעות, קופות גמל להשקעה)', shortTitle: 'טווח בינוני', color: 'border-[#BBDEFB]' },
-    { key: 'long', title: 'נכסים לטווח ארוך (פנסיה, קרנות השתלמות, גמל)', shortTitle: 'טווח ארוך', color: 'border-[#E1BEE7]' },
-    { key: 'liability', title: 'התחייבויות והלוואות (מינוס, הלוואות, משכנתה)', shortTitle: 'התחייבויות', color: 'border-[#FFCDD2]' },
+    { key: 'short', title: 'נכסים לטווח קצר', shortTitle: 'נכסים לטווח קצר', color: 'border-[#FFE0B2]' },
+    { key: 'medium', title: 'נכסים לטווח בינוני', shortTitle: 'נכסים לטווח בינוני', color: 'border-[#BBDEFB]' },
+    { key: 'long', title: 'נכסים לטווח ארוך', shortTitle: 'נכסים לטווח ארוך', color: 'border-[#E1BEE7]' },
+    { key: 'liability', title: 'התחייבויות', shortTitle: 'התחייבויות', color: 'border-[#FFCDD2]' },
   ];
 
   // Drag & Drop Handlers
@@ -106,7 +106,7 @@ export default function DataEntryModule({
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-stone-900">הזנת נתונים חודשית וניהול חשבונות</h2>
             <p className="text-xs text-stone-500 mt-1">
-              באפשרותך לערוך סדר חשבונות (למעלה/למטה או בגרירה), להעביר חשבון בין קטגוריות, ולעדכן יתרות חודשיות.
+              יש להזין יתרת חשבונות נכון לתאריך החתך בניכוי הכנסות והוצאות של תחילת חודש עוקב אשר נכנסו בתקופה הנוכחית.
             </p>
           </div>
 

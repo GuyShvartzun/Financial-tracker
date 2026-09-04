@@ -1,14 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { callGeminiAPI } from '../../utils/gemini';
+import { callGeminiAPI, getGeminiApiKey, saveGeminiApiKey, hasGeminiApiKey } from '../../utils/gemini';
 import { FormattedText } from '../../utils/textParser';
 import { getAccountTotalsForMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
 
 export default function AIAdvisorTab({ roomStats, budgetTotals, accounts, selectedMonth, users }) {
+  const [hasKey, setHasKey] = useState(() => hasGeminiApiKey());
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(() => getGeminiApiKey());
+  const [keySaveMessage, setKeySaveMessage] = useState('');
   const [aiAuditReport, setAiAuditReport] = useState('');
   const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', text: 'שלום! אני היועץ הפיננסי האישי שלכם ב-AI. אני מקושר בזמן אמת לנתוני התיק והתקציב שלכם. איך אוכל לעזור היום?' }
+    { role: 'assistant', text: 'שלום! אני היועץ הפיננסי שלכם ב-AI. אני מקושר בזמן אמת לנתוני התיק והתקציב שלכם. איך אוכל לעזור היום?' }
   ]);
   const [userInput, setUserInput] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
@@ -22,6 +26,10 @@ export default function AIAdvisorTab({ roomStats, budgetTotals, accounts, select
   }, [chatMessages]);
 
   const generateFullAudit = async () => {
+    if (!hasKey) {
+      setShowKeyModal(true);
+      return;
+    }
     setIsGeneratingAudit(true);
     try {
       const personalBreakdownStr = users.map(m => {
@@ -105,6 +113,11 @@ ${personalBreakdownStr}
     const textToSend = userInput;
     if (!textToSend.trim()) return;
 
+    if (!hasKey) {
+      setShowKeyModal(true);
+      return;
+    }
+
     const newMessages = [...chatMessages, { role: 'user', text: textToSend }];
     setChatMessages(newMessages);
     setUserInput('');
@@ -134,38 +147,98 @@ ${personalBreakdownStr}
 
   return (
     <div className="space-y-6">
+      {!hasKey && (
+        <div className="bg-[#FFF8E1] border border-[#FFE082] p-4 sm:p-5 rounded-2xl shadow-xs space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl shrink-0">🔑</span>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-bold text-stone-900">מפתח API של Gemini אינו מוגדר</h3>
+              <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                כדי להפעיל את דוח הייעוץ הפיננסי ואת הצ'אט, יש להזין מפתח Google Gemini API.
+                ניתן להפיק מפתח בחינם תוך שניות ב-Google AI Studio. המפתח נשמר בדפדפן שלך בלבד.
+              </p>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
+                <input
+                  type="password"
+                  placeholder="הדבק כאן את מפתח ה-API (AIzaSy...)"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  className="flex-1 bg-white border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2 outline-none focus:border-[#4A90E2] font-mono"
+                  dir="ltr"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!apiKeyInput.trim()) return;
+                    saveGeminiApiKey(apiKeyInput.trim());
+                    setHasKey(true);
+                    setKeySaveMessage('המפתח נשמר בהצלחה!');
+                  }}
+                  className="bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs transition cursor-pointer"
+                >
+                  שמור מפתח
+                </button>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white hover:bg-stone-50 border border-[#DDD6CA] text-stone-700 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1 text-center"
+                >
+                  <span>קבל מפתח ב-Google AI Studio</span>
+                  <span className="text-[10px]">↗</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main AI Advisor Panel */}
       <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D8] pb-4">
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-stone-900 flex items-center gap-2">
-              <span>יועץ פיננסי אישי (AI)</span>
-              <span className="text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
-                Gemini 3.8 Flash
-              </span>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-stone-900">
+              יועץ פיננסי
             </h2>
-            <p className="text-xs text-stone-500 mt-1">
-              ניתוח מקיף, אופטימיזציית תקציב וצ'אט פיננסי המחובר בזמן אמת לנתונים המשותפים והאישיים במערכת.
-            </p>
           </div>
 
-          <button
-            type="button"
-            onClick={generateFullAudit}
-            disabled={isGeneratingAudit}
-            className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs shadow-xs transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
-          >
-            {isGeneratingAudit ? (
-              <>
-                <div className="w-4 h-4 border-2 border-[#2E7D32] border-t-transparent rounded-full animate-spin"></div>
-                <span>מכין דוח ייעוץ מקיף...</span>
-              </>
-            ) : (
-              <>
-                <span>✦ הפק דוח ייעוץ פיננסי מלא</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                setApiKeyInput(getGeminiApiKey());
+                setKeySaveMessage('');
+                setShowKeyModal(true);
+              }}
+              className={`font-bold px-3 py-2 sm:py-2.5 rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer border ${
+                hasKey 
+                  ? 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]' 
+                  : 'bg-[#FFF3E0] hover:bg-[#FFE0B2] text-[#E65100] border-[#FFCC80]'
+              }`}
+              title="הגדרת מפתח Gemini API"
+            >
+              <span>🔑</span>
+              <span>{hasKey ? 'מפתח API מוגדר' : 'הגדר מפתח API'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={generateFullAudit}
+              disabled={isGeneratingAudit}
+              className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs shadow-xs transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+            >
+              {isGeneratingAudit ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-[#2E7D32] border-t-transparent rounded-full animate-spin"></div>
+                  <span>מכין דוח ייעוץ מקיף...</span>
+                </>
+              ) : (
+                <>
+                  <span>✦ הפק דוח ייעוץ פיננסי מלא</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {aiAuditReport && (
@@ -178,7 +251,7 @@ ${personalBreakdownStr}
 
       {/* Interactive Chat */}
       <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-4">
-        <h3 className="text-sm sm:text-base font-bold text-stone-900">צ'אט ייעוץ פיננסי אישי</h3>
+        <h3 className="text-sm sm:text-base font-bold text-stone-900">צ'אט ייעוץ פיננסי</h3>
 
         <div
           ref={chatContainerRef}
@@ -226,6 +299,100 @@ ${personalBreakdownStr}
           </button>
         </div>
       </div>
+
+      {/* API Key Modal */}
+      {showKeyModal && (
+        <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFFFF] border border-[#E8E2D8] rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#E8E2D8] pb-3">
+              <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
+                <span>🔑</span>
+                <span>הגדרת מפתח Google Gemini API</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowKeyModal(false)}
+                className="text-stone-400 hover:text-stone-700 text-lg leading-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-stone-600 leading-relaxed">
+              מפתח ה-API משמש להפעלת ניתוחי ה-AI והצ'אט הפיננסי. המפתח נשמר באופן מקומי בלבד בדפדפן שלך (localStorage) ואינו מועבר לשום גורם חיצוני מלבד שרתי Google Gemini הרשמיים.
+            </p>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-stone-700 block">מפתח API:</label>
+              <input
+                type="text"
+                placeholder="AIzaSy..."
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-[#4A90E2] font-mono"
+                dir="ltr"
+              />
+              {keySaveMessage && (
+                <div className="text-xs text-[#2E7D32] font-bold mt-1">
+                  ✓ {keySaveMessage}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-[#FAF7F2] p-3 rounded-xl border border-[#E8E2D8] text-[11px] text-stone-600 flex items-center justify-between gap-2">
+              <span>אין לך עדיין מפתח? ניתן להנפיק בחינם:</span>
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 font-bold whitespace-nowrap"
+              >
+                Google AI Studio ↗
+              </a>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  saveGeminiApiKey(apiKeyInput.trim());
+                  const active = hasGeminiApiKey();
+                  setHasKey(active);
+                  setKeySaveMessage(active ? 'המפתח נשמר בהצלחה!' : 'המפתח הוסר.');
+                  setTimeout(() => {
+                    setShowKeyModal(false);
+                    setKeySaveMessage('');
+                  }, 800);
+                }}
+                className="flex-1 py-2.5 bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold text-xs rounded-xl transition cursor-pointer"
+              >
+                שמור והחל
+              </button>
+              {hasKey && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    saveGeminiApiKey('');
+                    setApiKeyInput('');
+                    setHasKey(false);
+                    setKeySaveMessage('המפתח הוסר.');
+                  }}
+                  className="py-2.5 px-3 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] border border-[#EF9A9A] font-bold text-xs rounded-xl transition cursor-pointer"
+                >
+                  הסר מפתח
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowKeyModal(false)}
+                className="py-2.5 px-4 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 font-bold text-xs rounded-xl transition border border-[#DDD6CA] cursor-pointer"
+              >
+                סגור
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
