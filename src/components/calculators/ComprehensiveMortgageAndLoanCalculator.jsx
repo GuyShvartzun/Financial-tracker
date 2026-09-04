@@ -270,7 +270,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
     <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl space-y-6 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E2D8] pb-4">
         <div>
-          <h3 className="text-lg font-bold text-stone-900">מחשבון הלוואות ומשכנתאות מקצועי</h3>
+          <h3 className="text-lg font-bold text-stone-900">מחשבון הלוואות</h3>
           <p className="text-xs text-stone-500 mt-1">
             תכנון וניהול כלל התחייבויות האשראי של משק הבית – משכנתאות, הלוואות רכב, הלוואות צרכניות ובלון, לפי פרקטיקת הבנקאות בישראל.
           </p>

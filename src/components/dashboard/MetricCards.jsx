@@ -32,7 +32,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
       <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 sm:p-5 rounded-2xl shadow-xs">
         <div className="text-xs text-stone-500 font-bold mb-1">סך התחייבויות</div>
         <div className="text-2xl sm:text-3xl font-black text-[#C62828] tracking-tight">₪{fmtNum(liabilities)}</div>
-        <div className="mt-2 text-xs text-stone-500">הלוואות ומינוס</div>
+        <div className="mt-2 text-xs text-stone-500">הלוואות</div>
       </div>
     </div>
   );

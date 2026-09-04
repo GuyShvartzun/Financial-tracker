@@ -40,7 +40,7 @@ export default function CalculatorsModule({
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
           }`}
         >
-          מחשבון הלוואות ומשכנתה
+          מחשבון הלוואות
         </button>
         <button
           type="button"

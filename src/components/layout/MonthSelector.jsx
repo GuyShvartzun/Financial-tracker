@@ -15,9 +15,6 @@ export default function MonthSelector({ selectedMonth, setSelectedMonth, monthsL
           ))}
         </select>
       </div>
-      <span className="text-[11px] text-stone-500 font-semibold hidden sm:inline">
-        מעודכן לנתוני {selectedMonth}
-      </span>
     </div>
   );
 }

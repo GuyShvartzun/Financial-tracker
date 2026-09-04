@@ -4,6 +4,48 @@ import BudgetItemEditor from './BudgetItemEditor';
 import { fmtILS, fmtPct } from '../../utils/formatters';
 
 export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
+  const handleMoveCategory = (sourceKey, itemId, targetKey) => {
+    if (sourceKey === targetKey) return;
+    const sourceList = budget[sourceKey] || [];
+    const itemToMove = sourceList.find(i => i.id === itemId);
+    if (!itemToMove) return;
+
+    const newSourceList = sourceList.filter(i => i.id !== itemId);
+    const newTargetList = [...(budget[targetKey] || []), itemToMove];
+
+    onUpdateBudget({
+      ...budget,
+      [sourceKey]: newSourceList,
+      [targetKey]: newTargetList
+    });
+  };
+
+  const handleMoveItemToPosition = (sourceKey, itemId, targetKey, targetIndex) => {
+    const sourceList = budget[sourceKey] || [];
+    const itemToMove = sourceList.find(i => i.id === itemId);
+    if (!itemToMove) return;
+
+    if (sourceKey === targetKey) {
+      const filtered = sourceList.filter(i => i.id !== itemId);
+      const validIndex = Math.max(0, Math.min(targetIndex, filtered.length));
+      filtered.splice(validIndex, 0, itemToMove);
+      onUpdateBudget({
+        ...budget,
+        [sourceKey]: filtered
+      });
+    } else {
+      const newSourceList = sourceList.filter(i => i.id !== itemId);
+      const targetList = [...(budget[targetKey] || [])];
+      const validIndex = Math.max(0, Math.min(targetIndex, targetList.length));
+      targetList.splice(validIndex, 0, itemToMove);
+      onUpdateBudget({
+        ...budget,
+        [sourceKey]: newSourceList,
+        [targetKey]: targetList
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -37,27 +79,39 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <BudgetItemEditor 
           title="הכנסות חודשיות" 
+          categoryKey="incomes"
           items={budget.incomes} 
           color="border-[#C8E6C9]"
           onChange={(items) => onUpdateBudget({ ...budget, incomes: items })}
+          onMoveCategory={handleMoveCategory}
+          onMoveItemToPosition={handleMoveItemToPosition}
         />
         <BudgetItemEditor 
           title="הוצאות קבועות" 
+          categoryKey="fixedExpenses"
           items={budget.fixedExpenses} 
           color="border-[#FFCDD2]"
           onChange={(items) => onUpdateBudget({ ...budget, fixedExpenses: items })}
+          onMoveCategory={handleMoveCategory}
+          onMoveItemToPosition={handleMoveItemToPosition}
         />
         <BudgetItemEditor 
           title="הוצאות משתנות" 
+          categoryKey="variableExpenses"
           items={budget.variableExpenses} 
           color="border-[#FFE0B2]"
           onChange={(items) => onUpdateBudget({ ...budget, variableExpenses: items })}
+          onMoveCategory={handleMoveCategory}
+          onMoveItemToPosition={handleMoveItemToPosition}
         />
         <BudgetItemEditor 
           title="חסכונות והשקעות" 
+          categoryKey="savings"
           items={budget.savings} 
           color="border-[#BBDEFB]"
           onChange={(items) => onUpdateBudget({ ...budget, savings: items })}
+          onMoveCategory={handleMoveCategory}
+          onMoveItemToPosition={handleMoveItemToPosition}
         />
       </div>
     </div>

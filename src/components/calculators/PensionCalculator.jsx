@@ -95,7 +95,7 @@ export default function PensionCalculator({
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-3">
         <div>
           <h3 className="text-lg font-bold text-stone-900">סימולטור פנסיוני</h3>
-          <p className="text-xs text-stone-500 mt-0.5">חיזוי צבירה וקצבה פנסיונית לפי מסלולי השקעה מתוך פנסיה נט</p>
+          <p className="text-xs text-stone-500 mt-0.5">חיזוי צבירה וקצבה פנסיונית לפי מסלולי השקעה</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -326,7 +326,7 @@ export default function PensionCalculator({
               </div>
               <div className="flex justify-between text-stone-700">
                 <span>סה"כ הפקדות מצטברות:</span>
-                <div>
+                <div className="text-left">
                   <strong className="text-stone-900">{fmtILS(pensionSimulationResult.totalRealDeposited)}</strong>
                   <span className="text-[10px] text-stone-500 block">(נומינלי: {fmtILS(pensionSimulationResult.totalNominalDeposited)})</span>
                 </div>

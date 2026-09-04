@@ -264,17 +264,17 @@ export default function RoomSettingsModal({
         {isOwner && (
           <form onSubmit={handleUpdateRoomName} className="bg-[#FAF7F2] p-4 rounded-2xl border border-[#E8E2D8] space-y-3">
             <label className="text-xs font-bold text-stone-700 block">עריכת שם החדר:</label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
-                className="flex-1 bg-white border border-[#DDD6CA] text-stone-900 font-bold rounded-xl px-3 py-2 text-sm outline-none focus:border-[#4A90E2]"
+                className="flex-1 min-w-0 bg-white border border-[#DDD6CA] text-stone-900 font-bold rounded-xl px-3 py-2 text-sm outline-none focus:border-[#4A90E2]"
               />
               <button
                 type="submit"
                 disabled={isUpdatingName || roomName === currentRoom.name}
-                className="px-4 py-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
               >
                 {isUpdatingName ? 'שומר...' : 'עדכן שם חדר'}
               </button>
