@@ -112,7 +112,7 @@ export default function BudgetItemEditor({
         <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
           <h4 className="text-sm font-bold text-stone-900">{title}</h4>
           <span className="text-xs font-bold text-[#2E7D32]">
-            סה"כ: {fmtILS(items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0))}
+            סה"כ: <span className="privacy-blur">{fmtILS(items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0))}</span>
           </span>
         </div>
 
@@ -206,7 +206,7 @@ export default function BudgetItemEditor({
                   value={item.amount ?? ''}
                   onChange={(e) => handleAmount(item.id, e.target.value)}
                   placeholder="0"
-                  className="w-16 sm:w-20 bg-white border border-[#DDD6CA] text-xs font-bold text-[#2E7D32] rounded-lg px-1.5 sm:px-2 py-1 outline-none focus:border-[#4A90E2]"
+                  className="w-16 sm:w-20 bg-white border border-[#DDD6CA] text-xs font-bold text-[#2E7D32] rounded-lg px-1.5 sm:px-2 py-1 outline-none focus:border-[#4A90E2] privacy-blur"
                 />
 
                 {/* Delete button */}

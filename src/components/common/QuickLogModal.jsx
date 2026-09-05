@@ -166,7 +166,7 @@ export default function QuickLogModal({
               <div className="w-12 h-12 rounded-full bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] flex items-center justify-center mx-auto animate-bounce">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <p className="font-bold text-sm text-stone-800">{successMessage}</p>
+              <p className="font-bold text-sm text-stone-800 privacy-blur">{successMessage}</p>
             </div>
           ) : activeMode === 'balance' ? (
             <form onSubmit={handleSaveBalance} className="space-y-4">
@@ -204,7 +204,7 @@ export default function QuickLogModal({
                     value={newBalance}
                     onChange={(e) => setNewBalance(e.target.value)}
                     placeholder="הזן יתרה..."
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-black text-base rounded-xl p-3 pr-8 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] font-sans"
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-black text-base rounded-xl p-3 pr-8 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] font-sans privacy-blur"
                     required
                   />
                   <span className="absolute right-3 top-3.5 text-stone-400 font-bold text-sm">₪</span>
@@ -272,7 +272,7 @@ export default function QuickLogModal({
                     value={budgetItemAmount}
                     onChange={(e) => setBudgetItemAmount(e.target.value)}
                     placeholder="0"
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-black text-base rounded-xl p-2.5 pr-8 outline-none focus:border-[#2E7D32]"
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-black text-base rounded-xl p-2.5 pr-8 outline-none focus:border-[#2E7D32] privacy-blur"
                     required
                   />
                   <span className="absolute right-3 top-3 text-stone-400 font-bold text-sm">₪</span>

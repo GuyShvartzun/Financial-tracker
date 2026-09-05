@@ -52,25 +52,25 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
         <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">סה"כ הכנסות חודשיות</div>
           <div className="text-xl sm:text-2xl font-black text-[#2E7D32] privacy-blur">{fmtILS(budgetTotals.totalIncome)}</div>
-          <div className="text-[11px] text-stone-500 mt-1">100% מסך התקציב</div>
+          <div className="text-[11px] text-stone-500 mt-1"><span className="privacy-blur">100%</span> מסך התקציב</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">הוצאות קבועות</div>
           <div className="text-xl sm:text-2xl font-black text-[#C62828] privacy-blur">{fmtILS(budgetTotals.totalFixed)}</div>
-          <div className="text-[11px] text-[#C62828] mt-1">{fmtPct(budgetTotals.fixedPct)} מההכנסה</div>
+          <div className="text-[11px] text-[#C62828] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.fixedPct)}</span> מההכנסה</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">הוצאות משתנות</div>
           <div className="text-xl sm:text-2xl font-black text-[#E65100] privacy-blur">{fmtILS(budgetTotals.totalVar)}</div>
-          <div className="text-[11px] text-[#E65100] mt-1">{fmtPct(budgetTotals.varPct)} מההכנסה</div>
+          <div className="text-[11px] text-[#E65100] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.varPct)}</span> מההכנסה</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">חיסכון והשקעה</div>
           <div className="text-xl sm:text-2xl font-black text-[#1976D2] privacy-blur">{fmtILS(budgetTotals.totalSavings)}</div>
-          <div className="text-[11px] text-[#1976D2] mt-1">{fmtPct(budgetTotals.savingsPct)} מההכנסה</div>
+          <div className="text-[11px] text-[#1976D2] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.savingsPct)}</span> מההכנסה</div>
         </div>
       </div>
 

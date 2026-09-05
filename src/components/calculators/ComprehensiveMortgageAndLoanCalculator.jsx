@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Scale } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export const TRACK_TYPES = [
   { id: 'unlinked', name: 'לא צמודה (ללא הצמדה)', isLinked: false, desc: 'קרן והחזרים ללא הצמדה לשום מדד' },
@@ -199,6 +200,7 @@ export function getTrackLinkageInfo(track, safeData = {}) {
 }
 
 export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUpdate }) {
+  const { isPrivacyMode } = usePrivacy();
   const safeData = data || {};
   const [openSchedules, setOpenSchedules] = useState({});
 
@@ -445,7 +447,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       ? 'bg-[#FFF3E0] text-[#E65100] border-[#FFE0B2]'
                       : 'bg-[#FFEBEE] text-[#C62828] border-[#FFCDD2]'
                   }`}>
-                    PTI: {aggregateResults.ptiRatio.toFixed(1)}% {aggregateResults.ptiRatio > 40 ? '(חריגה מהנחיית בנק ישראל)' : aggregateResults.ptiRatio > 35 ? '(גבולי)' : '(תקין)'}
+                    PTI: <span className="privacy-blur">{aggregateResults.ptiRatio.toFixed(1)}%</span> {aggregateResults.ptiRatio > 40 ? '(חריגה מהנחיית בנק ישראל)' : aggregateResults.ptiRatio > 35 ? '(גבולי)' : '(תקין)'}
                   </span>
                 </div>
               ) : (
@@ -481,7 +483,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       ? 'bg-[#E3F2FD] text-[#1565C0] border-[#BBDEFB]'
                       : 'bg-[#FFEBEE] text-[#C62828] border-[#FFCDD2]'
                   }`}>
-                    LTV: {aggregateResults.ltvRatio.toFixed(1)}% {aggregateResults.ltvRatio > 75 ? '(חריגה ממגבלת 75%)' : aggregateResults.ltvRatio <= 60 ? '(שמרני)' : '(דירה יחידה)'}
+                    LTV: <span className="privacy-blur">{aggregateResults.ltvRatio.toFixed(1)}%</span> {aggregateResults.ltvRatio > 75 ? '(חריגה ממגבלת 75%)' : aggregateResults.ltvRatio <= 60 ? '(שמרני)' : '(דירה יחידה)'}
                   </span>
                 </div>
               ) : (
@@ -494,7 +496,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">ריבית משוקללת נטו</span>
-              <div className="text-xl font-black text-[#7B1FA2]">{aggregateResults.weightedAvgInterest.toFixed(2)}%</div>
+              <div className="text-xl font-black text-[#7B1FA2] privacy-blur">{aggregateResults.weightedAvgInterest.toFixed(2)}%</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               <span className="text-[10px] text-stone-500">ממוצע משוקלל לפי גודל הקרן</span>
@@ -508,7 +510,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
               <div className="text-xl font-black text-[#C62828] privacy-blur">{fmtILS(aggregateResults.totalInterestAndLinkage)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
-              <span className="text-[10px] text-stone-600 block truncate" title={`סה"כ להחזר כולל קרן: ${fmtILS(aggregateResults.totalPaidOverall)}`}>
+              <span className="text-[10px] text-stone-600 block truncate" title={isPrivacyMode ? undefined : `סה"כ להחזר כולל קרן: ${fmtILS(aggregateResults.totalPaidOverall)}`}>
                 סה"כ להחזר: <strong className="privacy-blur">{fmtILS(aggregateResults.totalPaidOverall)}</strong>
               </span>
             </div>
@@ -520,7 +522,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
             <h4 className="text-sm font-bold text-stone-900">הרכב מסלולי ההלוואה ({tracks.length} מסלולים)</h4>
             <span className="text-xs font-bold bg-[#E8F5E9] text-[#2E7D32] px-3 py-1 rounded-full border border-[#C8E6C9]">
-              סך התחייבות: {fmtILS(aggregateResults.totalMortgage)}
+              סך התחייבות: <span className="privacy-blur">{fmtILS(aggregateResults.totalMortgage)}</span>
             </span>
           </div>
           
@@ -564,7 +566,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${linkInfo.color}`}>
                           <span>{trackTypeObj?.name || linkInfo.name}</span>
                           {linkInfo.isLinked && (
-                            <span className="font-mono bg-white/70 px-1 rounded text-[9px] border border-black/5">
+                            <span className="font-mono bg-white/70 px-1 rounded text-[9px] border border-black/5 privacy-blur">
                               {linkInfo.rate}%
                             </span>
                           )}
@@ -731,11 +733,11 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                           {metrics?.yearlySchedule?.map((row) => (
                             <tr key={row.year} className="hover:bg-[#FAF7F2] transition font-mono">
                               <td className="p-2.5 font-bold font-sans text-stone-800">שנה {row.year}</td>
-                              <td className="p-2.5 text-stone-800">{fmtILS(row.openingBalance)}</td>
-                              <td className="p-2.5 text-[#2E7D32] font-semibold">{fmtILS(row.principalPaid)}</td>
-                              <td className="p-2.5 text-[#C62828]">{fmtILS(row.interestPaid)}</td>
-                              <td className="p-2.5 font-bold text-stone-900">{fmtILS(row.totalPaid)}</td>
-                              <td className="p-2.5 font-bold text-stone-800">{fmtILS(row.closingBalance)}</td>
+                              <td className="p-2.5 text-stone-800 privacy-blur">{fmtILS(row.openingBalance)}</td>
+                              <td className="p-2.5 text-[#2E7D32] font-semibold privacy-blur">{fmtILS(row.principalPaid)}</td>
+                              <td className="p-2.5 text-[#C62828] privacy-blur">{fmtILS(row.interestPaid)}</td>
+                              <td className="p-2.5 font-bold text-stone-900 privacy-blur">{fmtILS(row.totalPaid)}</td>
+                              <td className="p-2.5 font-bold text-stone-800 privacy-blur">{fmtILS(row.closingBalance)}</td>
                             </tr>
                           ))}
                         </tbody>

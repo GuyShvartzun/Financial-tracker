@@ -317,7 +317,7 @@ export default function AdvancedFIRECalculator({
                 }`}
                 title="לחץ למשיכת סך ההון הנזיל המשותף"
               >
-                הון משותף ({fmtILS(sharedLiquid)})
+                הון משותף (<span className="privacy-blur">{fmtILS(sharedLiquid)}</span>)
               </button>
             )}
             {users.map(member => {
@@ -332,14 +332,14 @@ export default function AdvancedFIRECalculator({
                   onClick={() => handleSwitchUser(memberUid, true)}
                   className={`py-2 px-3.5 font-bold text-xs rounded-xl border transition shadow-xs cursor-pointer ${
                     isActive 
-                      ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' 
-                      : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
+                    ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' 
+                    : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                   }`}
                   title="לחץ למשיכת יתרת ההון הנזיל העדכנית"
                 >
                   {isSingleUser 
-                    ? `משוך נתוני ${member.displayName || member.name} (${fmtILS(totals.liquid)})`
-                    : `עבור לנתוני ${member.displayName || member.name} (${fmtILS(totals.liquid)})`}
+                    ? <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid)}</span>)</span>
+                    : <span>עבור לנתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid)}</span>)</span>}
                 </button>
               );
             })}
@@ -357,7 +357,7 @@ export default function AdvancedFIRECalculator({
                 className="text-[11px] text-[#2E7D32] hover:underline font-bold cursor-pointer"
                 title="טען הון נזיל עדכני (קצר + בינוני)"
               >
-                טען נזיל ({fmtILS(activeUserLiquid)})
+                טען נזיל (<span className="privacy-blur">{fmtILS(activeUserLiquid)}</span>)
               </button>
             </div>
             <input 
@@ -365,7 +365,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.initialCapital ?? ''} 
               onChange={(e) => handleFireChange('initialCapital', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -376,7 +376,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.monthlyDeposit ?? ''} 
               onChange={(e) => handleFireChange('monthlyDeposit', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -387,7 +387,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.desiredNetMonthlyWithdrawal ?? ''} 
               onChange={(e) => handleFireChange('desiredNetMonthlyWithdrawal', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -406,10 +406,10 @@ export default function AdvancedFIRECalculator({
             <label className="text-xs text-stone-700 font-bold block mb-1">הפקדה חד פעמית עתידית (₪) (אופציונלי):</label>
             <input 
               type="number" 
-              step="any"
+              step="any" 
               value={userFireData.lumpSumAmount ?? ''} 
               onChange={(e) => handleFireChange('lumpSumAmount', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -499,7 +499,7 @@ export default function AdvancedFIRECalculator({
           {/* Card 1: Time to FIRE */}
           <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">זמן להגעה ליעד</span>
-            <div className="text-2xl sm:text-3xl font-black text-[#2E7D32]">
+            <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] privacy-blur">
               {calcResults.yearsToFIRE} שנים ו-{calcResults.remainingMonthsToFIRE} ח'
             </div>
             <span className="text-[11px] text-stone-400 block mt-1">צבירה חודשית מחושבת</span>
@@ -508,7 +508,7 @@ export default function AdvancedFIRECalculator({
           {/* Card 2: Estimated Age */}
           <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">גיל מוערך בפרישה</span>
-            <div className="text-2xl sm:text-3xl font-black text-[#1976D2]">
+            <div className="text-2xl sm:text-3xl font-black text-[#1976D2] privacy-blur">
               {calcResults.estimatedRetireAge}
             </div>
             <span className="text-[11px] text-stone-400 block mt-1">
@@ -574,14 +574,14 @@ export default function AdvancedFIRECalculator({
                   <tr className="border-b border-[#E8E2D8] text-stone-600">
                     <th className="py-2.5 px-3 text-right">תשואה \ הפקדה</th>
                     {sensitivityData.deposits.map((d, idx) => (
-                      <th key={idx} className="py-2.5 px-3">{fmtILS(d)}</th>
+                      <th key={idx} className="py-2.5 px-3 privacy-blur">{fmtILS(d)}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8E2D8]">
                   {sensitivityData.matrix.map((row, rIdx) => (
                     <tr key={rIdx} className="hover:bg-[#FAF7F2]">
-                      <td className="py-2.5 px-3 font-bold text-right text-stone-900">{row.returnRate.toFixed(1)}%</td>
+                      <td className="py-2.5 px-3 font-bold text-right text-stone-900 privacy-blur">{row.returnRate.toFixed(1)}%</td>
                       {row.cells.map((val, cIdx) => {
                         const ratio = span > 0 ? (val - minV) / span : 0;
                         let bgStyle = 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'; // Low = Green
@@ -595,7 +595,7 @@ export default function AdvancedFIRECalculator({
                         
                         return (
                           <td key={cIdx} className="py-2 px-2">
-                            <div className={`py-1.5 px-2 rounded-xl text-xs font-black ${bgStyle}`}>
+                            <div className={`py-1.5 px-2 rounded-xl text-xs font-black privacy-blur ${bgStyle}`}>
                               {val}
                             </div>
                           </td>
@@ -621,11 +621,11 @@ export default function AdvancedFIRECalculator({
 
         <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8E2D8] text-xs text-stone-700 leading-relaxed space-y-2">
           <p>
-            הטבלה מדגימה את שימור הקרן ב-3 השנים הראשונות בפרישה <strong>בערכים נומינליים</strong>, בהתחשב במס רווח הון של {userFireData.capitalGainsTax || 0}%. 
-            על מנת להבטיח משיכה נטו בכוח קנייה של <strong>{fmtILS(userFireData.desiredNetMonthlyWithdrawal || 0)} לחודש במונחי היום</strong>, משיכת הברוטו גדלה מדי שנה בשיעור האינפלציה ({(userFireData.annualInflation || 0)}%).
+            הטבלה מדגימה את שימור הקרן ב-3 השנים הראשונות בפרישה <strong>בערכים נומינליים</strong>, בהתחשב במס רווח הון של <span className="privacy-blur">{userFireData.capitalGainsTax || 0}%</span>. 
+            על מנת להבטיח משיכה נטו בכוח קנייה של <strong className="privacy-blur">{fmtILS(userFireData.desiredNetMonthlyWithdrawal || 0)} לחודש במונחי היום</strong>, משיכת הברוטו גדלה מדי שנה בשיעור האינפלציה (<span className="privacy-blur">{(userFireData.annualInflation || 0)}%</span>).
           </p>
           <p>
-            התשואה הנומינלית נטו מפצה על המשיכה והאינפלציה, כך שיתרת הסגירה גדלה בכל שנה בדיוק בשיעור האינפלציה השנתי ({(userFireData.annualInflation || 0)}%) — מה שמבטיח שכוח הקנייה הריאלי של הקרן ושל המשיכה החודשית נשמרים לנצח.
+            התשואה הנומינלית נטו מפצה על המשיכה והאינפלציה, כך שיתרת הסגירה גדלה בכל שנה בדיוק בשיעור האינפלציה השנתי (<span className="privacy-blur">{(userFireData.annualInflation || 0)}%</span>) — מה שמבטיח שכוח הקנייה הריאלי של הקרן ושל המשיכה החודשית נשמרים לנצח.
           </p>
         </div>
 
@@ -646,14 +646,14 @@ export default function AdvancedFIRECalculator({
               {calcResults.proofTable.map(row => (
                 <tr key={row.year} className="hover:bg-[#FAF7F2]">
                   <td className="py-3 px-2 font-bold text-stone-900">שנה {row.year} בפרישה</td>
-                  <td className="py-3 px-2 text-stone-700">{fmtILS(row.openingNominal)}</td>
-                  <td className="py-3 px-2 text-[#2E7D32] font-black">{fmtILS(row.grossReturnNominal)}</td>
-                  <td className="py-3 px-2 text-stone-700">{fmtILS(row.grossWithdrawalNominal)}</td>
-                  <td className="py-3 px-2 text-[#C62828] font-bold">({fmtILS(row.taxPaidNominal)})</td>
-                  <td className="py-3 px-2 text-[#1976D2] font-black">
+                  <td className="py-3 px-2 text-stone-700 privacy-blur">{fmtILS(row.openingNominal)}</td>
+                  <td className="py-3 px-2 text-[#2E7D32] font-black privacy-blur">{fmtILS(row.grossReturnNominal)}</td>
+                  <td className="py-3 px-2 text-stone-700 privacy-blur">{fmtILS(row.grossWithdrawalNominal)}</td>
+                  <td className="py-3 px-2 text-[#C62828] font-bold privacy-blur">({fmtILS(row.taxPaidNominal)})</td>
+                  <td className="py-3 px-2 text-[#1976D2] font-black privacy-blur">
                     {fmtILS(row.netHandNominal)}
                   </td>
-                  <td className="py-3 px-2 text-stone-900 font-black text-left">{fmtILS(row.closingNominal)}</td>
+                  <td className="py-3 px-2 text-stone-900 font-black text-left privacy-blur">{fmtILS(row.closingNominal)}</td>
                 </tr>
               ))}
             </tbody>

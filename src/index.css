@@ -20,7 +20,32 @@
     cursor: default;
   }
   
-  .privacy-active .privacy-blur:hover {
+  .privacy-active .privacy-blur:hover,
+  .privacy-active .privacy-blur:focus,
+  .privacy-active .privacy-blur:focus-within {
+    filter: blur(0px);
+  }
+
+  /* Automatic blurring of numeric inputs in privacy mode */
+  .privacy-active input[type="number"]:not(:focus) {
+    filter: blur(7px);
+    transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+  }
+
+  .privacy-active input[type="number"]:hover,
+  .privacy-active input[type="number"]:focus {
+    filter: blur(0px);
+  }
+
+  /* Privacy chart & graphics blurring */
+  .privacy-active .privacy-chart {
+    filter: blur(7px);
+    transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+  }
+
+  .privacy-active .privacy-chart:hover {
     filter: blur(0px);
   }
 }

@@ -36,6 +36,7 @@ import CalculatorsModule from './components/calculators/CalculatorsModule';
 import AIAdvisorTab from './components/ai/AIAdvisorTab';
 import DataEntryModule from './components/data/DataEntryModule';
 import DataExport from './components/data/DataExport';
+import { PrivacyContext } from './context/PrivacyContext';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('shared_dash');
@@ -720,145 +721,147 @@ export default function App() {
 
   // Active Room Screen
   return (
-    <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none pb-12 ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
-      <Header
-        authUser={authUser}
-        isCloudSynced={isCloudSynced}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onLogout={logoutGoogle}
-        currentRoom={currentRoom}
-        onSwitchRoom={() => setCurrentRoom(null)}
-        onOpenManageRoom={() => setShowManageRoomModal(true)}
-        isPrivacyMode={isPrivacyMode}
-        onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
-      />
-
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6">
-        <MonthSelector
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-          monthsList={monthsList}
+    <PrivacyContext.Provider value={{ isPrivacyMode, setIsPrivacyMode }}>
+      <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none pb-12 ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
+        <Header
+          authUser={authUser}
+          isCloudSynced={isCloudSynced}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onLogout={logoutGoogle}
+          currentRoom={currentRoom}
+          onSwitchRoom={() => setCurrentRoom(null)}
+          onOpenManageRoom={() => setShowManageRoomModal(true)}
+          isPrivacyMode={isPrivacyMode}
+          onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
         />
 
-        {!isSingleMember && activeTab === 'shared_dash' && (
-          <SharedDashboard
-            roomStats={roomStats}
-            budgetTotals={budgetTotals}
-          />
-        )}
-
-        {activeTab === 'personal_dash' && (
-          <PersonalDashboard
-            personalStats={personalStats}
-            selectedPersonalUserId={selectedPersonalUserId}
-            setSelectedPersonalUserId={setSelectedPersonalUserId}
-            selectedMonth={selectedMonth}
-            monthsList={monthsList}
-            accounts={accounts}
-            users={roomMembers}
-            isSingleMember={isSingleMember}
-            roomStats={roomStats}
-            budgetTotals={budgetTotals}
-            activeUserId={authUser?.uid}
-          />
-        )}
-
-        {activeTab === 'budget' && (
-          <BudgetTab
-            budget={budget}
-            budgetTotals={budgetTotals}
-            onUpdateBudget={(updated) => {
-              setBudget(updated);
-              syncBudgetToCloud(updated);
-            }}
-          />
-        )}
-
-        {activeTab === 'calculators' && (
-          <CalculatorsModule 
-            calculatorsData={calculatorsData}
-            onUpdateData={updateCalculatorData}
-            accounts={accounts}
-            selectedMonth={selectedMonth}
-            users={roomMembers}
-            roomStats={roomStats}
-            budgetTotals={budgetTotals}
-            isSingleMember={isSingleMember}
-            activeUserId={authUser?.uid}
-          />
-        )}
-
-        {activeTab === 'ai_advisor' && (
-          <AIAdvisorTab 
-            roomStats={roomStats} 
-            budgetTotals={budgetTotals} 
-            accounts={accounts} 
-            selectedMonth={selectedMonth}
-            users={roomMembers}
-          />
-        )}
-
-        {activeTab === 'data_entry' && (
-          <DataEntryModule 
+        <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6">
+          <MonthSelector
             selectedMonth={selectedMonth}
             setSelectedMonth={setSelectedMonth}
             monthsList={monthsList}
-            onAddNewMonth={handleAddNewMonth}
-            onDeleteMonth={handleDeleteMonth}
-            activeRoomAccounts={accounts}
-            users={roomMembers}
-            activeUserId={authUser?.uid}
-            isSingleMember={isSingleMember}
-            handleAccountNameChange={handleAccountNameChange}
-            handleAccountCategoryChange={handleAccountCategoryChange}
-            handleReorderAccount={handleReorderAccount}
-            handleMoveAccountToPosition={handleMoveAccountToPosition}
-            handleBalanceChange={handleBalanceChange}
-            handleRemoveAccountFromMonth={handleRemoveAccountFromMonth}
-            handleDeleteAccountCompletely={handleDeleteAccountCompletely}
-            handleAddAccount={handleAddAccount}
-            setAccounts={setAccounts}
-            syncAccountToCloud={syncAccountToCloud}
           />
-        )}
 
-        {activeTab === 'export' && (
-          <DataExport 
-            accounts={accounts} 
-            budget={budget} 
-            monthsList={monthsList} 
-            users={roomMembers}
-            syncAccountToCloud={syncAccountToCloud}
-            deleteAccountFromCloud={deleteAccountFromCloud}
-            syncBudgetToCloud={syncBudgetToCloud}
-            syncMonthsToCloud={syncMonthsToCloud}
-            setAccounts={setAccounts}
-            setBudget={setBudget}
-            setMonthsList={setMonthsList}
-            setSelectedPersonalUserId={setSelectedPersonalUserId}
+          {!isSingleMember && activeTab === 'shared_dash' && (
+            <SharedDashboard
+              roomStats={roomStats}
+              budgetTotals={budgetTotals}
+            />
+          )}
+
+          {activeTab === 'personal_dash' && (
+            <PersonalDashboard
+              personalStats={personalStats}
+              selectedPersonalUserId={selectedPersonalUserId}
+              setSelectedPersonalUserId={setSelectedPersonalUserId}
+              selectedMonth={selectedMonth}
+              monthsList={monthsList}
+              accounts={accounts}
+              users={roomMembers}
+              isSingleMember={isSingleMember}
+              roomStats={roomStats}
+              budgetTotals={budgetTotals}
+              activeUserId={authUser?.uid}
+            />
+          )}
+
+          {activeTab === 'budget' && (
+            <BudgetTab
+              budget={budget}
+              budgetTotals={budgetTotals}
+              onUpdateBudget={(updated) => {
+                setBudget(updated);
+                syncBudgetToCloud(updated);
+              }}
+            />
+          )}
+
+          {activeTab === 'calculators' && (
+            <CalculatorsModule 
+              calculatorsData={calculatorsData}
+              onUpdateData={updateCalculatorData}
+              accounts={accounts}
+              selectedMonth={selectedMonth}
+              users={roomMembers}
+              roomStats={roomStats}
+              budgetTotals={budgetTotals}
+              isSingleMember={isSingleMember}
+              activeUserId={authUser?.uid}
+            />
+          )}
+
+          {activeTab === 'ai_advisor' && (
+            <AIAdvisorTab 
+              roomStats={roomStats} 
+              budgetTotals={budgetTotals} 
+              accounts={accounts} 
+              selectedMonth={selectedMonth}
+              users={roomMembers}
+            />
+          )}
+
+          {activeTab === 'data_entry' && (
+            <DataEntryModule 
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              monthsList={monthsList}
+              onAddNewMonth={handleAddNewMonth}
+              onDeleteMonth={handleDeleteMonth}
+              activeRoomAccounts={accounts}
+              users={roomMembers}
+              activeUserId={authUser?.uid}
+              isSingleMember={isSingleMember}
+              handleAccountNameChange={handleAccountNameChange}
+              handleAccountCategoryChange={handleAccountCategoryChange}
+              handleReorderAccount={handleReorderAccount}
+              handleMoveAccountToPosition={handleMoveAccountToPosition}
+              handleBalanceChange={handleBalanceChange}
+              handleRemoveAccountFromMonth={handleRemoveAccountFromMonth}
+              handleDeleteAccountCompletely={handleDeleteAccountCompletely}
+              handleAddAccount={handleAddAccount}
+              setAccounts={setAccounts}
+              syncAccountToCloud={syncAccountToCloud}
+            />
+          )}
+
+          {activeTab === 'export' && (
+            <DataExport 
+              accounts={accounts} 
+              budget={budget} 
+              monthsList={monthsList} 
+              users={roomMembers}
+              syncAccountToCloud={syncAccountToCloud}
+              deleteAccountFromCloud={deleteAccountFromCloud}
+              syncBudgetToCloud={syncBudgetToCloud}
+              syncMonthsToCloud={syncMonthsToCloud}
+              setAccounts={setAccounts}
+              setBudget={setBudget}
+              setMonthsList={setMonthsList}
+              setSelectedPersonalUserId={setSelectedPersonalUserId}
+              authUser={authUser}
+            />
+          )}
+        </main>
+
+        {/* Room Settings Modal */}
+        {showManageRoomModal && (
+          <RoomSettingsModal
+            currentRoom={currentRoom}
             authUser={authUser}
+            onClose={() => setShowManageRoomModal(false)}
+            onUpdateRoom={(updated) => setCurrentRoom(updated)}
+            onDeleteRoom={() => {
+              setCurrentRoom(null);
+              setShowManageRoomModal(false);
+            }}
+            onLeaveRoom={() => {
+              setCurrentRoom(null);
+              setShowManageRoomModal(false);
+            }}
           />
         )}
-      </main>
-
-      {/* Room Settings Modal */}
-      {showManageRoomModal && (
-        <RoomSettingsModal
-          currentRoom={currentRoom}
-          authUser={authUser}
-          onClose={() => setShowManageRoomModal(false)}
-          onUpdateRoom={(updated) => setCurrentRoom(updated)}
-          onDeleteRoom={() => {
-            setCurrentRoom(null);
-            setShowManageRoomModal(false);
-          }}
-          onLeaveRoom={() => {
-            setCurrentRoom(null);
-            setShowManageRoomModal(false);
-          }}
-        />
-      )}
-    </div>
+      </div>
+    </PrivacyContext.Provider>
   );
 }

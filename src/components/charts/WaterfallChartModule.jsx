@@ -25,17 +25,17 @@ export default function WaterfallChartModule({ budgetTotals }) {
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
             <div className="text-[10px] sm:text-[11px] font-black text-[#2E7D32] mb-0.5 sm:mb-1 privacy-blur">{fmtILS(budgetTotals.totalIncome)}</div>
-            <div className="text-[9px] text-[#2E7D32] mb-1 font-bold">100%</div>
-            <div className="w-full max-w-[42px] sm:max-w-[54px] bg-[#A5D6A7] rounded-t-lg h-full transition-all duration-500 shadow-xs"></div>
+            <div className="text-[9px] text-[#2E7D32] mb-1 font-bold privacy-blur">100%</div>
+            <div className="w-full max-w-[42px] sm:max-w-[54px] bg-[#A5D6A7] rounded-t-lg h-full transition-all duration-500 shadow-xs privacy-blur"></div>
             <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 mt-2 text-center whitespace-nowrap">הכנסות</span>
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
             <div className="text-[10px] sm:text-[11px] font-black text-[#C62828] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalFixed)}</div>
-            <div className="text-[9px] text-[#C62828] mb-1 font-bold">-{fmtPct(budgetTotals.fixedPct)}</div>
+            <div className="text-[9px] text-[#C62828] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.fixedPct)}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
-                className="w-full bg-[#EF9A9A] rounded-lg absolute transition-all duration-500 shadow-xs"
+                className="w-full bg-[#EF9A9A] rounded-lg absolute transition-all duration-500 shadow-xs privacy-blur"
                 style={{
                   bottom: `${Math.max(100 - budgetTotals.fixedPct, 0)}%`,
                   height: `${Math.min(budgetTotals.fixedPct, 100)}%`
@@ -47,10 +47,10 @@ export default function WaterfallChartModule({ budgetTotals }) {
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
             <div className="text-[10px] sm:text-[11px] font-black text-[#E65100] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalVar)}</div>
-            <div className="text-[9px] text-[#E65100] mb-1 font-bold">-{fmtPct(budgetTotals.varPct)}</div>
+            <div className="text-[9px] text-[#E65100] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.varPct)}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
-                className="w-full bg-[#FFCC80] rounded-lg absolute transition-all duration-500 shadow-xs"
+                className="w-full bg-[#FFCC80] rounded-lg absolute transition-all duration-500 shadow-xs privacy-blur"
                 style={{
                   bottom: `${Math.max(100 - budgetTotals.fixedPct - budgetTotals.varPct, 0)}%`,
                   height: `${Math.min(budgetTotals.varPct, 100)}%`
@@ -62,10 +62,10 @@ export default function WaterfallChartModule({ budgetTotals }) {
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
             <div className="text-[10px] sm:text-[11px] font-black text-[#1976D2] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalSavings)}</div>
-            <div className="text-[9px] text-[#1976D2] mb-1 font-bold">-{fmtPct(budgetTotals.savingsPct)}</div>
+            <div className="text-[9px] text-[#1976D2] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.savingsPct)}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
-                className="w-full bg-[#90CAF9] rounded-lg absolute transition-all duration-500 shadow-xs"
+                className="w-full bg-[#90CAF9] rounded-lg absolute transition-all duration-500 shadow-xs privacy-blur"
                 style={{
                   bottom: '0%',
                   height: `${Math.min(budgetTotals.savingsPct, 100)}%`
@@ -92,25 +92,25 @@ export default function WaterfallChartModule({ budgetTotals }) {
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#2E7D32]">הכנסות</td>
               <td className="py-2 px-2 font-bold text-[#2E7D32] privacy-blur">+{fmtILS(budgetTotals.totalIncome)}</td>
-              <td className="py-2 px-2 text-stone-600 font-bold">100.0%</td>
+              <td className="py-2 px-2 text-stone-600 font-bold privacy-blur">100.0%</td>
               <td className="py-2 px-2 text-left font-bold text-stone-900 privacy-blur">{fmtILS(budgetTotals.totalIncome)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#C62828]">הוצאות קבועות</td>
               <td className="py-2 px-2 font-bold text-[#C62828] privacy-blur">-{fmtILS(budgetTotals.totalFixed)}</td>
-              <td className="py-2 px-2 text-[#C62828] font-bold">-{fmtPct(budgetTotals.fixedPct)}</td>
+              <td className="py-2 px-2 text-[#C62828] font-bold privacy-blur">-{fmtPct(budgetTotals.fixedPct)}</td>
               <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#E65100]">הוצאות משתנות</td>
               <td className="py-2 px-2 font-bold text-[#E65100] privacy-blur">-{fmtILS(budgetTotals.totalVar)}</td>
-              <td className="py-2 px-2 text-[#E65100] font-bold">-{fmtPct(budgetTotals.varPct)}</td>
+              <td className="py-2 px-2 text-[#E65100] font-bold privacy-blur">-{fmtPct(budgetTotals.varPct)}</td>
               <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#1976D2]">חיסכון והשקעה</td>
               <td className="py-2 px-2 font-bold text-[#1976D2] privacy-blur">-{fmtILS(budgetTotals.totalSavings)}</td>
-              <td className="py-2 px-2 text-[#1976D2] font-bold">-{fmtPct(budgetTotals.savingsPct)}</td>
+              <td className="py-2 px-2 text-[#1976D2] font-bold privacy-blur">-{fmtPct(budgetTotals.savingsPct)}</td>
               <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings)}</td>
             </tr>
             <tr className="bg-[#F9FAFB] border-t-2 border-[#DDD6CA]">

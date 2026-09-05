@@ -21,8 +21,11 @@ import DataExport from '../components/data/DataExport';
 import RoomLobby from '../components/room/RoomLobby';
 import RoomSettingsModal from '../components/room/RoomSettingsModal';
 import CalculatorsModule from '../components/calculators/CalculatorsModule';
+import ComprehensiveMortgageAndLoanCalculator from '../components/calculators/ComprehensiveMortgageAndLoanCalculator';
 import QuickLogModal from '../components/common/QuickLogModal';
 import FloatingActionButton from '../components/common/FloatingActionButton';
+import { PrivacyContext } from '../context/PrivacyContext';
+import { parseQuantitative, parseBold, FormattedText } from '../utils/textParser';
 
 import { DEFAULT_BUDGET, DEFAULT_CALCULATORS_DATA } from '../constants/initialData';
 
@@ -608,4 +611,107 @@ describe('QuickLogModal Component', () => {
     expect(updatedBudget.variableExpenses.some(i => i.name === 'מכולת שכונתית' && i.amount === 450)).toBe(true);
   });
 });
+
+describe('Privacy Mode Enforcement Tests', () => {
+  it('parseQuantitative and parseBold add privacy-blur to monetary and percentage values', () => {
+    const { container: c1 } = render(<div>{parseQuantitative('סכום של ₪15,000 ושיעור של 4.5%')}</div>);
+    const blurred = c1.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBe(2);
+    expect(blurred[0].textContent).toBe('₪15,000');
+    expect(blurred[1].textContent).toBe('4.5%');
+
+    const { container: c2 } = render(<div>{parseBold('חסכת **₪50,000** מתוך יעד של 100,000 ₪')}</div>);
+    const blurredBold = c2.querySelectorAll('.privacy-blur');
+    expect(blurredBold.length).toBe(2);
+    expect(blurredBold[0].textContent).toBe('₪50,000');
+    expect(blurredBold[1].textContent).toBe('100,000 ₪');
+  });
+
+  it('FormattedText renders quantitative elements with privacy-blur inside headers and bullets', () => {
+    const markdown = `### יעד של ₪2,000,000\n* הפקדה חודשית של ₪3,500\n* תשואה של 7% שנתית`;
+    const { container } = render(<FormattedText text={markdown} />);
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('DemographicBox renders percentiles and values with privacy-blur class', () => {
+    const { container } = render(
+      <DemographicBox
+        totalNetWorth={150000}
+        liquidNetWorth={50000}
+        nonLiquidNetWorth={100000}
+      />
+    );
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThan(0);
+  });
+
+  it('DonutDistributionChart renders percentage breakdown badges with privacy-blur class', () => {
+    const { container } = render(
+      <DonutDistributionChart
+        personalStats={{ short: 10000, medium: 20000, long: 70000 }}
+      />
+    );
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('PersonalGrowthLineChart masks hover tooltip and blurs curves in privacy mode', () => {
+    const { container } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <PersonalGrowthLineChart
+          userId="u1"
+          monthsList={['07/2026', '08/2026']}
+          currentNetWorth={60000}
+          currentLiquid={30000}
+          accounts={[{ id: '1', ownerId: 'u1', balances: { '07/2026': 50000, '08/2026': 60000 } }]}
+          isSingleMember={false}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    const titles = container.querySelectorAll('title');
+    expect(titles.length).toBeGreaterThan(0);
+    titles.forEach(title => {
+      expect(title.textContent).toContain('[מוסתר במצב פרטיות]');
+    });
+
+    const blurredElements = container.querySelectorAll('.privacy-blur');
+    expect(blurredElements.length).toBeGreaterThan(0);
+  });
+
+  it('ComprehensiveMortgageAndLoanCalculator renders aggregate metrics with privacy-blur class', () => {
+    const calcData = {
+      propertyValue: '2000000',
+      monthlyIncome: '25000',
+      expectedInflation: '2.5',
+      constructionInflation: '2.5',
+      tracks: [
+        {
+          id: 't1',
+          name: 'מסלול פריים',
+          amount: '500000',
+          years: '25',
+          months: '300',
+          interest: '5.5',
+          trackType: 'prime',
+          scheduleType: 'spitzer'
+        }
+      ]
+    };
+
+    const { container } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <ComprehensiveMortgageAndLoanCalculator
+          data={calcData}
+          onUpdate={vi.fn()}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThan(0);
+  });
+});
+
 

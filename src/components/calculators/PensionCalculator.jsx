@@ -158,7 +158,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.balance ?? ''}
                 onChange={(e) => handlePensionChange('balance', e.target.value)}
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur"
               />
             </div>
 
@@ -169,7 +169,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.monthlyDeposit ?? ''}
                 onChange={(e) => handlePensionChange('monthlyDeposit', e.target.value)}
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur"
               />
             </div>
 
@@ -218,7 +218,7 @@ export default function PensionCalculator({
                     <div className="flex justify-between items-center w-full">
                       <span className="text-xs font-bold text-stone-900">{track.name}</span>
                       {track.id !== 'custom' && (
-                        <span className="text-[11px] font-black text-[#7B1FA2] bg-[#FFFFFF] px-2 py-0.5 rounded border border-[#E1BEE7]">
+                        <span className="text-[11px] font-black text-[#7B1FA2] bg-[#FFFFFF] px-2 py-0.5 rounded border border-[#E1BEE7] privacy-blur">
                           ~{dynamicTrackReturn}% שנתי
                         </span>
                       )}
@@ -328,18 +328,18 @@ export default function PensionCalculator({
                 (קצבה נומינלית: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.nominalMonthlyAnnuity)}</span>)
               </div>
               <div className="text-[10px] text-stone-400 mt-1 font-bold">
-                לפי מקדם קצבה של {pensionData.annuityFactor || 200}
+                לפי מקדם קצבה של <span className="privacy-blur">{pensionData.annuityFactor || 200}</span>
               </div>
             </div>
 
             <div className="space-y-2 text-xs border-t border-[#E8E2D8] pt-3">
               <div className="flex justify-between text-stone-700">
                 <span>תקופת חיסכון נותרת:</span>
-                <strong className="text-stone-900">{pensionSimulationResult.years} שנים</strong>
+                <strong className="text-stone-900 privacy-blur">{pensionSimulationResult.years} שנים</strong>
               </div>
               <div className="flex justify-between text-stone-700">
                 <span>תשואה היסטורית למסלול ({remainingYears} שנים):</span>
-                <strong className="text-[#7B1FA2]">{nominalReturnRate.toFixed(1)}%</strong>
+                <strong className="text-[#7B1FA2] privacy-blur">{nominalReturnRate.toFixed(1)}%</strong>
               </div>
               <div className="flex justify-between text-stone-700">
                 <span>סה"כ הפקדות מצטברות:</span>

@@ -263,7 +263,7 @@ export default function DataEntryModule({
                 </span>
               </div>
               <span className="text-xs text-stone-500">
-                סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black">{fmtILS(groupTotal)}</strong>
+                סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black privacy-blur">{fmtILS(groupTotal)}</strong>
               </span>
             </div>
 
@@ -406,7 +406,7 @@ export default function DataEntryModule({
                             step="any"
                             value={acc.balances?.[selectedMonth] ?? ''}
                             onChange={(e) => handleBalanceChange(acc.id, selectedMonth, e.target.value)}
-                            className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg px-3 py-1.5 outline-none focus:border-[#4A90E2]"
+                            className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg px-3 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur"
                           />
                         </div>
 
@@ -524,7 +524,7 @@ export default function DataEntryModule({
                               step="any"
                               value={acc.balances?.[selectedMonth] ?? ''}
                               onChange={(e) => handleBalanceChange(acc.id, selectedMonth, e.target.value)}
-                              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg p-2 outline-none focus:border-[#4A90E2]"
+                              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg p-2 outline-none focus:border-[#4A90E2] privacy-blur"
                             />
                           </div>
                         </div>

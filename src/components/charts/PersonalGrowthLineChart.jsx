@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import { getAccountTotalsForMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function PersonalGrowthLineChart({ userId, monthsList, currentNetWorth, currentLiquid, accounts, isSingleMember = false }) {
+  const { isPrivacyMode } = usePrivacy();
   const chartData = useMemo(() => {
     return monthsList.map(m => {
       const userAccs = (isSingleMember || !userId) ? accounts : accounts.filter(a => a.ownerId === userId);
@@ -78,32 +80,37 @@ export default function PersonalGrowthLineChart({ userId, monthsList, currentNet
               );
             })}
 
-            {/* Total Line */}
-            {pointsTotal.length > 1 && (
-              <path d={pathTotal} fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            )}
+            {/* Total Line & Liquid Line & Points wrapped in privacy-blur */}
+            <g className="privacy-blur">
+              {pointsTotal.length > 1 && (
+                <path d={pathTotal} fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              )}
 
-            {/* Liquid Line */}
-            {pointsLiquid.length > 1 && (
-              <path d={pathLiquid} fill="none" stroke="#1976D2" strokeWidth="2.5" strokeDasharray="4 2" strokeLinecap="round" strokeLinejoin="round" />
-            )}
+              {pointsLiquid.length > 1 && (
+                <path d={pathLiquid} fill="none" stroke="#1976D2" strokeWidth="2.5" strokeDasharray="4 2" strokeLinecap="round" strokeLinejoin="round" />
+              )}
 
-            {/* Points & Labels */}
+              {/* Points & Labels */}
+              {pointsTotal.map((p, i) => (
+                <g key={`total-${i}`} className="group cursor-pointer">
+                  <circle cx={p.x} cy={p.y} r="4" fill="#FFFFFF" stroke="#2E7D32" strokeWidth="2.5" />
+                  <title>{isPrivacyMode ? `חודש: ${p.month} | [מוסתר במצב פרטיות]` : `חודש: ${p.month} | סך הון: ${fmtILS(p.val)}`}</title>
+                </g>
+              ))}
+
+              {pointsLiquid.map((p, i) => (
+                <g key={`liquid-${i}`} className="group cursor-pointer">
+                  <circle cx={p.x} cy={p.y} r="3.5" fill="#FFFFFF" stroke="#1976D2" strokeWidth="2" />
+                  <title>{isPrivacyMode ? `חודש: ${p.month} | [מוסתר במצב פרטיות]` : `חודש: ${p.month} | הון נזיל: ${fmtILS(p.val)}`}</title>
+                </g>
+              ))}
+            </g>
+
+            {/* X-axis Month Labels (Non-sensitive dates) */}
             {pointsTotal.map((p, i) => (
-              <g key={`total-${i}`} className="group cursor-pointer">
-                <circle cx={p.x} cy={p.y} r="4" fill="#FFFFFF" stroke="#2E7D32" strokeWidth="2.5" />
-                <text x={p.x} y={height - 10} fill="#78716C" fontSize="10" fontWeight="bold" textAnchor="middle">
-                  {p.month}
-                </text>
-                <title>{`חודש: ${p.month} | סך הון: ${fmtILS(p.val)}`}</title>
-              </g>
-            ))}
-
-            {pointsLiquid.map((p, i) => (
-              <g key={`liquid-${i}`} className="group cursor-pointer">
-                <circle cx={p.x} cy={p.y} r="3.5" fill="#FFFFFF" stroke="#1976D2" strokeWidth="2" />
-                <title>{`חודש: ${p.month} | הון נזיל: ${fmtILS(p.val)}`}</title>
-              </g>
+              <text key={`month-lbl-${i}`} x={p.x} y={height - 10} fill="#78716C" fontSize="10" fontWeight="bold" textAnchor="middle">
+                {p.month}
+              </text>
             ))}
           </svg>
         </div>

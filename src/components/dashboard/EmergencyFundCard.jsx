@@ -23,7 +23,7 @@ export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, mo
         </p>
       </div>
       <div>
-        <div className="w-full bg-[#FAF7F2] rounded-full h-3.5 overflow-hidden border border-[#E8E2D8]">
+        <div className="w-full bg-[#FAF7F2] rounded-full h-3.5 overflow-hidden border border-[#E8E2D8] privacy-blur">
           <div 
             className="bg-gradient-to-r from-[#FFB74D] to-[#81C784] h-full rounded-full transition-all duration-500"
             style={{ width: `${progressPct}%` }}

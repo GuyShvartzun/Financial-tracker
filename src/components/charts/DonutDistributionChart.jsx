@@ -30,7 +30,7 @@ export default function DonutDistributionChart({ personalStats }) {
 
       <div className="flex flex-col sm:flex-row items-center justify-around gap-6">
         <div className="relative w-40 h-40 flex items-center justify-center">
-          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 transform">
+          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 transform privacy-blur">
             <circle cx="50" cy="50" r={radius} fill="none" stroke="#F2ECE1" strokeWidth="16" />
             {short > 0 && (
               <circle cx="50" cy="50" r={radius} fill="none" stroke="#FFB74D" strokeWidth="16" strokeDasharray={`${strokeShort} ${circumference}`} strokeDashoffset={-offsetShort} className="transition-all duration-500" />
@@ -57,7 +57,7 @@ export default function DonutDistributionChart({ personalStats }) {
             </div>
             <div className="text-left">
               <strong className="text-[#E65100] block privacy-blur">{fmtILS(short)}</strong>
-              <span className="text-[10px] text-stone-500">{fmtPct(shortPct)}</span>
+              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(shortPct)}</span>
             </div>
           </div>
 
@@ -68,7 +68,7 @@ export default function DonutDistributionChart({ personalStats }) {
             </div>
             <div className="text-left">
               <strong className="text-[#1976D2] block privacy-blur">{fmtILS(medium)}</strong>
-              <span className="text-[10px] text-stone-500">{fmtPct(mediumPct)}</span>
+              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(mediumPct)}</span>
             </div>
           </div>
 
@@ -79,7 +79,7 @@ export default function DonutDistributionChart({ personalStats }) {
             </div>
             <div className="text-left">
               <strong className="text-[#7B1FA2] block privacy-blur">{fmtILS(long)}</strong>
-              <span className="text-[10px] text-stone-500">{fmtPct(longPct)}</span>
+              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(longPct)}</span>
             </div>
           </div>
         </div>
