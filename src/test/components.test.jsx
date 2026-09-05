@@ -1340,7 +1340,7 @@ describe('Comprehensive Privacy Mode Hardening Tests across All Modules', () => 
 });
 
 describe('WorkHoursCostCalculator Component', () => {
-  it('correctly calculates work hours for a 1,000 ILS product with 2 users, 20,000 ILS income, and 182 hours', () => {
+  it('correctly calculates work hours for a 1,000 ILS product with 2 users, 20,000 ILS income, and 182 hours, showing only hours', () => {
     const { container } = render(
       <WorkHoursCostCalculator
         totalIncome={20000}
@@ -1350,15 +1350,16 @@ describe('WorkHoursCostCalculator Component', () => {
 
     // Initial state: price 1,000, 2 users, 182 monthly hours each (total 364 hrs)
     // Hourly wage = 20,000 / 364 = ~54.95 ILS/hr
-    // Hours needed = 1,000 / 54.945 = 18.2 hours (18 hours and 12 minutes)
-    // Days needed = 18.2 / 8 = ~2.3 days
+    // Hours needed = 1,000 / 54.945 = 18.2 hours
+    expect(container.textContent).toContain('עלות המוצר בשעות עבודה:');
     expect(container.textContent).toContain('18.2 שעות עבודה');
-    expect(container.textContent).toContain('18 שעות ו-12 דקות');
-    expect(container.textContent).toContain('כ-2.3 ימי עבודה');
-    expect(container.textContent).toContain('364 שעות');
+    // Ensure all extra explanations and secondary badges were removed as requested
+    expect(container.textContent).not.toContain('ימי עבודה');
+    expect(container.textContent).not.toContain('שכר שעתי משוקלל');
+    expect(container.textContent).not.toContain('18 שעות ו-12 דקות');
   });
 
-  it('updates calculation when selecting a different monthly hours preset (160 hours)', () => {
+  it('updates calculation when changing monthly hours input', () => {
     const { container } = render(
       <WorkHoursCostCalculator
         totalIncome={20000}
@@ -1366,20 +1367,16 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
-    // Click 160 hours preset button
-    const presetBtn = screen.getByRole('button', { name: /160 שעות/i });
-    fireEvent.click(presetBtn);
+    const hoursInput = screen.getByPlaceholderText('182');
+    fireEvent.change(hoursInput, { target: { value: '160' } });
 
     // 2 users * 160 hours = 320 hours
     // Wage = 20,000 / 320 = 62.5 ILS/hr
-    // Hours needed = 1,000 / 62.5 = 16.0 hours (2 days)
+    // Hours needed = 1,000 / 62.5 = 16.0 hours
     expect(container.textContent).toContain('16.0 שעות עבודה');
-    expect(container.textContent).toContain('16 שעות');
-    expect(container.textContent).toContain('כ-2.0 ימי עבודה');
-    expect(container.textContent).toContain('320 שעות');
   });
 
-  it('updates calculation when price changes', () => {
+  it('updates calculation when changing price input without built-in options', () => {
     const { container } = render(
       <WorkHoursCostCalculator
         totalIncome={20000}
@@ -1387,9 +1384,8 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
-    // Click quick 500 ILS price preset
-    const priceBtn = screen.getByRole('button', { name: /^500 ₪$/i });
-    fireEvent.click(priceBtn);
+    const priceInput = container.querySelector('input[type="number"]');
+    fireEvent.change(priceInput, { target: { value: '500' } });
 
     // 500 / 54.945 = 9.1 hours
     expect(container.textContent).toContain('9.1 שעות עבודה');
@@ -1415,7 +1411,6 @@ describe('WorkHoursCostCalculator Component', () => {
     // 1 user * 182 hours = 182 hours. Wage = 18200 / 182 = 100 ILS/hr.
     // Price 1000 / 100 = 10.0 hours.
     expect(container.textContent).toContain('10.0 שעות עבודה');
-    expect(container.textContent).toContain('כ-1.3 ימי עבודה');
   });
 
   it('respects privacy mode by masking monetary input and sensitive values', () => {
