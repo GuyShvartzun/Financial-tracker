@@ -16,6 +16,7 @@ import SharedDashboard from '../components/dashboard/SharedDashboard';
 import PersonalDashboard from '../components/dashboard/PersonalDashboard';
 import BudgetTab from '../components/budget/BudgetTab';
 import BudgetItemEditor from '../components/budget/BudgetItemEditor';
+import WorkHoursCostCalculator from '../components/budget/WorkHoursCostCalculator';
 import DataEntryModule from '../components/data/DataEntryModule';
 import DataExport from '../components/data/DataExport';
 import RoomLobby from '../components/room/RoomLobby';
@@ -1337,5 +1338,105 @@ describe('Comprehensive Privacy Mode Hardening Tests across All Modules', () => 
     });
   });
 });
+
+describe('WorkHoursCostCalculator Component', () => {
+  it('correctly calculates work hours for a 1,000 ILS product with 2 users, 20,000 ILS income, and 182 hours', () => {
+    const { container } = render(
+      <WorkHoursCostCalculator
+        totalIncome={20000}
+        usersCount={2}
+      />
+    );
+
+    // Initial state: price 1,000, 2 users, 182 monthly hours each (total 364 hrs)
+    // Hourly wage = 20,000 / 364 = ~54.95 ILS/hr
+    // Hours needed = 1,000 / 54.945 = 18.2 hours (18 hours and 12 minutes)
+    // Days needed = 18.2 / 8 = ~2.3 days
+    expect(container.textContent).toContain('18.2 שעות עבודה');
+    expect(container.textContent).toContain('18 שעות ו-12 דקות');
+    expect(container.textContent).toContain('כ-2.3 ימי עבודה');
+    expect(container.textContent).toContain('364 שעות');
+  });
+
+  it('updates calculation when selecting a different monthly hours preset (160 hours)', () => {
+    const { container } = render(
+      <WorkHoursCostCalculator
+        totalIncome={20000}
+        usersCount={2}
+      />
+    );
+
+    // Click 160 hours preset button
+    const presetBtn = screen.getByRole('button', { name: /160 שעות/i });
+    fireEvent.click(presetBtn);
+
+    // 2 users * 160 hours = 320 hours
+    // Wage = 20,000 / 320 = 62.5 ILS/hr
+    // Hours needed = 1,000 / 62.5 = 16.0 hours (2 days)
+    expect(container.textContent).toContain('16.0 שעות עבודה');
+    expect(container.textContent).toContain('16 שעות');
+    expect(container.textContent).toContain('כ-2.0 ימי עבודה');
+    expect(container.textContent).toContain('320 שעות');
+  });
+
+  it('updates calculation when price changes', () => {
+    const { container } = render(
+      <WorkHoursCostCalculator
+        totalIncome={20000}
+        usersCount={2}
+      />
+    );
+
+    // Click quick 500 ILS price preset
+    const priceBtn = screen.getByRole('button', { name: /^500 ₪$/i });
+    fireEvent.click(priceBtn);
+
+    // 500 / 54.945 = 9.1 hours
+    expect(container.textContent).toContain('9.1 שעות עבודה');
+  });
+
+  it('allows manual income override when no budget income is defined', () => {
+    const { container } = render(
+      <WorkHoursCostCalculator
+        totalIncome={0}
+        usersCount={1}
+      />
+    );
+
+    expect(container.textContent).toContain('נא להזין הכנסה חודשית לביצוע החישוב');
+
+    // Toggle custom income
+    const toggleBtn = screen.getByRole('button', { name: /הזן ידנית/i });
+    fireEvent.click(toggleBtn);
+
+    const input = screen.getByPlaceholderText('הזן הכנסה ידנית (₪)');
+    fireEvent.change(input, { target: { value: '18200' } });
+
+    // 1 user * 182 hours = 182 hours. Wage = 18200 / 182 = 100 ILS/hr.
+    // Price 1000 / 100 = 10.0 hours.
+    expect(container.textContent).toContain('10.0 שעות עבודה');
+    expect(container.textContent).toContain('כ-1.3 ימי עבודה');
+  });
+
+  it('respects privacy mode by masking monetary input and sensitive values', () => {
+    const { container } = render(
+      <WorkHoursCostCalculator
+        totalIncome={20000}
+        usersCount={2}
+        isPrivacyMode={true}
+      />
+    );
+
+    // Password input for product price
+    const passwordInput = container.querySelector('input[type="password"]');
+    expect(passwordInput).toBeInTheDocument();
+    expect(passwordInput.value).toBe('••••••');
+    expect(passwordInput.readOnly).toBe(true);
+
+    // Income formatted with privacy bullets
+    expect(container.textContent).toContain('₪ ••••••');
+  });
+});
+
 
 

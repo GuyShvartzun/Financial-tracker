@@ -1,10 +1,11 @@
 import React from 'react';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
 import BudgetItemEditor from './BudgetItemEditor';
+import WorkHoursCostCalculator from './WorkHoursCostCalculator';
 import { fmtILS, fmtPct } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function BudgetTab({ budget, budgetTotals, onUpdateBudget, isPrivacyMode: propPrivacy }) {
+export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMember = false, onUpdateBudget, isPrivacyMode: propPrivacy }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
 
@@ -79,6 +80,12 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget, isPriv
       </div>
 
       <WaterfallChartModule budgetTotals={budgetTotals} isPrivacyMode={isPrivacyMode} />
+
+      <WorkHoursCostCalculator
+        totalIncome={budgetTotals.totalIncome}
+        usersCount={users?.length || 1}
+        isPrivacyMode={isPrivacyMode}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <BudgetItemEditor 

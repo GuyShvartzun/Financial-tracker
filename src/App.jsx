@@ -802,6 +802,8 @@ export default function App() {
             <BudgetTab
               budget={budget}
               budgetTotals={budgetTotals}
+              users={roomMembers}
+              isSingleMember={isSingleMember}
               onUpdateBudget={(updated) => {
                 setBudget(updated);
                 syncBudgetToCloud(updated);
