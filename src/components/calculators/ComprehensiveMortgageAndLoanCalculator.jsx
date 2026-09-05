@@ -199,8 +199,9 @@ export function getTrackLinkageInfo(track, safeData = {}) {
   return { name: 'ללא הצמדה', rate: 0, isLinked: false, color: 'text-[#455A64] bg-[#ECEFF1] border-[#CFD8DC]' };
 }
 
-export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUpdate }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUpdate, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const safeData = data || {};
   const [openSchedules, setOpenSchedules] = useState({});
 

@@ -12,9 +12,11 @@ export default function AdvancedFIRECalculator({
   selectedMonth = '',
   users = [],
   isSingleMember = false,
-  activeUserId = ''
+  activeUserId = '',
+  isPrivacyMode: propPrivacy
 }) {
-  const { isPrivacyMode } = usePrivacy();
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || 'single';
   const preferredFireUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))

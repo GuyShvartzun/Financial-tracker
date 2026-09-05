@@ -4,8 +4,11 @@ import { callGeminiAPI } from '../../utils/gemini';
 import { FormattedText } from '../../utils/textParser';
 import { getAccountTotalsForMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function AIAdvisorTab({ roomStats, budgetTotals, accounts, selectedMonth, users }) {
+export default function AIAdvisorTab({ roomStats, budgetTotals, accounts, selectedMonth, users, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const [aiAuditReport, setAiAuditReport] = useState('');
   const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
   const [chatMessages, setChatMessages] = useState([

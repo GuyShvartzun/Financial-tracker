@@ -3,8 +3,9 @@ import { TrendingUp, Wallet, Coins, Scale, ArrowUpRight, ArrowDownRight } from '
 import { fmtILS, fmtNum, fmtPct } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, growthPct }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, growthPct, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const liquidityRatio = netWorth ? (liquid / netWorth) * 100 : 0;
 
   return (

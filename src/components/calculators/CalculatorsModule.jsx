@@ -4,6 +4,7 @@ import PensionCalculator from './PensionCalculator';
 import ComprehensiveMortgageAndLoanCalculator from './ComprehensiveMortgageAndLoanCalculator';
 import AdvancedFIRECalculator from './AdvancedFIRECalculator';
 import { DEFAULT_CALCULATORS_DATA } from '../../constants/initialData';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function CalculatorsModule({
   calculatorsData,
@@ -14,8 +15,11 @@ export default function CalculatorsModule({
   roomStats,
   budgetTotals,
   isSingleMember = false,
-  activeUserId = ''
+  activeUserId = '',
+  isPrivacyMode: propPrivacy
 }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const [calcMode, setCalcMode] = useState('pension');
 
   return (
@@ -68,6 +72,7 @@ export default function CalculatorsModule({
           users={users}
           isSingleMember={isSingleMember}
           activeUserId={activeUserId}
+          isPrivacyMode={isPrivacyMode}
         />
       )}
 
@@ -75,6 +80,7 @@ export default function CalculatorsModule({
         <ComprehensiveMortgageAndLoanCalculator
           data={calculatorsData.mortgage || DEFAULT_CALCULATORS_DATA.mortgage}
           onUpdate={onUpdateData}
+          isPrivacyMode={isPrivacyMode}
         />
       )}
 
@@ -89,6 +95,7 @@ export default function CalculatorsModule({
           budgetTotals={budgetTotals}
           isSingleMember={isSingleMember}
           activeUserId={activeUserId}
+          isPrivacyMode={isPrivacyMode}
         />
       )}
     </div>

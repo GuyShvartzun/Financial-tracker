@@ -4,8 +4,9 @@ import BudgetItemEditor from './BudgetItemEditor';
 import { fmtILS, fmtPct } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function BudgetTab({ budget, budgetTotals, onUpdateBudget, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
 
   const handleMoveCategory = (sourceKey, itemId, targetKey) => {
     if (sourceKey === targetKey) return;
@@ -77,7 +78,7 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
         </div>
       </div>
 
-      <WaterfallChartModule budgetTotals={budgetTotals} />
+      <WaterfallChartModule budgetTotals={budgetTotals} isPrivacyMode={isPrivacyMode} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <BudgetItemEditor 
@@ -88,6 +89,7 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
           onChange={(items) => onUpdateBudget({ ...budget, incomes: items })}
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
+          isPrivacyMode={isPrivacyMode}
         />
         <BudgetItemEditor 
           title="הוצאות קבועות" 
@@ -97,6 +99,7 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
           onChange={(items) => onUpdateBudget({ ...budget, fixedExpenses: items })}
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
+          isPrivacyMode={isPrivacyMode}
         />
         <BudgetItemEditor 
           title="הוצאות משתנות" 
@@ -106,6 +109,7 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
           onChange={(items) => onUpdateBudget({ ...budget, variableExpenses: items })}
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
+          isPrivacyMode={isPrivacyMode}
         />
         <BudgetItemEditor 
           title="חסכונות והשקעות" 
@@ -115,6 +119,7 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
           onChange={(items) => onUpdateBudget({ ...budget, savings: items })}
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
+          isPrivacyMode={isPrivacyMode}
         />
       </div>
     </div>

@@ -1077,6 +1077,131 @@ describe('Comprehensive Privacy Mode Hardening Tests across All Modules', () => 
     expect(donutContainer.textContent).not.toContain('50.0%');
     expect(donutContainer.textContent).toContain('•••%');
   });
+
+  it('SharedDashboard passes isPrivacyMode to DemographicBox, WaterfallChartModule, and MetricCards', () => {
+    const roomStats = {
+      netWorth: 761709,
+      liquid: 489292,
+      nonLiquid: 272417,
+      liabilities: 50000,
+      growthPct: 15.5,
+      avgMonthlyTotalGrowth: 5000,
+      totalGrowthAmount: 50000,
+      avgMonthlyLiquidGrowth: 3000,
+      liquidGrowthAmount: 30000,
+      emergencyMonths: 5.2,
+      shortTermAssets: 100000,
+      monthlyExp: 15000
+    };
+    const budgetTotals = {
+      totalIncome: 22300,
+      totalFixed: 8085,
+      totalVar: 7500,
+      totalSavings: 6715,
+      fixedPct: 36.3,
+      varPct: 33.6,
+      savingsPct: 30.1
+    };
+
+    const { container } = render(
+      <SharedDashboard
+        roomStats={roomStats}
+        budgetTotals={budgetTotals}
+        isPrivacyMode={true}
+      />
+    );
+
+    // Verify demographic box is masked
+    expect(container.textContent).not.toContain('2026');
+    expect(container.textContent).not.toContain('761,709');
+    expect(container.textContent).not.toContain('489,292');
+    expect(container.textContent).not.toContain('272,417');
+    expect(container.textContent).not.toContain('אחוזון 99%');
+    expect(container.textContent).toContain('אחוזון ••%');
+
+    // Verify waterfall chart percentages are masked
+    expect(container.textContent).not.toContain('36.3%');
+    expect(container.textContent).not.toContain('33.6%');
+    expect(container.textContent).not.toContain('30.1%');
+    expect(container.textContent).toContain('•••%');
+  });
+
+  it('BudgetTab top cards and item amount inputs are strictly masked with bullets and readOnly', () => {
+    const mockBudget = {
+      incomes: [{ id: '1', name: 'משכורת', amount: 9200 }],
+      fixedExpenses: [{ id: '2', name: 'שכר דירה', amount: 6500 }],
+      variableExpenses: [],
+      savings: []
+    };
+    const budgetTotals = {
+      totalIncome: 22300,
+      totalFixed: 8085,
+      totalVar: 7500,
+      totalSavings: 6715,
+      fixedPct: 36.3,
+      varPct: 33.6,
+      savingsPct: 30.1
+    };
+
+    const { container } = render(
+      <BudgetTab
+        budget={mockBudget}
+        budgetTotals={budgetTotals}
+        onUpdateBudget={vi.fn()}
+        isPrivacyMode={true}
+      />
+    );
+
+    // Top cards percentages masked
+    expect(container.textContent).not.toContain('36.3% מההכנסה');
+    expect(container.textContent).toContain('•••%');
+
+    // Item amount inputs
+    const inputs = container.querySelectorAll('input[type="password"]');
+    expect(inputs.length).toBeGreaterThanOrEqual(2);
+    inputs.forEach(input => {
+      expect(input.value).toBe('••••••');
+      expect(input.readOnly).toBe(true);
+    });
+  });
+
+  it('DataEntryModule masks balance inputs with password type, bullet values, and readOnly', () => {
+    const mockAccounts = [
+      { id: 'a1', name: 'עו"ש', category: 'short', ownerId: 'u1', balances: { '08/2026': 15000 } }
+    ];
+
+    const { container } = render(
+      <DataEntryModule
+        selectedMonth="08/2026"
+        setSelectedMonth={vi.fn()}
+        monthsList={['08/2026']}
+        onAddNewMonth={vi.fn()}
+        onDeleteMonth={vi.fn()}
+        activeRoomAccounts={mockAccounts}
+        users={[{ uid: 'u1', name: 'ישראל' }]}
+        activeUserId="u1"
+        isSingleMember={true}
+        handleAccountNameChange={vi.fn()}
+        handleAccountCategoryChange={vi.fn()}
+        handleReorderAccount={vi.fn()}
+        handleMoveAccountToPosition={vi.fn()}
+        handleBalanceChange={vi.fn()}
+        handleRemoveAccountFromMonth={vi.fn()}
+        handleDeleteAccountCompletely={vi.fn()}
+        handleAddAccount={vi.fn()}
+        setAccounts={vi.fn()}
+        syncAccountToCloud={vi.fn()}
+        isPrivacyMode={true}
+      />
+    );
+
+    const inputs = container.querySelectorAll('input[type="password"]');
+    expect(inputs.length).toBeGreaterThanOrEqual(1);
+    inputs.forEach(input => {
+      expect(input.value).toBe('••••••');
+      expect(input.readOnly).toBe(true);
+    });
+  });
 });
 
 

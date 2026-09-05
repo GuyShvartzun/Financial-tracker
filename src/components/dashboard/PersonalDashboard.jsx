@@ -21,9 +21,11 @@ export default function PersonalDashboard({
   isSingleMember = false,
   roomStats,
   budgetTotals,
-  activeUserId = ''
+  activeUserId = '',
+  isPrivacyMode: propPrivacy
 }) {
-  const { isPrivacyMode } = usePrivacy();
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const activeUser = users.find(u => (u.uid || u.id) === selectedPersonalUserId) 
     || users.find(u => (u.uid || u.id) === activeUserId) 
     || users[0];
@@ -67,6 +69,7 @@ export default function PersonalDashboard({
         nonLiquid={personalStats.long}
         liabilities={personalStats.liability}
         growthPct={personalStats.growthPct}
+        isPrivacyMode={isPrivacyMode}
       />
 
       <GrowthSummaryCards
@@ -74,6 +77,7 @@ export default function PersonalDashboard({
         totalGrowthAmount={personalStats.totalGrowthAmount}
         avgMonthlyLiquidGrowth={personalStats.avgMonthlyLiquidGrowth}
         liquidGrowthAmount={personalStats.liquidGrowthAmount}
+        isPrivacyMode={isPrivacyMode}
       />
 
       <PersonalGrowthLineChart 
@@ -83,10 +87,11 @@ export default function PersonalDashboard({
         currentLiquid={personalStats.liquid}
         accounts={accounts}
         isSingleMember={isSingleMember}
+        isPrivacyMode={isPrivacyMode}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DonutDistributionChart personalStats={personalStats} />
+        <DonutDistributionChart personalStats={personalStats} isPrivacyMode={isPrivacyMode} />
 
         <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs">
           <h3 className="text-lg font-bold text-stone-900 mb-4">
@@ -140,10 +145,11 @@ export default function PersonalDashboard({
             emergencyMonths={roomStats.emergencyMonths}
             shortTermAssets={roomStats.shortTermAssets}
             monthlyExp={roomStats.monthlyExp}
+            isPrivacyMode={isPrivacyMode}
           />
 
           <div className="lg:col-span-2">
-            <WaterfallChartModule budgetTotals={budgetTotals} />
+            <WaterfallChartModule budgetTotals={budgetTotals} isPrivacyMode={isPrivacyMode} />
           </div>
         </div>
       )}
@@ -156,7 +162,8 @@ export default function PersonalDashboard({
         label={isSingleMember 
           ? "השוואה דמוגרפית ליחיד מול נתוני הלמ״ס"
           : `השוואה דמוגרפית ליחיד מול נתוני הלמ״ס (${activeUser?.displayName || activeUser?.name || 'פרופיל אישי'})`
-        } 
+        }
+        isPrivacyMode={isPrivacyMode}
       />
     </div>
   );

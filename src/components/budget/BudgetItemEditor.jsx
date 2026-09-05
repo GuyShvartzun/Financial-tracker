@@ -16,9 +16,11 @@ export default function BudgetItemEditor({
   color,
   onChange,
   onMoveCategory,
-  onMoveItemToPosition
+  onMoveItemToPosition,
+  isPrivacyMode: propPrivacy
 }) {
-  const { isPrivacyMode } = usePrivacy();
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const [draggedItemId, setDraggedItemId] = useState(null);
   const [dragOverItemId, setDragOverItemId] = useState(null);
   const [isDragOverCard, setIsDragOverCard] = useState(false);
@@ -205,9 +207,10 @@ export default function BudgetItemEditor({
                 <input
                   type={isPrivacyMode ? "password" : "number"}
                   step="any"
-                  value={item.amount ?? ''}
-                  onChange={(e) => handleAmount(item.id, e.target.value)}
-                  placeholder="0"
+                  value={isPrivacyMode ? '••••••' : (item.amount ?? '')}
+                  readOnly={isPrivacyMode}
+                  onChange={(e) => !isPrivacyMode && handleAmount(item.id, e.target.value)}
+                  placeholder={isPrivacyMode ? '••••' : '0'}
                   className="w-16 sm:w-20 bg-white border border-[#DDD6CA] text-xs font-bold text-[#2E7D32] rounded-lg px-1.5 sm:px-2 py-1 outline-none focus:border-[#4A90E2] privacy-blur"
                 />
 

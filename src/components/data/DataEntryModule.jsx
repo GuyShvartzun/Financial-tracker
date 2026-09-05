@@ -23,9 +23,11 @@ export default function DataEntryModule({
   handleDeleteAccountCompletely,
   handleAddAccount,
   setAccounts,
-  syncAccountToCloud
+  syncAccountToCloud,
+  isPrivacyMode: propPrivacy
 }) {
-  const { isPrivacyMode } = usePrivacy();
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const [newMonthInput, setNewMonthInput] = useState('');
   const [showAddMonthModal, setShowAddMonthModal] = useState(false);
   const [showDeleteMonthConfirm, setShowDeleteMonthConfirm] = useState(false);
@@ -408,8 +410,10 @@ export default function DataEntryModule({
                           <input
                             type={isPrivacyMode ? "password" : "number"}
                             step="any"
-                            value={acc.balances?.[selectedMonth] ?? ''}
-                            onChange={(e) => handleBalanceChange(acc.id, selectedMonth, e.target.value)}
+                            value={isPrivacyMode ? '••••••' : (acc.balances?.[selectedMonth] ?? '')}
+                            readOnly={isPrivacyMode}
+                            onChange={(e) => !isPrivacyMode && handleBalanceChange(acc.id, selectedMonth, e.target.value)}
+                            placeholder={isPrivacyMode ? '••••' : '0'}
                             className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg px-3 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur"
                           />
                         </div>
@@ -526,8 +530,10 @@ export default function DataEntryModule({
                             <input
                               type={isPrivacyMode ? "password" : "number"}
                               step="any"
-                              value={acc.balances?.[selectedMonth] ?? ''}
-                              onChange={(e) => handleBalanceChange(acc.id, selectedMonth, e.target.value)}
+                              value={isPrivacyMode ? '••••••' : (acc.balances?.[selectedMonth] ?? '')}
+                              readOnly={isPrivacyMode}
+                              onChange={(e) => !isPrivacyMode && handleBalanceChange(acc.id, selectedMonth, e.target.value)}
+                              placeholder={isPrivacyMode ? '••••' : '0'}
                               className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg p-2 outline-none focus:border-[#4A90E2] privacy-blur"
                             />
                           </div>

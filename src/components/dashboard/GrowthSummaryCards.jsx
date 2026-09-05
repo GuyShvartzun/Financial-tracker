@@ -6,9 +6,11 @@ export default function GrowthSummaryCards({
   avgMonthlyTotalGrowth,
   totalGrowthAmount,
   avgMonthlyLiquidGrowth,
-  liquidGrowthAmount
+  liquidGrowthAmount,
+  isPrivacyMode: propPrivacy
 }) {
-  const { isPrivacyMode } = usePrivacy();
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 font-sans">

@@ -3,8 +3,9 @@ import { getAccountTotalsForMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function PersonalGrowthLineChart({ userId, monthsList, currentNetWorth, currentLiquid, accounts, isSingleMember = false }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function PersonalGrowthLineChart({ userId, monthsList, currentNetWorth, currentLiquid, accounts, isSingleMember = false, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const chartData = useMemo(() => {
     return monthsList.map(m => {
       const userAccs = (isSingleMember || !userId) ? accounts : accounts.filter(a => a.ownerId === userId);

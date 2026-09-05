@@ -2,8 +2,9 @@ import React from 'react';
 import { fmtILS, fmtPct } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function DonutDistributionChart({ personalStats }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function DonutDistributionChart({ personalStats, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const short = personalStats.short || 0;
   const medium = personalStats.medium || 0;
   const long = personalStats.long || 0;

@@ -26,9 +26,11 @@ export default function PensionCalculator({
   selectedMonth,
   users = [],
   isSingleMember = false,
-  activeUserId = ''
+  activeUserId = '',
+  isPrivacyMode: propPrivacy
 }) {
-  const { isPrivacyMode } = usePrivacy();
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || '';
   const preferredUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))

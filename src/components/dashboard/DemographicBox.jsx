@@ -3,8 +3,9 @@ import { CBS_AGE_DATA } from '../../constants/cbsData';
 import { fmtILS } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, label }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, label, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const [selectedAgeBracket, setSelectedAgeBracket] = useState('20-29');
 
   const dataset = isCouple ? CBS_AGE_DATA.couple : CBS_AGE_DATA.single;

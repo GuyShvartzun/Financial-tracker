@@ -66,12 +66,21 @@ export default function App() {
     }
   });
 
-  // Persist privacy mode changes
+  // Persist privacy mode changes and sync global body class
   useEffect(() => {
     try {
       localStorage.setItem('fin_tracker_privacy_mode', String(isPrivacyMode));
     } catch (e) {
       console.warn("Could not persist privacy mode to localStorage:", e);
+    }
+    if (typeof document !== 'undefined') {
+      if (isPrivacyMode) {
+        document.body.classList.add('privacy-active');
+        document.documentElement.classList.add('privacy-active');
+      } else {
+        document.body.classList.remove('privacy-active');
+        document.documentElement.classList.remove('privacy-active');
+      }
     }
   }, [isPrivacyMode]);
 
@@ -747,6 +756,7 @@ export default function App() {
             <SharedDashboard
               roomStats={roomStats}
               budgetTotals={budgetTotals}
+              isPrivacyMode={isPrivacyMode}
             />
           )}
 
@@ -763,6 +773,7 @@ export default function App() {
               roomStats={roomStats}
               budgetTotals={budgetTotals}
               activeUserId={authUser?.uid}
+              isPrivacyMode={isPrivacyMode}
             />
           )}
 
@@ -774,6 +785,7 @@ export default function App() {
                 setBudget(updated);
                 syncBudgetToCloud(updated);
               }}
+              isPrivacyMode={isPrivacyMode}
             />
           )}
 
@@ -788,6 +800,7 @@ export default function App() {
               budgetTotals={budgetTotals}
               isSingleMember={isSingleMember}
               activeUserId={authUser?.uid}
+              isPrivacyMode={isPrivacyMode}
             />
           )}
 
@@ -798,6 +811,7 @@ export default function App() {
               accounts={accounts} 
               selectedMonth={selectedMonth}
               users={roomMembers}
+              isPrivacyMode={isPrivacyMode}
             />
           )}
 
@@ -822,6 +836,7 @@ export default function App() {
               handleAddAccount={handleAddAccount}
               setAccounts={setAccounts}
               syncAccountToCloud={syncAccountToCloud}
+              isPrivacyMode={isPrivacyMode}
             />
           )}
 

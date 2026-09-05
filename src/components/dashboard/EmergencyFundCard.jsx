@@ -3,8 +3,9 @@ import { ShieldCheck } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, monthlyExp }) {
-  const { isPrivacyMode } = usePrivacy();
+export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, monthlyExp, isPrivacyMode: propPrivacy }) {
+  const { isPrivacyMode: contextPrivacy } = usePrivacy();
+  const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const progressPct = Math.min(((emergencyMonths || 0) / 6) * 100, 100);
 
   return (
