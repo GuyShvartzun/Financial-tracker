@@ -33,7 +33,7 @@ export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, 
           <select
             value={selectedAgeBracket}
             onChange={(e) => setSelectedAgeBracket(e.target.value)}
-            className="bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl px-3 py-1.5 outline-none focus:border-[#4A90E2] cursor-pointer"
+            className="bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl px-3 py-1.5 outline-none focus:border-[#4A90E2] cursor-pointer privacy-blur"
           >
             <option value="20-29">גילאי 20-29</option>
             <option value="30-39">גילאי 30-39</option>

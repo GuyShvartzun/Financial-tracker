@@ -398,7 +398,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualDepositGrowth ?? ''} 
               onChange={(e) => handleFireChange('annualDepositGrowth', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -420,7 +420,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.lumpSumYears ?? ''} 
               onChange={(e) => handleFireChange('lumpSumYears', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -431,7 +431,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.currentAge ?? ''} 
               onChange={(e) => handleFireChange('currentAge', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -442,7 +442,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.capitalGainsTax ?? ''} 
               onChange={(e) => handleFireChange('capitalGainsTax', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -453,7 +453,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.accumulationReturn ?? ''} 
               onChange={(e) => handleFireChange('accumulationReturn', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -464,7 +464,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.retirementReturn ?? ''} 
               onChange={(e) => handleFireChange('retirementReturn', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -475,7 +475,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualInflation ?? ''} 
               onChange={(e) => handleFireChange('annualInflation', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
 
@@ -486,7 +486,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualManagementFee ?? ''} 
               onChange={(e) => handleFireChange('annualManagementFee', e.target.value)} 
-              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
             />
           </div>
         </div>
@@ -512,7 +512,7 @@ export default function AdvancedFIRECalculator({
               {calcResults.estimatedRetireAge}
             </div>
             <span className="text-[11px] text-stone-400 block mt-1">
-              מגיל בסיס {userFireData.currentAge || 30}
+              מגיל בסיס <span className="privacy-blur">{userFireData.currentAge || 30}</span>
             </span>
           </div>
         </div>

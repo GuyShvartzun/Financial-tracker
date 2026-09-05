@@ -12,41 +12,38 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-  /* Privacy Mode Blurring */
+  /* Privacy Mode Blurring - Strict protection with NO hover reveal */
   .privacy-active .privacy-blur {
-    filter: blur(7px);
-    transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    user-select: none;
+    filter: blur(8px) !important;
+    user-select: none !important;
     cursor: default;
-  }
-  
-  .privacy-active .privacy-blur:hover,
-  .privacy-active .privacy-blur:focus,
-  .privacy-active .privacy-blur:focus-within {
-    filter: blur(0px);
   }
 
   /* Automatic blurring of numeric inputs in privacy mode */
-  .privacy-active input[type="number"]:not(:focus) {
-    filter: blur(7px);
-    transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    user-select: none;
+  .privacy-active input[type="number"],
+  .privacy-active input.privacy-blur {
+    filter: blur(8px) !important;
+    user-select: none !important;
   }
 
-  .privacy-active input[type="number"]:hover,
-  .privacy-active input[type="number"]:focus {
-    filter: blur(0px);
+  /* Privacy dropdowns */
+  .privacy-active select.privacy-blur {
+    filter: blur(8px) !important;
+    user-select: none !important;
   }
 
   /* Privacy chart & graphics blurring */
   .privacy-active .privacy-chart {
-    filter: blur(7px);
-    transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    user-select: none;
+    filter: blur(8px) !important;
+    user-select: none !important;
   }
 
-  .privacy-active .privacy-chart:hover {
-    filter: blur(0px);
+  /* ONLY active input/select being directly edited gets unblurred */
+  .privacy-active input[type="number"]:focus,
+  .privacy-active input.privacy-blur:focus,
+  .privacy-active select.privacy-blur:focus {
+    filter: blur(0px) !important;
+    user-select: auto !important;
   }
 }
 

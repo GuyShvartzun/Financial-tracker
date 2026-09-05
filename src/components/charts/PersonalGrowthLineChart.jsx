@@ -64,8 +64,8 @@ export default function PersonalGrowthLineChart({ userId, monthsList, currentNet
       </div>
 
       <div className="w-full overflow-x-auto">
-        <div className="min-w-[500px]">
-          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible">
+        <div className={`min-w-[500px] transition-all duration-200 ${isPrivacyMode ? 'privacy-chart' : ''}`}>
+          <svg viewBox={`0 0 ${width} ${height}`} className={`w-full h-auto overflow-visible ${isPrivacyMode ? 'privacy-chart' : ''}`}>
             {/* Grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
               const y = padding + ratio * (height - padding * 2);

@@ -22,6 +22,8 @@ import RoomLobby from '../components/room/RoomLobby';
 import RoomSettingsModal from '../components/room/RoomSettingsModal';
 import CalculatorsModule from '../components/calculators/CalculatorsModule';
 import ComprehensiveMortgageAndLoanCalculator from '../components/calculators/ComprehensiveMortgageAndLoanCalculator';
+import PensionCalculator from '../components/calculators/PensionCalculator';
+import AdvancedFIRECalculator from '../components/calculators/AdvancedFIRECalculator';
 import QuickLogModal from '../components/common/QuickLogModal';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import { PrivacyContext } from '../context/PrivacyContext';
@@ -709,6 +711,54 @@ describe('Privacy Mode Enforcement Tests', () => {
       </PrivacyContext.Provider>
     );
 
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThan(0);
+  });
+
+  it('DemographicBox renders age select with privacy-blur class', () => {
+    const { container } = render(
+      <DemographicBox
+        totalNetWorth={150000}
+        liquidNetWorth={50000}
+        nonLiquidNetWorth={100000}
+      />
+    );
+    const select = container.querySelector('select.privacy-blur');
+    expect(select).toBeInTheDocument();
+  });
+
+  it('PensionCalculator renders member pull button amount with privacy-blur class', () => {
+    const { container } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <PensionCalculator
+          calculatorsData={DEFAULT_CALCULATORS_DATA}
+          onUpdateData={vi.fn()}
+          accounts={[{ id: '1', ownerId: 'u1', category: 'long', balances: { '08/2026': 250000 } }]}
+          selectedMonth="08/2026"
+          users={[{ uid: 'u1', displayName: 'ישראל ישראלי' }]}
+          isSingleMember={true}
+        />
+      </PrivacyContext.Provider>
+    );
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThan(0);
+    const buttonWithBlur = Array.from(blurred).find(el => el.textContent.includes('250,000'));
+    expect(buttonWithBlur).toBeDefined();
+  });
+
+  it('AdvancedFIRECalculator renders base age with privacy-blur class', () => {
+    const { container } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <AdvancedFIRECalculator
+          calculatorsData={DEFAULT_CALCULATORS_DATA}
+          onUpdateData={vi.fn()}
+          accounts={[]}
+          selectedMonth="08/2026"
+          users={[{ uid: 'u1', displayName: 'ישראל ישראלי' }]}
+          isSingleMember={true}
+        />
+      </PrivacyContext.Provider>
+    );
     const blurred = container.querySelectorAll('.privacy-blur');
     expect(blurred.length).toBeGreaterThan(0);
   });

@@ -337,7 +337,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 value={safeData.propertyValue ?? ''} 
                 onChange={(e) => handleChange('propertyValue', e.target.value)} 
                 placeholder="לחישוב אחוז מימון (LTV)" 
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
               />
             </div>
 
@@ -351,7 +351,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 value={safeData.monthlyIncome ?? ''} 
                 onChange={(e) => handleChange('monthlyIncome', e.target.value)} 
                 placeholder="לחישוב יחס החזר (PTI)" 
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
               />
             </div>
           </div>
@@ -385,7 +385,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     value={safeData.expectedInflation ?? ''} 
                     onChange={(e) => handleChange('expectedInflation', e.target.value)} 
                     placeholder="למשל 2.5"
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono" 
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono privacy-blur" 
                   />
                   <span className="absolute left-2.5 top-2.5 text-stone-400 text-xs font-bold">%</span>
                 </div>
@@ -409,7 +409,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     value={safeData.constructionInflation ?? ''} 
                     onChange={(e) => handleChange('constructionInflation', e.target.value)} 
                     placeholder="למשל 2.5"
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono" 
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono privacy-blur" 
                   />
                   <span className="absolute left-2.5 top-2.5 text-stone-400 text-xs font-bold">%</span>
                 </div>
@@ -594,7 +594,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       value={track.amount ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'amount', e.target.value)} 
                       placeholder="לדוג' 500,000"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
 
@@ -606,7 +606,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       value={displayYears} 
                       onChange={(e) => handleUpdateTrack(track.id, 'years', e.target.value)} 
                       placeholder="לדוג' 25"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
 
@@ -618,7 +618,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       value={displayMonths} 
                       onChange={(e) => handleUpdateTrack(track.id, 'months', e.target.value)} 
                       placeholder="לדוג' 300"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
                   
@@ -647,7 +647,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       value={track.interest ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'interest', e.target.value)} 
                       placeholder="לדוג' 4.8"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
 
@@ -671,7 +671,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                         value={track.graceMonths ?? ''} 
                         onChange={(e) => handleUpdateTrack(track.id, 'graceMonths', e.target.value)} 
                         placeholder="לדוג' 12"
-                        className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                        className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                       />
                     </div>
                   )}
