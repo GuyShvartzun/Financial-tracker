@@ -24,6 +24,7 @@ export default function DataEntryModule({
   handleAddAccount,
   setAccounts,
   syncAccountToCloud,
+  handleToggleFlagAccount,
   isPrivacyMode: propPrivacy
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
@@ -31,6 +32,31 @@ export default function DataEntryModule({
   const [newMonthInput, setNewMonthInput] = useState('');
   const [showAddMonthModal, setShowAddMonthModal] = useState(false);
   const [showDeleteMonthConfirm, setShowDeleteMonthConfirm] = useState(false);
+  const [filterOnlyFlagged, setFilterOnlyFlagged] = useState(false);
+
+  // Toggle account flag for a specific month
+  const toggleFlag = (accId, month) => {
+    if (handleToggleFlagAccount) {
+      handleToggleFlagAccount(accId, month);
+    } else if (setAccounts) {
+      setAccounts(prev => prev.map(a => {
+        if (a.id === accId) {
+          const currentFlagged = a.flaggedMonths || {};
+          const isFlagged = Boolean(currentFlagged[month]);
+          const updatedFlagged = { ...currentFlagged };
+          if (isFlagged) {
+            delete updatedFlagged[month];
+          } else {
+            updatedFlagged[month] = true;
+          }
+          const updatedAcc = { ...a, flaggedMonths: updatedFlagged };
+          if (syncAccountToCloud) syncAccountToCloud(updatedAcc);
+          return updatedAcc;
+        }
+        return a;
+      }));
+    }
+  };
 
   // Multi-user Data Entry selector state
   const isMultiUser = !isSingleMember && users.length > 1;
@@ -55,6 +81,17 @@ export default function DataEntryModule({
   const displayedAccounts = isMultiUser
     ? safeAccounts.filter(a => a.ownerId === currentUserId)
     : safeAccounts;
+
+  // Flagged accounts count for selected month
+  const flaggedAccountsInMonth = displayedAccounts.filter(a => Boolean(a.flaggedMonths?.[selectedMonth]));
+  const flaggedCount = flaggedAccountsInMonth.length;
+
+  // Reset filter if no flagged accounts remain
+  useEffect(() => {
+    if (filterOnlyFlagged && flaggedCount === 0) {
+      setFilterOnlyFlagged(false);
+    }
+  }, [filterOnlyFlagged, flaggedCount]);
 
   // Drag & Drop State
   const [draggedAccId, setDraggedAccId] = useState(null);
@@ -241,13 +278,48 @@ export default function DataEntryModule({
         </div>
       )}
 
+      {/* Flagged Accounts Notification Banner & Filter */}
+      {flaggedCount > 0 && (
+        <div className="bg-amber-50/90 border border-amber-300 p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="text-xl shrink-0">🚩</span>
+            <div>
+              <span className="font-black text-amber-950 block text-xs sm:text-sm">
+                ישנם {flaggedCount} חשבונות המסומנים כדורשים עדכון יתרה לחודש {selectedMonth}
+              </span>
+              <span className="text-amber-800 text-[11px]">
+                חשבונות אלו סומנו כבעלי ערך זמני או קודם הדורש עדכון. לחץ על הדגלון לצד הסכום להסרת הסימון לאחר עדכון היתרה.
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterOnlyFlagged(prev => !prev)}
+              className={`px-3 py-1.5 rounded-xl font-bold transition text-xs cursor-pointer border ${
+                filterOnlyFlagged
+                  ? 'bg-amber-600 text-white border-amber-700 shadow-xs'
+                  : 'bg-white hover:bg-amber-100/60 text-amber-900 border-amber-300'
+              }`}
+            >
+              {filterOnlyFlagged ? 'הצג את כל החשבונות' : `סנן רק חשבונות עם דגל (${flaggedCount})`}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Account Categories Groups */}
       {accountGroups.map(group => {
-        const groupAccounts = displayedAccounts
+        const allCategoryAccounts = displayedAccounts
           .filter(a => a.category === group.key)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
+        const groupAccounts = filterOnlyFlagged
+          ? allCategoryAccounts.filter(a => Boolean(a.flaggedMonths?.[selectedMonth]))
+          : allCategoryAccounts;
+
         const groupTotal = groupAccounts.reduce((s, a) => s + (parseFloat(a.balances?.[selectedMonth]) || 0), 0);
+        const groupTotalFlagged = allCategoryAccounts.filter(a => Boolean(a.flaggedMonths?.[selectedMonth])).length;
         const isDragOverThisGroup = dragOverGroupId === group.key;
 
         return (
@@ -262,11 +334,17 @@ export default function DataEntryModule({
           >
             {/* Category Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8E2D8] pb-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm sm:text-base font-bold text-stone-900">{group.title}</h3>
                 <span className="text-[11px] font-bold bg-[#FAF7F2] border border-[#DDD6CA] text-stone-600 px-2 py-0.5 rounded-full">
                   <span className="privacy-blur">{isPrivacyMode ? '••' : groupAccounts.length}</span> חשבונות
                 </span>
+                {groupTotalFlagged > 0 && (
+                  <span className="text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                    <span>🚩</span>
+                    <span>{groupTotalFlagged} דורש עדכון</span>
+                  </span>
+                )}
               </div>
               <span className="text-xs text-stone-500">
                 סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black privacy-blur">{fmtILS(groupTotal, isPrivacyMode)}</strong>
@@ -278,7 +356,9 @@ export default function DataEntryModule({
               <div 
                 className="py-8 text-center bg-[#FAF7F2] border border-dashed border-[#DDD6CA] rounded-xl text-stone-500 text-xs"
               >
-                {isMultiUser
+                {filterOnlyFlagged
+                  ? `אין חשבונות המסומנים כדורשים עדכון בקטגוריה זו לחודש ${selectedMonth}.`
+                  : isMultiUser
                   ? `אין חשבונות עבור ${currentSelectedUser?.displayName || currentSelectedUser?.name} בקטגוריה זו. לחץ על הכפתור למטה להוספת חשבון.`
                   : 'אין חשבונות בקטגוריה זו. לחץ על הכפתור למטה או גרור לכאן חשבון מקבוצה אחרת.'}
               </div>
@@ -287,6 +367,7 @@ export default function DataEntryModule({
                 {groupAccounts.map((acc, idx) => {
                   const isBeingDragged = draggedAccId === acc.id;
                   const isDragTarget = dragOverAccId === acc.id;
+                  const isFlagged = Boolean(acc.flaggedMonths?.[selectedMonth]);
 
                   return (
                     <div
@@ -306,6 +387,8 @@ export default function DataEntryModule({
                           ? 'opacity-40 border-dashed border-stone-400 bg-stone-100' 
                           : isDragTarget 
                           ? 'border-emerald-500 bg-emerald-50/50 shadow-md scale-[1.01]'
+                          : isFlagged
+                          ? 'bg-amber-50/30 hover:bg-amber-50/50 border-amber-300 ring-1 ring-amber-300/60'
                           : 'bg-[#FAF7F2] hover:bg-[#F9F6F0] border-[#E8E2D8]'
                       } p-3.5 space-y-3 sm:space-y-0`}
                     >
@@ -404,18 +487,45 @@ export default function DataEntryModule({
                           </select>
                         </div>
 
-                        {/* Balance in ILS */}
-                        <div className="w-36">
-                          <label className="text-[10px] text-stone-500 font-bold block mb-1">סכום ב-₪ ({selectedMonth})</label>
-                          <input
-                            type={isPrivacyMode ? "password" : "number"}
-                            step="any"
-                            value={isPrivacyMode ? '••••••' : (acc.balances?.[selectedMonth] ?? '')}
-                            readOnly={isPrivacyMode}
-                            onChange={(e) => !isPrivacyMode && handleBalanceChange(acc.id, selectedMonth, e.target.value)}
-                            placeholder={isPrivacyMode ? '••••' : '0'}
-                            className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg px-3 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur"
-                          />
+                        {/* Balance in ILS with Flag Button */}
+                        <div className="w-40">
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[10px] text-stone-500 font-bold block">סכום ב-₪ ({selectedMonth})</label>
+                            {isFlagged && (
+                              <span className="text-[9px] font-black text-amber-800 bg-amber-100/90 border border-amber-300 px-1.5 py-0.2 rounded-md">
+                                דורש עדכון
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative flex items-center">
+                            <input
+                              type={isPrivacyMode ? "password" : "number"}
+                              step="any"
+                              value={isPrivacyMode ? '••••••' : (acc.balances?.[selectedMonth] ?? '')}
+                              readOnly={isPrivacyMode}
+                              onChange={(e) => !isPrivacyMode && handleBalanceChange(acc.id, selectedMonth, e.target.value)}
+                              placeholder={isPrivacyMode ? '••••' : '0'}
+                              className={`w-full bg-[#FFFFFF] border font-black text-sm rounded-lg px-3 py-1.5 pl-8 outline-none focus:border-[#4A90E2] privacy-blur transition ${
+                                isFlagged
+                                  ? 'border-amber-400 bg-amber-50/70 text-amber-900 ring-1 ring-amber-300'
+                                  : 'border-[#DDD6CA] text-[#2E7D32]'
+                              }`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => toggleFlag(acc.id, selectedMonth)}
+                              className="absolute left-1.5 p-1 text-xs transition cursor-pointer hover:scale-110 select-none"
+                              title={isFlagged ? `חשבון מסומן כדורש עדכון עבור ${selectedMonth} (לחץ להסרת הדגל)` : `סמן חשבון זה כדורש עדכון עבור ${selectedMonth}`}
+                            >
+                              {isFlagged ? (
+                                <span className="text-sm">🚩</span>
+                              ) : (
+                                <svg className="w-3.5 h-3.5 text-stone-300 hover:text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
                         </div>
 
                         {/* Action buttons */}
@@ -454,6 +564,11 @@ export default function DataEntryModule({
                               placeholder="שם החשבון"
                               className="flex-1 min-w-0 bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-sm font-bold rounded-lg px-2.5 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur"
                             />
+                            {isFlagged && (
+                              <span className="text-xs shrink-0 select-none" title="מסומן כדורש עדכון לחודש זה">
+                                🚩
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-1 shrink-0">
@@ -526,16 +641,44 @@ export default function DataEntryModule({
                           </div>
 
                           <div className="col-span-2 sm:col-span-1">
-                            <label className="text-[10px] text-stone-500 font-bold block mb-1">סכום ב-₪ ({selectedMonth})</label>
-                            <input
-                              type={isPrivacyMode ? "password" : "number"}
-                              step="any"
-                              value={isPrivacyMode ? '••••••' : (acc.balances?.[selectedMonth] ?? '')}
-                              readOnly={isPrivacyMode}
-                              onChange={(e) => !isPrivacyMode && handleBalanceChange(acc.id, selectedMonth, e.target.value)}
-                              placeholder={isPrivacyMode ? '••••' : '0'}
-                              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black text-sm rounded-lg p-2 outline-none focus:border-[#4A90E2] privacy-blur"
-                            />
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[10px] text-stone-500 font-bold block">סכום ב-₪ ({selectedMonth})</label>
+                              {isFlagged && (
+                                <span className="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                  <span>🚩</span>
+                                  <span>דורש עדכון</span>
+                                </span>
+                              )}
+                            </div>
+                            <div className="relative flex items-center">
+                              <input
+                                type={isPrivacyMode ? "password" : "number"}
+                                step="any"
+                                value={isPrivacyMode ? '••••••' : (acc.balances?.[selectedMonth] ?? '')}
+                                readOnly={isPrivacyMode}
+                                onChange={(e) => !isPrivacyMode && handleBalanceChange(acc.id, selectedMonth, e.target.value)}
+                                placeholder={isPrivacyMode ? '••••' : '0'}
+                                className={`w-full bg-[#FFFFFF] border font-black text-sm rounded-lg p-2 pl-9 outline-none focus:border-[#4A90E2] privacy-blur transition ${
+                                  isFlagged
+                                    ? 'border-amber-400 bg-amber-50/70 text-amber-900 ring-1 ring-amber-300'
+                                    : 'border-[#DDD6CA] text-[#2E7D32]'
+                                }`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => toggleFlag(acc.id, selectedMonth)}
+                                className="absolute left-2 p-1 text-sm transition cursor-pointer hover:scale-110 select-none"
+                                title={isFlagged ? `חשבון מסומן כדורש עדכון עבור ${selectedMonth} (לחץ להסרת הדגל)` : `סמן חשבון זה כדורש עדכון עבור ${selectedMonth}`}
+                              >
+                                {isFlagged ? (
+                                  <span className="text-base">🚩</span>
+                                ) : (
+                                  <svg className="w-4 h-4 text-stone-300 hover:text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
 

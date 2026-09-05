@@ -530,9 +530,30 @@ export default function App() {
     setAccounts(prev => prev.map(a => {
       const updatedBalances = { ...a.balances };
       delete updatedBalances[monthToDelete];
-      const updatedAcc = { ...a, balances: updatedBalances };
+      const updatedFlagged = { ...(a.flaggedMonths || {}) };
+      delete updatedFlagged[monthToDelete];
+      const updatedAcc = { ...a, balances: updatedBalances, flaggedMonths: updatedFlagged };
       syncAccountToCloud(updatedAcc);
       return updatedAcc;
+    }));
+  };
+
+  const handleToggleFlagAccount = (accId, month) => {
+    setAccounts(prev => prev.map(a => {
+      if (a.id === accId) {
+        const currentFlagged = a.flaggedMonths || {};
+        const isFlagged = Boolean(currentFlagged[month]);
+        const updatedFlagged = { ...currentFlagged };
+        if (isFlagged) {
+          delete updatedFlagged[month];
+        } else {
+          updatedFlagged[month] = true;
+        }
+        const updatedAcc = { ...a, flaggedMonths: updatedFlagged };
+        syncAccountToCloud(updatedAcc);
+        return updatedAcc;
+      }
+      return a;
     }));
   };
 
@@ -836,6 +857,7 @@ export default function App() {
               handleAddAccount={handleAddAccount}
               setAccounts={setAccounts}
               syncAccountToCloud={syncAccountToCloud}
+              handleToggleFlagAccount={handleToggleFlagAccount}
               isPrivacyMode={isPrivacyMode}
             />
           )}

@@ -9,6 +9,7 @@ export default function QuickLogModal({
   accounts = [],
   selectedMonth,
   onUpdateAccountBalance,
+  onToggleFlagAccount,
   budget,
   onUpdateBudget,
   users = [],
@@ -19,6 +20,7 @@ export default function QuickLogModal({
   const [activeMode, setActiveMode] = useState('balance'); // 'balance' | 'budget'
   const [selectedAccId, setSelectedAccId] = useState('');
   const [newBalance, setNewBalance] = useState('');
+  const [unflagOnSave, setUnflagOnSave] = useState(true);
   
   // Budget Form State
   const [budgetCategory, setBudgetCategory] = useState('variableExpenses');
@@ -58,12 +60,16 @@ export default function QuickLogModal({
   if (!isOpen) return null;
 
   const currentAcc = accounts.find(a => a.id === selectedAccId);
+  const isAccFlagged = Boolean(currentAcc?.flaggedMonths?.[selectedMonth]);
 
   const handleSaveBalance = (e) => {
     e.preventDefault();
     if (!selectedAccId) return;
     const num = parseFloat(newBalance) || 0;
     onUpdateAccountBalance(selectedAccId, selectedMonth, num);
+    if (isAccFlagged && unflagOnSave && onToggleFlagAccount) {
+      onToggleFlagAccount(selectedAccId, selectedMonth);
+    }
     setSuccessMessage(`היתרה בחשבון "${currentAcc?.name}" עודכנה ל-${fmtILS(num, isPrivacyMode)}!`);
     setTimeout(() => {
       setSuccessMessage('');
@@ -185,14 +191,33 @@ export default function QuickLogModal({
                     const catLabel = acc.category === 'short' ? 'טווח קצר'
                       : acc.category === 'medium' ? 'טווח בינוני'
                       : acc.category === 'long' ? 'טווח ארוך' : 'התחייבות';
+                    const isFlagged = Boolean(acc.flaggedMonths?.[selectedMonth]);
                     return (
                       <option key={acc.id} value={acc.id}>
-                        {acc.name} ({catLabel})
+                        {isFlagged ? '🚩 ' : ''}{acc.name} ({catLabel})
                       </option>
                     );
                   })}
                 </select>
               </div>
+
+              {isAccFlagged && (
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-950 space-y-1.5 animate-in fade-in">
+                  <div className="flex items-center gap-2 font-bold">
+                    <span className="text-base shrink-0">🚩</span>
+                    <span>חשבון זה מסומן כדורש עדכון יתרה עבור {selectedMonth}.</span>
+                  </div>
+                  <label className="flex items-center gap-2 text-[11px] text-amber-800 cursor-pointer font-bold pt-0.5 select-none">
+                    <input
+                      type="checkbox"
+                      checked={unflagOnSave}
+                      onChange={(e) => setUnflagOnSave(e.target.checked)}
+                      className="rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
+                    />
+                    <span>הסר סימון דגל עם שמירת היתרה החדשה</span>
+                  </label>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1.5">

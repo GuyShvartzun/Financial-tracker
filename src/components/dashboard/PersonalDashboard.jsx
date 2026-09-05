@@ -64,11 +64,11 @@ export default function PersonalDashboard({
       )}
 
       <MetricCards
-        netWorth={personalStats.netWorth}
-        liquid={personalStats.liquid}
-        nonLiquid={personalStats.long}
-        liabilities={personalStats.liability}
-        growthPct={personalStats.growthPct}
+        netWorth={personalStats?.netWorth || 0}
+        liquid={personalStats?.liquid || 0}
+        nonLiquid={personalStats?.long || 0}
+        liabilities={personalStats?.liability || 0}
+        growthPct={personalStats?.growthPct || 0}
         isPrivacyMode={isPrivacyMode}
       />
 
@@ -83,8 +83,8 @@ export default function PersonalDashboard({
       <PersonalGrowthLineChart 
         userId={selectedPersonalUserId || activeUid} 
         monthsList={monthsList} 
-        currentNetWorth={personalStats.netWorth}
-        currentLiquid={personalStats.liquid}
+        currentNetWorth={personalStats?.netWorth || 0}
+        currentLiquid={personalStats?.liquid || 0}
         accounts={accounts}
         isSingleMember={isSingleMember}
         isPrivacyMode={isPrivacyMode}
@@ -118,7 +118,19 @@ export default function PersonalDashboard({
                 )}
                 {sortedUserAccs.map(acc => (
                   <tr key={acc.id} className="hover:bg-[#FAF7F2]">
-                    <td className="py-2.5 px-2 font-bold text-stone-800">{acc.name}</td>
+                    <td className="py-2.5 px-2 font-bold text-stone-800">
+                      <div className="flex items-center gap-1.5">
+                        <span>{acc.name}</span>
+                        {acc.flaggedMonths?.[selectedMonth] && (
+                          <span 
+                            className="text-xs shrink-0 cursor-help select-none" 
+                            title={`יתרה עבור חודש ${selectedMonth} סומנה כזמנית/דורשת עדכון`}
+                          >
+                            🚩
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-2.5 px-2">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                         acc.category === 'short' ? 'bg-[#FFE0B2] text-[#E65100]' :

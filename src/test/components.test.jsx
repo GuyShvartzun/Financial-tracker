@@ -402,6 +402,140 @@ describe('DataEntryModule Component', () => {
     fireEvent.click(addShortBtn);
     expect(handleAddAccount).toHaveBeenCalledWith('short', 'u1');
   });
+
+  it('toggles account flag for a specific month and displays banner and category badge', () => {
+    const handleToggleFlagAccount = vi.fn();
+    const accountsWithFlag = [
+      { id: 'a1', name: 'עו"ש', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } },
+      { id: 'a2', name: 'קרן השתלמות', category: 'medium', order: 0, ownerId: 'u1', balances: { '08/2026': 80000 } }
+    ];
+
+    render(
+      <DataEntryModule
+        selectedMonth="08/2026"
+        setSelectedMonth={vi.fn()}
+        monthsList={['08/2026']}
+        onAddNewMonth={vi.fn()}
+        onDeleteMonth={vi.fn()}
+        activeRoomAccounts={accountsWithFlag}
+        users={mockUsers}
+        handleAccountNameChange={vi.fn()}
+        handleAccountCategoryChange={vi.fn()}
+        handleReorderAccount={vi.fn()}
+        handleMoveAccountToPosition={vi.fn()}
+        handleBalanceChange={vi.fn()}
+        handleRemoveAccountFromMonth={vi.fn()}
+        handleDeleteAccountCompletely={vi.fn()}
+        handleAddAccount={vi.fn()}
+        setAccounts={vi.fn()}
+        syncAccountToCloud={vi.fn()}
+        handleToggleFlagAccount={handleToggleFlagAccount}
+      />
+    );
+
+    // Verify banner and category badge are shown
+    expect(screen.getByText(/ישנם 1 חשבונות המסומנים כדורשים עדכון יתרה לחודש 08\/2026/i)).toBeInTheDocument();
+    expect(screen.getByText('1 דורש עדכון')).toBeInTheDocument();
+
+    // Click flag button on second account to toggle flag
+    const flagButtons = screen.getAllByTitle(/סמן חשבון זה כדורש עדכון עבור 08\/2026/i);
+    fireEvent.click(flagButtons[0]);
+    expect(handleToggleFlagAccount).toHaveBeenCalledWith('a2', '08/2026');
+  });
+
+  it('filters to only flagged accounts when filter button is toggled', () => {
+    const accountsWithFlag = [
+      { id: 'a1', name: 'עו"ש', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } },
+      { id: 'a2', name: 'קרן השתלמות', category: 'medium', order: 0, ownerId: 'u1', balances: { '08/2026': 80000 } }
+    ];
+
+    render(
+      <DataEntryModule
+        selectedMonth="08/2026"
+        setSelectedMonth={vi.fn()}
+        monthsList={['08/2026']}
+        onAddNewMonth={vi.fn()}
+        onDeleteMonth={vi.fn()}
+        activeRoomAccounts={accountsWithFlag}
+        users={mockUsers}
+        handleAccountNameChange={vi.fn()}
+        handleAccountCategoryChange={vi.fn()}
+        handleReorderAccount={vi.fn()}
+        handleMoveAccountToPosition={vi.fn()}
+        handleBalanceChange={vi.fn()}
+        handleRemoveAccountFromMonth={vi.fn()}
+        handleDeleteAccountCompletely={vi.fn()}
+        handleAddAccount={vi.fn()}
+        setAccounts={vi.fn()}
+        syncAccountToCloud={vi.fn()}
+      />
+    );
+
+    const filterBtn = screen.getByRole('button', { name: /סנן רק חשבונות עם דגל/i });
+    expect(filterBtn).toBeInTheDocument();
+    fireEvent.click(filterBtn);
+
+    // After filtering, unflagged account is hidden while flagged account remains visible
+    expect(screen.queryByDisplayValue('קרן השתלמות')).not.toBeInTheDocument();
+    expect(screen.getAllByDisplayValue('עו"ש')[0]).toBeInTheDocument();
+  });
+
+  it('PersonalDashboard displays flag next to account name when flagged for selected month', () => {
+    const accountsWithFlag = [
+      { id: 'a1', name: 'עו"ש בנק', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } }
+    ];
+
+    render(
+      <PersonalDashboard
+        personalStats={{ netWorth: 15000, liquid: 15000, long: 0, liability: 0, growthPct: 0, userAccs: accountsWithFlag }}
+        accounts={accountsWithFlag}
+        selectedMonth="08/2026"
+        monthsList={['08/2026']}
+        users={mockUsers}
+        selectedUserId="u1"
+        setSelectedUserId={vi.fn()}
+        authUser={{ uid: 'u1' }}
+        isSingleMember={false}
+      />
+    );
+
+    expect(screen.getByText('עו"ש בנק')).toBeInTheDocument();
+    expect(screen.getByTitle(/יתרה עבור חודש 08\/2026 סומנה כזמנית\/דורשת עדכון/i)).toBeInTheDocument();
+  });
+
+  it('QuickLogModal shows flag notice and unflags account when saving updated balance', () => {
+    const handleUpdateAccountBalance = vi.fn();
+    const handleToggleFlagAccount = vi.fn();
+    const accountsWithFlag = [
+      { id: 'a1', name: 'עו"ש בנק', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } }
+    ];
+
+    render(
+      <QuickLogModal
+        isOpen={true}
+        onClose={vi.fn()}
+        accounts={accountsWithFlag}
+        selectedMonth="08/2026"
+        onUpdateAccountBalance={handleUpdateAccountBalance}
+        onToggleFlagAccount={handleToggleFlagAccount}
+        budget={DEFAULT_BUDGET}
+        onUpdateBudget={vi.fn()}
+        users={mockUsers}
+        activeUserId="u1"
+        isSingleMember={true}
+      />
+    );
+
+    expect(screen.getByText(/חשבון זה מסומן כדורש עדכון יתרה עבור 08\/2026/i)).toBeInTheDocument();
+    const unflagCheckbox = screen.getByLabelText(/הסר סימון דגל עם שמירת היתרה החדשה/i);
+    expect(unflagCheckbox).toBeChecked();
+
+    const saveBtn = screen.getByRole('button', { name: /שמור יתרה/i });
+    fireEvent.click(saveBtn);
+
+    expect(handleUpdateAccountBalance).toHaveBeenCalledWith('a1', '08/2026', 15000);
+    expect(handleToggleFlagAccount).toHaveBeenCalledWith('a1', '08/2026');
+  });
 });
 
 describe('DataExport Component', () => {
