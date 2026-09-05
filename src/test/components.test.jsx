@@ -1340,7 +1340,7 @@ describe('Comprehensive Privacy Mode Hardening Tests across All Modules', () => 
 });
 
 describe('WorkHoursCostCalculator Component', () => {
-  it('correctly calculates work hours for a 1,000 ILS product with 2 users, 20,000 ILS income, and 182 hours, showing only hours', () => {
+  it('defaults product price to empty, prompts to enter price, and calculates correctly when filled', () => {
     const { container } = render(
       <WorkHoursCostCalculator
         totalIncome={20000}
@@ -1348,15 +1348,19 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
-    // Initial state: price 1,000, 2 users, 182 monthly hours each (total 364 hrs)
-    // Hourly wage = 20,000 / 364 = ~54.95 ILS/hr
-    // Hours needed = 1,000 / 54.945 = 18.2 hours
+    // Initial state: product price is empty by default
+    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    expect(priceInput.value).toBe('');
+    expect(container.textContent).toContain('הזן מחיר מוצר לחישוב');
+
+    // Enter 1,000 ILS price: 2 users, 182 monthly hours (total 364 hrs)
+    // Wage = 20,000 / 364 = ~54.95 ILS/hr -> 1,000 / 54.945 = 18.2 hours
+    fireEvent.change(priceInput, { target: { value: '1000' } });
+
     expect(container.textContent).toContain('עלות המוצר בשעות עבודה:');
     expect(container.textContent).toContain('18.2 שעות עבודה');
-    // Ensure all extra explanations and secondary badges were removed as requested
     expect(container.textContent).not.toContain('ימי עבודה');
     expect(container.textContent).not.toContain('שכר שעתי משוקלל');
-    expect(container.textContent).not.toContain('18 שעות ו-12 דקות');
   });
 
   it('updates calculation when changing monthly hours input', () => {
@@ -1367,6 +1371,9 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
+    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    fireEvent.change(priceInput, { target: { value: '1000' } });
+
     const hoursInput = screen.getByPlaceholderText('182');
     fireEvent.change(hoursInput, { target: { value: '160' } });
 
@@ -1376,7 +1383,7 @@ describe('WorkHoursCostCalculator Component', () => {
     expect(container.textContent).toContain('16.0 שעות עבודה');
   });
 
-  it('updates calculation when changing price input without built-in options', () => {
+  it('updates calculation when changing price input', () => {
     const { container } = render(
       <WorkHoursCostCalculator
         totalIncome={20000}
@@ -1384,7 +1391,7 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
-    const priceInput = container.querySelector('input[type="number"]');
+    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
     fireEvent.change(priceInput, { target: { value: '500' } });
 
     // 500 / 54.945 = 9.1 hours
@@ -1400,6 +1407,10 @@ describe('WorkHoursCostCalculator Component', () => {
     );
 
     expect(container.textContent).toContain('נא להזין הכנסה חודשית לביצוע החישוב');
+
+    // Fill price
+    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    fireEvent.change(priceInput, { target: { value: '1000' } });
 
     // Toggle custom income
     const toggleBtn = screen.getByRole('button', { name: /הזן ידנית/i });

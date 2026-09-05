@@ -14,7 +14,7 @@ export default function WorkHoursCostCalculator({
   // Default number of users from room members count
   const effectiveUsersCount = Math.max(1, usersCount || 1);
 
-  const [productPrice, setProductPrice] = useState(1000);
+  const [productPrice, setProductPrice] = useState('');
   const [monthlyHours, setMonthlyHours] = useState(182);
   const [isCustomIncome, setIsCustomIncome] = useState(false);
   const [customIncomeValue, setCustomIncomeValue] = useState('');
@@ -41,7 +41,7 @@ export default function WorkHoursCostCalculator({
     : 0;
 
   const handleReset = () => {
-    setProductPrice(1000);
+    setProductPrice('');
     setMonthlyHours(182);
     setIsCustomIncome(false);
     setCustomIncomeValue('');
@@ -91,7 +91,7 @@ export default function WorkHoursCostCalculator({
             value={isPrivacyMode ? '••••••' : productPrice}
             readOnly={isPrivacyMode}
             onChange={(e) => !isPrivacyMode && setProductPrice(e.target.value)}
-            placeholder={isPrivacyMode ? '••••' : '1000'}
+            placeholder={isPrivacyMode ? '••••' : 'לדוגמה: 1,000'}
             className="w-full bg-white border border-[#DDD6CA] text-sm font-bold text-stone-900 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 privacy-blur transition"
           />
         </div>
