@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Landmark } from 'lucide-react';
 import { PENSION_TRACKS } from '../../constants/pensionTracks';
 import { getDynamicHistoricalReturn, getAccountTotalsForMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
@@ -101,11 +102,16 @@ export default function PensionCalculator({
   }, [pensionData, remainingYears, nominalReturnRate]);
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl space-y-6 shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-3">
-        <div>
-          <h3 className="text-lg font-bold text-stone-900">סימולטור פנסיוני</h3>
-          <p className="text-xs text-stone-500 mt-0.5">חיזוי צבירה וקצבה פנסיונית לפי מסלולי השקעה</p>
+    <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl space-y-6 shadow-xs font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#F3E5F5] text-[#7B1FA2] border border-[#E1BEE7] flex items-center justify-center shrink-0 shadow-2xs">
+            <Landmark className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-stone-900">סימולטור פנסיוני</h3>
+            <p className="text-xs text-stone-500 mt-0.5">חיזוי צבירה וקצבה פנסיונית לפי מסלולי השקעה</p>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -117,6 +123,7 @@ export default function PensionCalculator({
             return (
               <button
                 key={memberUid}
+                type="button"
                 onClick={() => {
                   setActivePensionUser(memberUid);
                   const currentData = calculatorsData.pension?.[memberUid] || (isSingleUser && Object.values(calculatorsData.pension || {})[0]) || DEFAULT_PENSION;
@@ -127,8 +134,8 @@ export default function PensionCalculator({
                 }}
                 className={`py-2 px-3.5 font-bold text-xs rounded-xl border transition shadow-xs cursor-pointer ${
                   isActive 
-                    ? 'bg-[#E1BEE7] text-[#4A148C] border-[#AB47BC]'
-                    : 'bg-[#F3E5F5] hover:bg-[#E1BEE7] text-[#7B1FA2] border-[#CE93D8]'
+                    ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' 
+                    : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                 }`}
                 title="לחץ למשיכת צבירה פנסיונית עדכנית"
               >
@@ -151,7 +158,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.balance ?? ''}
                 onChange={(e) => handlePensionChange('balance', e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#7B1FA2] font-black rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]"
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
               />
             </div>
 
@@ -162,7 +169,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.monthlyDeposit ?? ''}
                 onChange={(e) => handlePensionChange('monthlyDeposit', e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-black rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]"
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
               />
             </div>
 
@@ -173,7 +180,7 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.currentAge ?? ''}
                 onChange={(e) => handlePensionChange('currentAge', e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]"
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
               />
             </div>
 
@@ -184,12 +191,12 @@ export default function PensionCalculator({
                 step="any"
                 value={pensionData.retireAge ?? ''}
                 onChange={(e) => handlePensionChange('retireAge', e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]"
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
               />
             </div>
           </div>
 
-          <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8E2D8] space-y-3">
+          <div className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-3">
             <div className="flex justify-between items-center">
               <label className="text-xs font-bold text-stone-800 block">בחר מסלול השקעה רשמי:</label>
               <span className="text-[11px] text-[#7B1FA2] font-bold bg-[#F3E5F5] px-2 py-0.5 rounded border border-[#E1BEE7]">
@@ -224,101 +231,101 @@ export default function PensionCalculator({
 
             {pensionData.trackId === 'custom' && (
               <div className="pt-2">
-                <label className="text-[11px] text-stone-600 font-bold block mb-1">תשואה שנתית מותאמת אישית (%):</label>
+                <label className="text-xs text-stone-700 font-bold block mb-1">תשואה שנתית מותאמת אישית (%):</label>
                 <input
                   type="number"
                   step="any"
                   value={pensionData.customReturnRate ?? ''}
                   onChange={(e) => handlePensionChange('customReturnRate', e.target.value)}
-                  className="w-36 bg-[#FFFFFF] border border-[#DDD6CA] text-[#7B1FA2] font-black text-xs rounded-xl p-2 outline-none focus:border-[#4A90E2]"
+                  className="w-36 bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
                 />
               </div>
             )}
           </div>
 
-          <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8E2D8] space-y-3">
+          <div className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-3">
             <span className="text-xs font-bold text-stone-800 block">דמי ניהול, אינפלציה ומקדמי קצבה:</span>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <label className="text-[10px] text-stone-600 font-bold block mb-1">דמי ניהול מהפקדה (%):</label>
+                <label className="text-xs text-stone-700 font-bold block mb-1">דמי ניהול מהפקדה (%):</label>
                 <input
                   type="number"
                   step="any"
                   value={pensionData.managementFeeDeposit ?? ''}
                   onChange={(e) => handlePensionChange('managementFeeDeposit', e.target.value)}
-                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 rounded-lg p-2 outline-none focus:border-[#4A90E2]"
+                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-stone-600 font-bold block mb-1">דמי ניהול מצבירה (%):</label>
+                <label className="text-xs text-stone-700 font-bold block mb-1">דמי ניהול מצבירה (%):</label>
                 <input
                   type="number"
                   step="any"
                   value={pensionData.managementFeeBalance ?? ''}
                   onChange={(e) => handlePensionChange('managementFeeBalance', e.target.value)}
-                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 rounded-lg p-2 outline-none focus:border-[#4A90E2]"
+                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-stone-600 font-bold block mb-1">אינפלציה שנתית (%):</label>
+                <label className="text-xs text-stone-700 font-bold block mb-1">אינפלציה שנתית (%):</label>
                 <input
                   type="number"
                   step="any"
                   value={pensionData.annualInflationRate ?? ''}
                   onChange={(e) => handlePensionChange('annualInflationRate', e.target.value)}
-                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 rounded-lg p-2 outline-none focus:border-[#4A90E2]"
+                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-stone-600 font-bold block mb-1">מקדם קצבה (ברירת מחדל 200):</label>
+                <label className="text-xs text-stone-700 font-bold block mb-1">מקדם קצבה (200):</label>
                 <input
                   type="number"
                   step="any"
                   value={pensionData.annuityFactor ?? ''}
                   onChange={(e) => handlePensionChange('annuityFactor', e.target.value)}
-                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 rounded-lg p-2 outline-none focus:border-[#4A90E2]"
+                  className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
                 />
               </div>
             </div>
 
             <div className="pt-1">
-              <label className="text-[10px] text-stone-600 font-bold block mb-1">גידול שנתי ממוצע בהפקדות (קידום שכר %):</label>
+              <label className="text-xs text-stone-700 font-bold block mb-1">גידול שנתי ממוצע בהפקדות (קידום שכר %):</label>
               <input
                 type="number"
                 step="any"
                 value={pensionData.annualDepositGrowth ?? ''}
                 onChange={(e) => handlePensionChange('annualDepositGrowth', e.target.value)}
-                className="w-36 bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2]"
+                className="w-36 bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#E8E2D8] flex flex-col justify-between space-y-6">
+        <div className="bg-[#FAF7F2] p-5 sm:p-6 rounded-2xl border border-[#E8E2D8] flex flex-col justify-between space-y-6 shadow-xs">
           <div className="space-y-4">
             <div>
               <span className="text-xs text-stone-500 font-bold block">
                 צבירה משוערת בגיל פרישה ({pensionData.retireAge || 67}) בכוח קנייה של היום:
               </span>
-              <div className="text-3xl font-black text-[#7B1FA2] mt-1 tracking-tight">
+              <div className="text-3xl font-black text-[#7B1FA2] mt-1 tracking-tight privacy-blur">
                 {fmtILS(pensionSimulationResult.finalRealBalance)}
               </div>
               <div className="text-xs font-bold text-stone-500 mt-0.5">
-                (סכום נומינלי: {fmtILS(pensionSimulationResult.finalNominalBalance)})
+                (סכום נומינלי: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.finalNominalBalance)}</span>)
               </div>
             </div>
 
-            <div className="p-4 bg-[#FFFFFF] rounded-xl border border-[#C8E6C9] space-y-1 shadow-xs">
+            <div className="p-4 bg-[#FFFFFF] rounded-2xl border border-[#C8E6C9] space-y-1 shadow-xs hover:shadow-card transition">
               <span className="text-xs text-stone-500 font-bold block">קצבה חודשית צפויה בפרישה (בכוח קנייה של היום):</span>
-              <div className="text-2xl font-black text-[#2E7D32]">
+              <div className="text-2xl font-black text-[#2E7D32] privacy-blur">
                 {fmtILS(pensionSimulationResult.realMonthlyAnnuity)}
               </div>
               <div className="text-xs font-bold text-stone-500 mt-0.5">
-                (קצבה נומינלית: {fmtILS(pensionSimulationResult.nominalMonthlyAnnuity)})
+                (קצבה נומינלית: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.nominalMonthlyAnnuity)}</span>)
               </div>
               <div className="text-[10px] text-stone-400 mt-1 font-bold">
                 לפי מקדם קצבה של {pensionData.annuityFactor || 200}
@@ -337,8 +344,8 @@ export default function PensionCalculator({
               <div className="flex justify-between text-stone-700">
                 <span>סה"כ הפקדות מצטברות:</span>
                 <div className="text-left">
-                  <strong className="text-stone-900">{fmtILS(pensionSimulationResult.totalRealDeposited)}</strong>
-                  <span className="text-[10px] text-stone-500 block">(נומינלי: {fmtILS(pensionSimulationResult.totalNominalDeposited)})</span>
+                  <strong className="text-stone-900 privacy-blur">{fmtILS(pensionSimulationResult.totalRealDeposited)}</strong>
+                  <span className="text-[10px] text-stone-500 block">(נומינלי: <span className="privacy-blur">{fmtILS(pensionSimulationResult.totalNominalDeposited)}</span>)</span>
                 </div>
               </div>
             </div>

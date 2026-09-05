@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Landmark, Scale, Flame } from 'lucide-react';
 import PensionCalculator from './PensionCalculator';
 import ComprehensiveMortgageAndLoanCalculator from './ComprehensiveMortgageAndLoanCalculator';
 import AdvancedFIRECalculator from './AdvancedFIRECalculator';
@@ -17,42 +18,44 @@ export default function CalculatorsModule({
 }) {
   const [calcMode, setCalcMode] = useState('pension');
 
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-[#FFFFFF] p-1.5 sm:p-2 rounded-2xl border border-[#E8E2D8] shadow-xs">
         <button
           type="button"
           onClick={() => setCalcMode('pension')}
-          className={`py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs transition border cursor-pointer text-center ${
+          className={`py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition border cursor-pointer flex items-center justify-center gap-2 ${
             calcMode === 'pension' 
               ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
           }`}
         >
-          סימולטור פנסיוני
+          <Landmark className="w-4 h-4 shrink-0" />
+          <span>סימולטור פנסיוני</span>
         </button>
         <button
           type="button"
           onClick={() => setCalcMode('mortgage')}
-          className={`py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs transition border cursor-pointer text-center ${
+          className={`py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition border cursor-pointer flex items-center justify-center gap-2 ${
             calcMode === 'mortgage' 
               ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
           }`}
         >
-          מחשבון הלוואות
+          <Scale className="w-4 h-4 shrink-0" />
+          <span>מחשבון הלוואות</span>
         </button>
         <button
           type="button"
           onClick={() => setCalcMode('fire')}
-          className={`py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs transition border cursor-pointer text-center ${
+          className={`py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition border cursor-pointer flex items-center justify-center gap-2 ${
             calcMode === 'fire' 
               ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
               : 'text-stone-600 border-transparent hover:bg-[#FAF7F2]'
           }`}
         >
-          מחשבון עצמאות כלכלית
+          <Flame className="w-4 h-4 shrink-0" />
+          <span>מחשבון עצמאות כלכלית</span>
         </button>
       </div>
 

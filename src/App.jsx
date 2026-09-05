@@ -36,8 +36,6 @@ import CalculatorsModule from './components/calculators/CalculatorsModule';
 import AIAdvisorTab from './components/ai/AIAdvisorTab';
 import DataEntryModule from './components/data/DataEntryModule';
 import DataExport from './components/data/DataExport';
-import QuickLogModal from './components/common/QuickLogModal';
-import FloatingActionButton from './components/common/FloatingActionButton';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('shared_dash');
@@ -67,9 +65,6 @@ export default function App() {
     }
   });
 
-  // Quick Log Modal State
-  const [showQuickLogModal, setShowQuickLogModal] = useState(false);
-
   // Persist privacy mode changes
   useEffect(() => {
     try {
@@ -79,14 +74,13 @@ export default function App() {
     }
   }, [isPrivacyMode]);
 
-  // Global Keyboard Shortcuts (P: Privacy Mode, Q: Quick Log, Esc: Close Modals)
+  // Global Keyboard Shortcuts (P: Privacy Mode, Esc: Close Modals)
   useEffect(() => {
     const handleKeyDown = (e) => {
       const tag = e.target?.tagName?.toLowerCase();
       const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable;
 
       if (e.key === 'Escape') {
-        setShowQuickLogModal(false);
         setShowManageRoomModal(false);
         return;
       }
@@ -96,17 +90,12 @@ export default function App() {
       if (e.key === 'p' || e.key === 'P' || e.key === 'פ') {
         e.preventDefault();
         setIsPrivacyMode(prev => !prev);
-      } else if (e.key === 'q' || e.key === 'Q' || e.key === '/') {
-        if (currentRoom) {
-          e.preventDefault();
-          setShowQuickLogModal(prev => !prev);
-        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentRoom]);
+  }, []);
 
   // 1. Dynamic User Session via Google Auth
   useEffect(() => {
@@ -870,26 +859,6 @@ export default function App() {
           }}
         />
       )}
-
-      {/* Quick Log Floating Action Button */}
-      <FloatingActionButton onClick={() => setShowQuickLogModal(true)} />
-
-      {/* Quick Log Modal for Rapid Entry */}
-      <QuickLogModal
-        isOpen={showQuickLogModal}
-        onClose={() => setShowQuickLogModal(false)}
-        accounts={accounts}
-        selectedMonth={selectedMonth}
-        onUpdateAccountBalance={handleBalanceChange}
-        budget={budget}
-        onUpdateBudget={(updated) => {
-          setBudget(updated);
-          syncBudgetToCloud(updated);
-        }}
-        users={roomMembers}
-        activeUserId={authUser?.uid}
-        isSingleMember={isSingleMember}
-      />
     </div>
   );
 }

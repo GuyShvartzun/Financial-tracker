@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Flame } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
 import { getAccountTotalsForMonth } from '../../utils/calculations';
 import { DEFAULT_FIRE_DATA } from '../../constants/initialData';
@@ -289,13 +290,18 @@ export default function AdvancedFIRECalculator({
   return (
     <div className="space-y-6">
       {/* Header and User Profile Selection */}
-      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-5">
+      <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl shadow-xs space-y-5 font-sans">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-4">
-          <div>
-            <h2 className="text-xl font-bold text-stone-900">מחשבון עצמאות כלכלית</h2>
-            <p className="text-xs text-stone-500 mt-1">
-              חישוב היעד ומשך הזמן הנדרש להשגת עצמאות כלכלית ופרישה
-            </p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2] flex items-center justify-center shrink-0 shadow-2xs">
+              <Flame className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-stone-900">מחשבון עצמאות כלכלית</h3>
+              <p className="text-xs text-stone-500 mt-0.5">
+                חישוב היעד ומשך הזמן הנדרש להשגת עצמאות כלכלית ופרישה
+              </p>
+            </div>
           </div>
 
           {/* User profile selection buttons with Shared Capital */}
@@ -306,8 +312,8 @@ export default function AdvancedFIRECalculator({
                 onClick={() => handleSwitchUser('shared', true)}
                 className={`py-2 px-3.5 font-bold text-xs rounded-xl border transition shadow-xs cursor-pointer ${
                   activeFireUser === 'shared'
-                    ? 'bg-[#E8F5E9] text-[#1B5E20] border-[#81C784]'
-                    : 'bg-[#FAF7F2] hover:bg-[#E8F5E9] text-stone-700 border-[#DDD6CA]'
+                    ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]'
+                    : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                 }`}
                 title="לחץ למשיכת סך ההון הנזיל המשותף"
               >
@@ -326,8 +332,8 @@ export default function AdvancedFIRECalculator({
                   onClick={() => handleSwitchUser(memberUid, true)}
                   className={`py-2 px-3.5 font-bold text-xs rounded-xl border transition shadow-xs cursor-pointer ${
                     isActive 
-                      ? 'bg-[#E8F5E9] text-[#1B5E20] border-[#81C784]'
-                      : 'bg-[#FAF7F2] hover:bg-[#E8F5E9] text-stone-700 border-[#DDD6CA]'
+                      ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' 
+                      : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                   }`}
                   title="לחץ למשיכת יתרת ההון הנזיל העדכנית"
                 >
@@ -359,7 +365,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.initialCapital ?? ''} 
               onChange={(e) => handleFireChange('initialCapital', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -370,7 +376,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.monthlyDeposit ?? ''} 
               onChange={(e) => handleFireChange('monthlyDeposit', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-[#2E7D32] font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -381,7 +387,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.desiredNetMonthlyWithdrawal ?? ''} 
               onChange={(e) => handleFireChange('desiredNetMonthlyWithdrawal', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -392,7 +398,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualDepositGrowth ?? ''} 
               onChange={(e) => handleFireChange('annualDepositGrowth', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -403,7 +409,7 @@ export default function AdvancedFIRECalculator({
               step="any"
               value={userFireData.lumpSumAmount ?? ''} 
               onChange={(e) => handleFireChange('lumpSumAmount', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -414,7 +420,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.lumpSumYears ?? ''} 
               onChange={(e) => handleFireChange('lumpSumYears', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -422,10 +428,10 @@ export default function AdvancedFIRECalculator({
             <label className="text-xs text-stone-700 font-bold block mb-1">גיל נוכחי:</label>
             <input 
               type="number" 
-              step="any"
+              step="any" 
               value={userFireData.currentAge ?? ''} 
               onChange={(e) => handleFireChange('currentAge', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -433,10 +439,10 @@ export default function AdvancedFIRECalculator({
             <label className="text-xs text-stone-700 font-bold block mb-1">מס רווח הון (% על הרווחים):</label>
             <input 
               type="number" 
-              step="any"
+              step="any" 
               value={userFireData.capitalGainsTax ?? ''} 
               onChange={(e) => handleFireChange('capitalGainsTax', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -447,7 +453,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.accumulationReturn ?? ''} 
               onChange={(e) => handleFireChange('accumulationReturn', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -458,7 +464,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.retirementReturn ?? ''} 
               onChange={(e) => handleFireChange('retirementReturn', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -469,7 +475,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualInflation ?? ''} 
               onChange={(e) => handleFireChange('annualInflation', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
 
@@ -480,7 +486,7 @@ export default function AdvancedFIRECalculator({
               step="any" 
               value={userFireData.annualManagementFee ?? ''} 
               onChange={(e) => handleFireChange('annualManagementFee', e.target.value)} 
-              className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 rounded-xl p-2.5 text-xs outline-none focus:border-[#4A90E2]" 
+              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 text-xs outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
             />
           </div>
         </div>
@@ -491,7 +497,7 @@ export default function AdvancedFIRECalculator({
         {/* Row 1: 2 Cards (Equal width on md+, stacked on mobile) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card 1: Time to FIRE */}
-          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-5 rounded-2xl shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">זמן להגעה ליעד</span>
             <div className="text-2xl sm:text-3xl font-black text-[#2E7D32]">
               {calcResults.yearsToFIRE} שנים ו-{calcResults.remainingMonthsToFIRE} ח'
@@ -500,7 +506,7 @@ export default function AdvancedFIRECalculator({
           </div>
 
           {/* Card 2: Estimated Age */}
-          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-5 rounded-2xl shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">גיל מוערך בפרישה</span>
             <div className="text-2xl sm:text-3xl font-black text-[#1976D2]">
               {calcResults.estimatedRetireAge}
@@ -514,35 +520,35 @@ export default function AdvancedFIRECalculator({
         {/* Row 2: 3 Cards (Equal width on md+, stacked on mobile) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Card 1: Required Capital (Real + Nominal) */}
-          <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 rounded-2xl shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">קרן נדרשת נטו (בערכי היום)</span>
-            <div className="text-2xl sm:text-3xl font-black text-stone-900">
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 privacy-blur">
               {fmtILS(calcResults.requiredCapitalReal)}
             </div>
             <span className="text-[11px] text-stone-500 font-semibold block mt-1">
-              (נומינלי בפרישה: {fmtILS(calcResults.requiredCapitalNominal)})
+              (נומינלי בפרישה: <span className="privacy-blur font-bold">{fmtILS(calcResults.requiredCapitalNominal)}</span>)
             </span>
           </div>
 
           {/* Card 2: Total Contributed (Real + Nominal) */}
-          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-5 rounded-2xl shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">סה"כ יופקד מכיסך לאורך השנים</span>
-            <div className="text-2xl sm:text-3xl font-black text-[#E65100]">
+            <div className="text-2xl sm:text-3xl font-black text-[#E65100] privacy-blur">
               {fmtILS(calcResults.totalContributedReal)}
             </div>
             <span className="text-[11px] text-stone-500 font-semibold block mt-1">
-              (נומינלי: {fmtILS(calcResults.totalContributedNominal)})
+              (נומינלי: <span className="privacy-blur font-bold">{fmtILS(calcResults.totalContributedNominal)}</span>)
             </span>
           </div>
 
           {/* Card 3: Profit Generated (Real + Nominal) */}
-          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-5 rounded-2xl shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">סה"כ רווח נקי מריבית דריבית</span>
-            <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2]">
+            <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2] privacy-blur">
               {fmtILS(calcResults.profitGeneratedReal)}
             </div>
             <span className="text-[11px] text-stone-500 font-semibold block mt-1">
-              (נומינלי: {fmtILS(calcResults.profitGeneratedNominal)})
+              (נומינלי: <span className="privacy-blur font-bold">{fmtILS(calcResults.profitGeneratedNominal)}</span>)
             </span>
           </div>
         </div>

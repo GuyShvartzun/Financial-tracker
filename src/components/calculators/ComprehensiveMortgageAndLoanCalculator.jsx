@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Scale } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
 
 export const TRACK_TYPES = [
@@ -305,13 +306,18 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
   }, [tracks, safeData.expectedInflation, safeData.constructionInflation]);
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-6 rounded-2xl space-y-6 shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E2D8] pb-4">
-        <div>
-          <h3 className="text-lg font-bold text-stone-900">מחשבון הלוואות</h3>
-          <p className="text-xs text-stone-500 mt-1">
-            חישוב, תכנון והשוואת לוחות סילוקין להלוואות
-          </p>
+    <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-4 sm:p-6 rounded-2xl space-y-6 shadow-xs font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D8] pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#E3F2FD] text-[#1976D2] border border-[#BBDEFB] flex items-center justify-center shrink-0 shadow-2xs">
+            <Scale className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-stone-900">מחשבון הלוואות ומשכנתה</h3>
+            <p className="text-xs text-stone-500 mt-0.5">
+              חישוב, תכנון והשוואת לוחות סילוקין להלוואות
+            </p>
+          </div>
         </div>
       </div>
 
@@ -329,7 +335,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 value={safeData.propertyValue ?? ''} 
                 onChange={(e) => handleChange('propertyValue', e.target.value)} 
                 placeholder="לחישוב אחוז מימון (LTV)" 
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl p-2.5 outline-none focus:border-[#4A90E2]" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
               />
             </div>
 
@@ -343,7 +349,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 value={safeData.monthlyIncome ?? ''} 
                 onChange={(e) => handleChange('monthlyIncome', e.target.value)} 
                 placeholder="לחישוב יחס החזר (PTI)" 
-                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl p-2.5 outline-none focus:border-[#4A90E2]" 
+                className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
               />
             </div>
           </div>
@@ -377,9 +383,9 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     value={safeData.expectedInflation ?? ''} 
                     onChange={(e) => handleChange('expectedInflation', e.target.value)} 
                     placeholder="למשל 2.5"
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2] font-mono font-bold" 
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono" 
                   />
-                  <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
+                  <span className="absolute left-2.5 top-2.5 text-stone-400 text-xs font-bold">%</span>
                 </div>
                 <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודים למדד</span>
               </div>
@@ -401,9 +407,9 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     value={safeData.constructionInflation ?? ''} 
                     onChange={(e) => handleChange('constructionInflation', e.target.value)} 
                     placeholder="למשל 2.5"
-                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-lg p-2 outline-none focus:border-[#4A90E2] font-mono font-bold" 
+                    className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono" 
                   />
-                  <span className="absolute left-2.5 top-2 text-stone-400 text-xs font-bold">%</span>
+                  <span className="absolute left-2.5 top-2.5 text-stone-400 text-xs font-bold">%</span>
                 </div>
                 <span className="text-[10px] text-stone-500 block">עבור מסלולים צמודי תשומות בנייה</span>
               </div>
@@ -424,10 +430,10 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         {/* 5 Executive Aggregate Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* 1. Initial Monthly Payment */}
-          <div className="bg-[#FAF7F2] border border-[#C8E6C9] p-3.5 rounded-xl flex flex-col justify-between shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">החזר חודשי התחלתי</span>
-              <div className="text-xl font-black text-[#2E7D32]">{fmtILS(aggregateResults.totalInitialMonthly)}</div>
+              <div className="text-xl font-black text-[#2E7D32] privacy-blur">{fmtILS(aggregateResults.totalInitialMonthly)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               {parseFloat(safeData.monthlyIncome) > 0 ? (
@@ -449,10 +455,10 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
           
           {/* 2. Peak Monthly Payment */}
-          <div className="bg-[#FAF7F2] border border-[#FFE0B2] p-3.5 rounded-xl flex flex-col justify-between shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">החזר חודשי שיא (צפוי)</span>
-              <div className="text-xl font-black text-[#E65100]">{fmtILS(aggregateResults.totalPeakMonthly)}</div>
+              <div className="text-xl font-black text-[#E65100] privacy-blur">{fmtILS(aggregateResults.totalPeakMonthly)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               <span className="text-[10px] text-stone-500">תחת אינפלציה מצטברת</span>
@@ -460,10 +466,10 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
           
           {/* 3. Total Principal Obligations */}
-          <div className="bg-[#FAF7F2] border border-[#BBDEFB] p-3.5 rounded-xl flex flex-col justify-between shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">סך התחייבויות (קרן)</span>
-              <div className="text-xl font-black text-[#1976D2]">{fmtILS(aggregateResults.totalMortgage)}</div>
+              <div className="text-xl font-black text-[#1976D2] privacy-blur">{fmtILS(aggregateResults.totalMortgage)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               {parseFloat(safeData.propertyValue) > 0 ? (
@@ -485,7 +491,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
 
           {/* 4. Weighted Average Interest Rate */}
-          <div className="bg-[#FAF7F2] border border-[#E1BEE7] p-3.5 rounded-xl flex flex-col justify-between shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">ריבית משוקללת נטו</span>
               <div className="text-xl font-black text-[#7B1FA2]">{aggregateResults.weightedAvgInterest.toFixed(2)}%</div>
@@ -496,14 +502,14 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
           
           {/* 5. Total Cost of Financing */}
-          <div className="bg-[#FAF7F2] border border-[#FFCDD2] p-3.5 rounded-xl flex flex-col justify-between shadow-xs">
+          <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">עלות מימון (ריבית והצמדה)</span>
-              <div className="text-xl font-black text-[#C62828]">{fmtILS(aggregateResults.totalInterestAndLinkage)}</div>
+              <div className="text-xl font-black text-[#C62828] privacy-blur">{fmtILS(aggregateResults.totalInterestAndLinkage)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               <span className="text-[10px] text-stone-600 block truncate" title={`סה"כ להחזר כולל קרן: ${fmtILS(aggregateResults.totalPaidOverall)}`}>
-                סה"כ להחזר: <strong>{fmtILS(aggregateResults.totalPaidOverall)}</strong>
+                סה"כ להחזר: <strong className="privacy-blur">{fmtILS(aggregateResults.totalPaidOverall)}</strong>
               </span>
             </div>
           </div>
@@ -538,7 +544,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
               : (track.years ? String(Math.round(parseFloat(track.years) * 12)) : '');
 
             return (
-              <div key={track.id} className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8E2D8] space-y-4 relative shadow-2xs">
+              <div key={track.id} className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4 relative shadow-2xs">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -550,7 +556,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       placeholder="שם הלוואה / מסלול..."
                       value={track.name || ''}
                       onChange={(e) => handleUpdateTrack(track.id, 'name', e.target.value)}
-                      className="bg-[#FFFFFF] border border-[#DDD6CA] focus:border-[#4A90E2] text-stone-900 font-bold text-xs rounded-lg px-2.5 py-1.5 flex-1 outline-none transition"
+                      className="bg-[#FFFFFF] border border-[#DDD6CA] focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] text-stone-900 font-bold text-xs rounded-xl px-2.5 py-1.5 flex-1 outline-none transition"
                     />
                     {(() => {
                       const linkInfo = getTrackLinkageInfo(track, safeData);
@@ -570,7 +576,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <button 
                     type="button"
                     onClick={() => handleDeleteTrack(track.id)} 
-                    className="text-xs bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] font-bold px-2.5 py-1 rounded-lg border border-[#EF9A9A] transition cursor-pointer"
+                    className="text-xs bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] font-bold px-2.5 py-1.5 rounded-xl border border-[#EF9A9A] transition cursor-pointer"
                   >
                     הסר מסלול
                   </button>
@@ -579,43 +585,43 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 {/* Inputs Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
                   <div>
-                    <label className="text-[10px] text-stone-600 font-bold block mb-1">סכום הקרן (₪):</label>
+                    <label className="text-xs text-stone-700 font-bold block mb-1">סכום הקרן (₪):</label>
                     <input 
                       type="number" 
                       step="any"
                       value={track.amount ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'amount', e.target.value)} 
                       placeholder="לדוג' 500,000"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-[#2E7D32] font-black rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-stone-600 font-bold block mb-1">תקופה (שנים):</label>
+                    <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (שנים):</label>
                     <input 
                       type="number" 
                       step="any"
                       value={displayYears} 
                       onChange={(e) => handleUpdateTrack(track.id, 'years', e.target.value)} 
                       placeholder="לדוג' 25"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-stone-600 font-bold block mb-1">תקופה (חודשים):</label>
+                    <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (חודשים):</label>
                     <input 
                       type="number" 
                       step="1"
                       value={displayMonths} 
                       onChange={(e) => handleUpdateTrack(track.id, 'months', e.target.value)} 
                       placeholder="לדוג' 300"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
                     />
                   </div>
                   
                   <div>
-                    <label className="text-[10px] text-stone-600 font-bold block mb-1">סוג מסלול / הצמדה:</label>
+                    <label className="text-xs text-stone-700 font-bold block mb-1">סוג מסלול / הצמדה:</label>
                     <select 
                       value={
                         (track.trackType === 'fixed_unlinked' || track.trackType === 'prime' || track.trackType === 'variable_5_unlinked' || track.trackType === 'commercial_fixed' || track.trackType === 'variable_unlinked' || track.trackType === 'other' || track.trackType === 'forex_linked')
@@ -625,30 +631,30 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                           : (track.trackType || 'unlinked')
                       } 
                       onChange={(e) => handleUpdateTrack(track.id, 'trackType', e.target.value)} 
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none cursor-pointer focus:border-[#4A90E2]" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none cursor-pointer focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
                     >
                       {TRACK_TYPES.filter(tt => !tt.hidden).map(tt => <option key={tt.id} value={tt.id}>{tt.name}</option>)}
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-stone-600 font-bold block mb-1">ריבית שנתית (%):</label>
+                    <label className="text-xs text-stone-700 font-bold block mb-1">ריבית שנתית (%):</label>
                     <input 
                       type="number" 
                       step="any" 
                       value={track.interest ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'interest', e.target.value)} 
                       placeholder="לדוג' 4.8"
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-stone-600 font-bold block mb-1">לוח סילוקין / החזר:</label>
+                    <label className="text-xs text-stone-700 font-bold block mb-1">לוח סילוקין / החזר:</label>
                     <select 
                       value={track.scheduleType} 
                       onChange={(e) => handleUpdateTrack(track.id, 'scheduleType', e.target.value)} 
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none cursor-pointer focus:border-[#4A90E2]"
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none cursor-pointer focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
                     >
                       {SCHEDULE_TYPES.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
                     </select>
@@ -656,36 +662,36 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
 
                   {track.scheduleType === 'grace_partial' && (
                     <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[10px] text-stone-600 font-bold block mb-1">חודשי גרייס (ריבית בלבד):</label>
+                      <label className="text-xs text-stone-700 font-bold block mb-1">חודשי גרייס (ריבית בלבד):</label>
                       <input 
                         type="number" 
                         step="1"
                         value={track.graceMonths ?? ''} 
                         onChange={(e) => handleUpdateTrack(track.id, 'graceMonths', e.target.value)} 
                         placeholder="לדוג' 12"
-                        className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-lg p-2.5 outline-none focus:border-[#4A90E2]" 
+                        className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
                       />
                     </div>
                   )}
                 </div>
                 
                 {/* Track Summary Bar */}
-                <div className="bg-[#FFFFFF] p-3 rounded-lg border border-[#E8E2D8] flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
+                <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E8E2D8] flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
                   <div className="flex flex-wrap items-center gap-4 font-bold text-xs">
                     <div className="text-[#2E7D32]">
-                      החזר התחלתי: <span className="font-black font-mono">{fmtILS(metrics?.initialMonthly)}</span>
+                      החזר התחלתי: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.initialMonthly)}</span>
                     </div>
                     <div className="text-stone-300 hidden sm:block">|</div>
                     <div className="text-[#E65100]">
-                      החזר שיא: <span className="font-black font-mono">{fmtILS(metrics?.peakMonthly)}</span>
+                      החזר שיא: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.peakMonthly)}</span>
                     </div>
                     <div className="text-stone-300 hidden sm:block">|</div>
                     <div className="text-[#C62828]">
-                      סך ריבית והצמדה: <span className="font-black font-mono">{fmtILS(metrics?.totalInterestAndLinkage)}</span>
+                      סך ריבית והצמדה: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.totalInterestAndLinkage)}</span>
                     </div>
                     <div className="text-stone-300 hidden sm:block">|</div>
                     <div className="text-stone-700">
-                      סה"כ להחזר: <span className="font-black font-mono">{fmtILS(metrics?.totalPaidOverall)}</span>
+                      סה"כ להחזר: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.totalPaidOverall)}</span>
                     </div>
                   </div>
 
