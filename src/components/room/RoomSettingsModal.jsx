@@ -241,7 +241,7 @@ export default function RoomSettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-['Calibri',sans-serif] dir-rtl text-right select-none" dir="rtl">
-      <div className="bg-white rounded-3xl shadow-2xl border border-[#E8E2D8] max-w-xl w-full p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-3xl shadow-2xl border border-[#E8E2D8] max-w-xl w-full p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-[#E8E2D8] pb-3">
@@ -269,15 +269,26 @@ export default function RoomSettingsModal({
                 type="text"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
-                className="flex-1 min-w-0 bg-white border border-[#DDD6CA] text-stone-900 font-bold rounded-xl px-3 py-2 text-sm outline-none focus:border-[#4A90E2]"
+                className="w-full sm:flex-1 min-w-0 bg-white border border-[#DDD6CA] text-stone-900 font-bold rounded-xl px-3 py-2 text-sm outline-none focus:border-[#4A90E2]"
               />
-              <button
-                type="submit"
-                disabled={isUpdatingName || roomName === currentRoom.name}
-                className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
-              >
-                {isUpdatingName ? 'שומר...' : 'עדכן שם חדר'}
-              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                <button
+                  type="submit"
+                  disabled={isUpdatingName || roomName === currentRoom.name || !roomName.trim()}
+                  className="flex-1 sm:flex-initial px-4 py-2.5 sm:py-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50 whitespace-nowrap text-center"
+                >
+                  {isUpdatingName ? 'שומר...' : 'עדכן שם חדר'}
+                </button>
+                {roomName !== currentRoom.name && (
+                  <button
+                    type="button"
+                    onClick={() => setRoomName(currentRoom.name)}
+                    className="flex-1 sm:flex-initial px-3 py-2.5 sm:py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-xl transition cursor-pointer whitespace-nowrap text-center"
+                  >
+                    ביטול
+                  </button>
+                )}
+              </div>
             </div>
             {nameSuccess && (
               <span className="text-xs text-[#2E7D32] font-bold block">שם החדר עודכן בהצלחה!</span>
@@ -319,30 +330,30 @@ export default function RoomSettingsModal({
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       {member.photoURL ? (
-                        <img src={member.photoURL} alt="" className="w-9 h-9 rounded-full shadow-xs" />
+                        <img src={member.photoURL} alt="" className="w-9 h-9 rounded-full shadow-xs shrink-0" />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-[#81C784] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        <div className="w-9 h-9 rounded-full bg-[#81C784] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
                           {(member.displayName || member.name)?.[0] || 'U'}
                         </div>
                       )}
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-stone-900 text-xs truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="font-black text-stone-900 text-xs truncate max-w-[130px] sm:max-w-none">
                             {member.displayName || member.name}
                           </span>
                           {isCurrentUser && (
-                            <span className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
+                            <span className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold shrink-0">
                               אתה
                             </span>
                           )}
                           {isMemberOwner ? (
-                            <span className="text-[9px] bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] px-2 py-0.5 rounded-full font-black">
+                            <span className="text-[9px] bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] px-2 py-0.5 rounded-full font-black shrink-0">
                               בעלים
                             </span>
                           ) : (
-                            <span className="text-[9px] bg-[#E3F2FD] text-[#1976D2] border border-[#BBDEFB] px-2 py-0.5 rounded-full font-bold">
+                            <span className="text-[9px] bg-[#E3F2FD] text-[#1976D2] border border-[#BBDEFB] px-2 py-0.5 rounded-full font-bold shrink-0">
                               חבר
                             </span>
                           )}
@@ -351,11 +362,11 @@ export default function RoomSettingsModal({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {canEditName && !isEditing && (
                         <button
                           onClick={() => startEditDisplayName(member)}
-                          className="text-[11px] font-bold text-stone-600 hover:text-stone-900 bg-white hover:bg-stone-50 px-2.5 py-1 rounded-lg border border-[#DDD6CA] transition cursor-pointer"
+                          className="text-[11px] font-bold text-stone-600 hover:text-stone-900 bg-white hover:bg-stone-50 px-2.5 py-1 rounded-lg border border-[#DDD6CA] transition cursor-pointer whitespace-nowrap"
                           title="ערוך שם תצוגה מקומי לחדר זה"
                         >
                           ✏️ ערוך שם
@@ -365,7 +376,7 @@ export default function RoomSettingsModal({
                       {isOwner && !isMemberOwner && !isEditing && (
                         <button
                           onClick={() => handleRemoveMember(member)}
-                          className="text-[11px] text-[#C62828] hover:bg-[#FFEBEE] border border-[#EF9A9A] font-bold px-2 py-1 rounded-lg transition cursor-pointer"
+                          className="text-[11px] text-[#C62828] hover:bg-[#FFEBEE] border border-[#EF9A9A] font-bold px-2 py-1 rounded-lg transition cursor-pointer whitespace-nowrap"
                           title="הסר חבר מהחדר"
                         >
                           הסר
@@ -376,28 +387,30 @@ export default function RoomSettingsModal({
 
                   {/* Inline Display Name Edit Form */}
                   {isEditing && (
-                    <div className="flex items-center gap-2 pt-2 border-t border-[#E8E2D8] mt-1">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-[#E8E2D8] mt-1">
                       <input
                         type="text"
                         value={tempDisplayName}
                         onChange={(e) => setTempDisplayName(e.target.value)}
                         placeholder="שם תצוגה מקומי בחדר"
-                        className="flex-1 bg-white border border-[#4A90E2] text-stone-900 font-bold text-xs rounded-lg px-2.5 py-1.5 outline-none"
+                        className="w-full sm:flex-1 min-w-0 bg-white border border-[#4A90E2] text-stone-900 font-bold text-xs rounded-lg px-2.5 py-2 sm:py-1.5 outline-none focus:ring-1 focus:ring-[#4A90E2]"
                         autoFocus
                       />
-                      <button
-                        onClick={() => handleSaveDisplayName(memberUid)}
-                        disabled={isSavingName || !tempDisplayName.trim()}
-                        className="px-3 py-1.5 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-xs rounded-lg shadow-xs transition cursor-pointer disabled:opacity-50"
-                      >
-                        שמור
-                      </button>
-                      <button
-                        onClick={cancelEditDisplayName}
-                        className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-lg transition cursor-pointer"
-                      >
-                        ביטול
-                      </button>
+                      <div className="flex items-center gap-1.5 shrink-0 justify-end">
+                        <button
+                          onClick={() => handleSaveDisplayName(memberUid)}
+                          disabled={isSavingName || !tempDisplayName.trim()}
+                          className="flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-xs rounded-lg shadow-xs transition cursor-pointer disabled:opacity-50 whitespace-nowrap text-center"
+                        >
+                          {isSavingName ? 'שומר...' : 'שמור'}
+                        </button>
+                        <button
+                          onClick={cancelEditDisplayName}
+                          className="flex-1 sm:flex-initial px-2.5 py-2 sm:py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-lg transition cursor-pointer whitespace-nowrap text-center"
+                        >
+                          ביטול
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -485,12 +498,12 @@ export default function RoomSettingsModal({
                 <p className="text-xs font-bold text-[#C62828] leading-relaxed">
                   האם אתה בטוח לחלוטין שברצונך למחוק את החדר "{currentRoom.name}"?
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <button
                     type="button"
                     onClick={handleDeleteActiveRoom}
                     disabled={isDeleting}
-                    className="flex-1 py-2 bg-[#C62828] hover:bg-[#B71C1C] text-white font-bold text-xs rounded-lg transition cursor-pointer disabled:opacity-50"
+                    className="flex-1 py-2 bg-[#C62828] hover:bg-[#B71C1C] text-white font-bold text-xs rounded-lg transition cursor-pointer disabled:opacity-50 text-center"
                   >
                     {isDeleting ? 'מוחק חדר...' : 'כן, מחק חדר לצמיתות'}
                   </button>
@@ -498,7 +511,7 @@ export default function RoomSettingsModal({
                     type="button"
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={isDeleting}
-                    className="py-2 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-lg transition cursor-pointer"
+                    className="py-2 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-lg transition cursor-pointer text-center"
                   >
                     ביטול
                   </button>
@@ -536,12 +549,12 @@ export default function RoomSettingsModal({
                 <p className="text-xs font-bold text-amber-900 leading-relaxed">
                   האם אתה בטוח שברצונך לעזוב את החדר "{currentRoom.name}"?
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <button
                     type="button"
                     onClick={handleLeaveActiveRoom}
                     disabled={isLeaving}
-                    className="flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition cursor-pointer disabled:opacity-50"
+                    className="flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition cursor-pointer disabled:opacity-50 text-center"
                   >
                     {isLeaving ? 'יוצא מהחדר...' : 'כן, עזוב חדר'}
                   </button>
@@ -549,7 +562,7 @@ export default function RoomSettingsModal({
                     type="button"
                     onClick={() => setShowLeaveConfirm(false)}
                     disabled={isLeaving}
-                    className="py-2 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-lg transition cursor-pointer"
+                    className="py-2 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-lg transition cursor-pointer text-center"
                   >
                     ביטול
                   </button>

@@ -242,6 +242,36 @@ describe('Interactive Form Stress Testing & Edge Cases', () => {
       fireEvent.click(submitBtn);
       expect(screen.getByText('משתמש עם כתובת אימייל זו כבר קיים בחדר')).toBeInTheDocument();
     });
+
+    it('renders responsive confirm and cancel buttons when editing member display name or room name', () => {
+      render(
+        <RoomSettingsModal
+          currentRoom={mockRoom}
+          authUser={mockAuthUser}
+          onClose={vi.fn()}
+          onUpdateRoom={vi.fn()}
+          onDeleteRoom={vi.fn()}
+          onLeaveRoom={vi.fn()}
+        />
+      );
+
+      // Room name cancel test
+      const roomInput = screen.getByDisplayValue('חדר פיננסי');
+      fireEvent.change(roomInput, { target: { value: 'חדר פיננסי משודרג' } });
+      const cancelRoomBtn = screen.getByRole('button', { name: 'ביטול' });
+      expect(cancelRoomBtn).toBeInTheDocument();
+      fireEvent.click(cancelRoomBtn);
+      expect(screen.getByDisplayValue('חדר פיננסי')).toBeInTheDocument();
+
+      // Member display name inline edit test
+      const editNameBtn = screen.getByRole('button', { name: /ערוך שם/i });
+      fireEvent.click(editNameBtn);
+      expect(screen.getByRole('button', { name: 'שמור' })).toBeInTheDocument();
+      const cancelMemberBtn = screen.getByRole('button', { name: 'ביטול' });
+      expect(cancelMemberBtn).toBeInTheDocument();
+      fireEvent.click(cancelMemberBtn);
+      expect(screen.queryByRole('button', { name: 'שמור' })).not.toBeInTheDocument();
+    });
   });
 
   describe('DataExport Multi-User Mapping Modal', () => {
