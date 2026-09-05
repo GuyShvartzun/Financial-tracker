@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fmtILS } from '../../utils/formatters';
 import { getNextMonth } from '../../utils/calculations';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function DataEntryModule({
   selectedMonth,
@@ -24,6 +25,7 @@ export default function DataEntryModule({
   setAccounts,
   syncAccountToCloud
 }) {
+  const { isPrivacyMode } = usePrivacy();
   const [newMonthInput, setNewMonthInput] = useState('');
   const [showAddMonthModal, setShowAddMonthModal] = useState(false);
   const [showDeleteMonthConfirm, setShowDeleteMonthConfirm] = useState(false);
@@ -178,7 +180,7 @@ export default function DataEntryModule({
           </div>
 
           <span className="text-xs text-stone-500 font-bold">
-            סה"כ {monthsList.length} חודשים רשומים במערכת
+            סה"כ <span className="privacy-blur">{isPrivacyMode ? '••' : monthsList.length}</span> חודשים רשומים במערכת
           </span>
         </div>
       </div>
@@ -228,7 +230,7 @@ export default function DataEntryModule({
                       ? 'bg-[#2E7D32] text-white' 
                       : 'bg-[#E8E2D8] text-stone-700'
                   }`}>
-                    {userAccountsCount} חשבונות
+                    <span className="privacy-blur">{isPrivacyMode ? '••' : userAccountsCount}</span> חשבונות
                   </span>
                 </button>
               );
@@ -261,11 +263,11 @@ export default function DataEntryModule({
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-stone-900">{group.title}</h3>
                 <span className="text-[11px] font-bold bg-[#FAF7F2] border border-[#DDD6CA] text-stone-600 px-2 py-0.5 rounded-full">
-                  <span className="privacy-blur">{groupAccounts.length}</span> חשבונות
+                  <span className="privacy-blur">{isPrivacyMode ? '••' : groupAccounts.length}</span> חשבונות
                 </span>
               </div>
               <span className="text-xs text-stone-500">
-                סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black privacy-blur">{fmtILS(groupTotal)}</strong>
+                סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black privacy-blur">{fmtILS(groupTotal, isPrivacyMode)}</strong>
               </span>
             </div>
 
@@ -339,7 +341,7 @@ export default function DataEntryModule({
 
                         {/* Order badge */}
                         <span className="text-[10px] font-bold text-stone-400 w-5 text-center">
-                          #<span className="privacy-blur">{idx + 1}</span>
+                          #<span className="privacy-blur">{isPrivacyMode ? '•' : idx + 1}</span>
                         </span>
 
                         {/* Account Name */}
@@ -404,7 +406,7 @@ export default function DataEntryModule({
                         <div className="w-36">
                           <label className="text-[10px] text-stone-500 font-bold block mb-1">סכום ב-₪ ({selectedMonth})</label>
                           <input
-                            type="number"
+                            type={isPrivacyMode ? "password" : "number"}
                             step="any"
                             value={acc.balances?.[selectedMonth] ?? ''}
                             onChange={(e) => handleBalanceChange(acc.id, selectedMonth, e.target.value)}
@@ -439,7 +441,7 @@ export default function DataEntryModule({
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 flex-1 min-w-0">
                             <span className="text-[11px] font-black text-stone-400 bg-white px-2 py-1 rounded-md border border-[#DDD6CA]">
-                              #<span className="privacy-blur">{idx + 1}</span>
+                              #<span className="privacy-blur">{isPrivacyMode ? '•' : idx + 1}</span>
                             </span>
                             <input
                               type="text"
@@ -522,7 +524,7 @@ export default function DataEntryModule({
                           <div className="col-span-2 sm:col-span-1">
                             <label className="text-[10px] text-stone-500 font-bold block mb-1">סכום ב-₪ ({selectedMonth})</label>
                             <input
-                              type="number"
+                              type={isPrivacyMode ? "password" : "number"}
                               step="any"
                               value={acc.balances?.[selectedMonth] ?? ''}
                               onChange={(e) => handleBalanceChange(acc.id, selectedMonth, e.target.value)}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, PlusCircle, CheckCircle2, Wallet, Receipt, Sparkles } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function QuickLogModal({
   isOpen,
@@ -14,6 +15,7 @@ export default function QuickLogModal({
   activeUserId = '',
   isSingleMember = false
 }) {
+  const { isPrivacyMode } = usePrivacy();
   const [activeMode, setActiveMode] = useState('balance'); // 'balance' | 'budget'
   const [selectedAccId, setSelectedAccId] = useState('');
   const [newBalance, setNewBalance] = useState('');
@@ -62,7 +64,7 @@ export default function QuickLogModal({
     if (!selectedAccId) return;
     const num = parseFloat(newBalance) || 0;
     onUpdateAccountBalance(selectedAccId, selectedMonth, num);
-    setSuccessMessage(`היתרה בחשבון "${currentAcc?.name}" עודכנה ל-${fmtILS(num)}!`);
+    setSuccessMessage(`היתרה בחשבון "${currentAcc?.name}" עודכנה ל-${fmtILS(num, isPrivacyMode)}!`);
     setTimeout(() => {
       setSuccessMessage('');
       onClose();
@@ -88,7 +90,7 @@ export default function QuickLogModal({
     };
 
     onUpdateBudget(updated);
-    setSuccessMessage(`הסעיף "${name}" (${fmtILS(amount)}) נוסף בהצלחה לתקציב!`);
+    setSuccessMessage(`הסעיף "${name}" (${fmtILS(amount, isPrivacyMode)}) נוסף בהצלחה לתקציב!`);
     setBudgetItemName('');
     setBudgetItemAmount('');
     setTimeout(() => {
@@ -199,7 +201,7 @@ export default function QuickLogModal({
                 <div className="relative">
                   <input
                     ref={inputRef}
-                    type="number"
+                    type={isPrivacyMode ? "password" : "number"}
                     step="any"
                     value={newBalance}
                     onChange={(e) => setNewBalance(e.target.value)}
@@ -267,7 +269,7 @@ export default function QuickLogModal({
                 </label>
                 <div className="relative">
                   <input
-                    type="number"
+                    type={isPrivacyMode ? "password" : "number"}
                     step="any"
                     value={budgetItemAmount}
                     onChange={(e) => setBudgetItemAmount(e.target.value)}

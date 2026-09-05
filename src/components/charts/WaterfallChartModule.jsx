@@ -1,7 +1,9 @@
 import React from 'react';
 import { fmtILS, fmtPct } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function WaterfallChartModule({ budgetTotals }) {
+  const { isPrivacyMode } = usePrivacy();
   const balance = budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings;
   const isBalanced = Math.abs(balance) < 1;
 
@@ -24,15 +26,15 @@ export default function WaterfallChartModule({ budgetTotals }) {
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#2E7D32] mb-0.5 sm:mb-1 privacy-blur">{fmtILS(budgetTotals.totalIncome)}</div>
-            <div className="text-[9px] text-[#2E7D32] mb-1 font-bold privacy-blur">100%</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#2E7D32] mb-0.5 sm:mb-1 privacy-blur">{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</div>
+            <div className="text-[9px] text-[#2E7D32] mb-1 font-bold privacy-blur">{isPrivacyMode ? '•••%' : '100%'}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] bg-[#A5D6A7] rounded-t-lg h-full transition-all duration-500 shadow-xs privacy-blur"></div>
             <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 mt-2 text-center whitespace-nowrap">הכנסות</span>
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#C62828] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalFixed)}</div>
-            <div className="text-[9px] text-[#C62828] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.fixedPct)}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#C62828] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalFixed, isPrivacyMode)}</div>
+            <div className="text-[9px] text-[#C62828] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.fixedPct, isPrivacyMode)}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
                 className="w-full bg-[#EF9A9A] rounded-lg absolute transition-all duration-500 shadow-xs privacy-blur"
@@ -46,8 +48,8 @@ export default function WaterfallChartModule({ budgetTotals }) {
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#E65100] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalVar)}</div>
-            <div className="text-[9px] text-[#E65100] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.varPct)}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#E65100] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalVar, isPrivacyMode)}</div>
+            <div className="text-[9px] text-[#E65100] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.varPct, isPrivacyMode)}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
                 className="w-full bg-[#FFCC80] rounded-lg absolute transition-all duration-500 shadow-xs privacy-blur"
@@ -61,8 +63,8 @@ export default function WaterfallChartModule({ budgetTotals }) {
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#1976D2] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalSavings)}</div>
-            <div className="text-[9px] text-[#1976D2] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.savingsPct)}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#1976D2] mb-0.5 sm:mb-1 privacy-blur">-{fmtILS(budgetTotals.totalSavings, isPrivacyMode)}</div>
+            <div className="text-[9px] text-[#1976D2] mb-1 font-bold privacy-blur">-{fmtPct(budgetTotals.savingsPct, isPrivacyMode)}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
                 className="w-full bg-[#90CAF9] rounded-lg absolute transition-all duration-500 shadow-xs privacy-blur"
@@ -91,37 +93,37 @@ export default function WaterfallChartModule({ budgetTotals }) {
           <tbody className="divide-y divide-[#E8E2D8] text-[11px]">
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#2E7D32]">הכנסות</td>
-              <td className="py-2 px-2 font-bold text-[#2E7D32] privacy-blur">+{fmtILS(budgetTotals.totalIncome)}</td>
-              <td className="py-2 px-2 text-stone-600 font-bold privacy-blur">100.0%</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-900 privacy-blur">{fmtILS(budgetTotals.totalIncome)}</td>
+              <td className="py-2 px-2 font-bold text-[#2E7D32] privacy-blur">+{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-stone-600 font-bold privacy-blur">{isPrivacyMode ? '•••%' : '100.0%'}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-900 privacy-blur">{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#C62828]">הוצאות קבועות</td>
-              <td className="py-2 px-2 font-bold text-[#C62828] privacy-blur">-{fmtILS(budgetTotals.totalFixed)}</td>
-              <td className="py-2 px-2 text-[#C62828] font-bold privacy-blur">-{fmtPct(budgetTotals.fixedPct)}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed)}</td>
+              <td className="py-2 px-2 font-bold text-[#C62828] privacy-blur">-{fmtILS(budgetTotals.totalFixed, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-[#C62828] font-bold privacy-blur">-{fmtPct(budgetTotals.fixedPct, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed, isPrivacyMode)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#E65100]">הוצאות משתנות</td>
-              <td className="py-2 px-2 font-bold text-[#E65100] privacy-blur">-{fmtILS(budgetTotals.totalVar)}</td>
-              <td className="py-2 px-2 text-[#E65100] font-bold privacy-blur">-{fmtPct(budgetTotals.varPct)}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar)}</td>
+              <td className="py-2 px-2 font-bold text-[#E65100] privacy-blur">-{fmtILS(budgetTotals.totalVar, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-[#E65100] font-bold privacy-blur">-{fmtPct(budgetTotals.varPct, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar, isPrivacyMode)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#1976D2]">חיסכון והשקעה</td>
-              <td className="py-2 px-2 font-bold text-[#1976D2] privacy-blur">-{fmtILS(budgetTotals.totalSavings)}</td>
-              <td className="py-2 px-2 text-[#1976D2] font-bold privacy-blur">-{fmtPct(budgetTotals.savingsPct)}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings)}</td>
+              <td className="py-2 px-2 font-bold text-[#1976D2] privacy-blur">-{fmtILS(budgetTotals.totalSavings, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-[#1976D2] font-bold privacy-blur">-{fmtPct(budgetTotals.savingsPct, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings, isPrivacyMode)}</td>
             </tr>
             <tr className="bg-[#F9FAFB] border-t-2 border-[#DDD6CA]">
               <td colSpan={3} className="py-3 px-2 font-black text-stone-900">יתרה סופית מהתקציב:</td>
               <td className="py-3 px-2 text-left font-black privacy-blur">
                 {isBalanced ? (
-                  <span className="text-[#2E7D32]">₪0 (מאוזן)</span>
+                  <span className="text-[#2E7D32]">{isPrivacyMode ? '₪ •••••• (מאוזן)' : '₪0 (מאוזן)'}</span>
                 ) : balance > 0 ? (
-                  <span className="text-[#1976D2]">+{fmtILS(balance)} (עודף)</span>
+                  <span className="text-[#1976D2]">+{fmtILS(balance, isPrivacyMode)} (עודף)</span>
                 ) : (
-                  <span className="text-[#C62828]">{fmtILS(balance)} (חריגה)</span>
+                  <span className="text-[#C62828]">{fmtILS(balance, isPrivacyMode)} (חריגה)</span>
                 )}
               </td>
             </tr>

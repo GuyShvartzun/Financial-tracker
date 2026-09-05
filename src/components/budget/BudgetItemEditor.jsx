@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 const BUDGET_CATEGORIES = [
   { key: 'incomes', label: 'הכנסה' },
@@ -17,6 +18,7 @@ export default function BudgetItemEditor({
   onMoveCategory,
   onMoveItemToPosition
 }) {
+  const { isPrivacyMode } = usePrivacy();
   const [draggedItemId, setDraggedItemId] = useState(null);
   const [dragOverItemId, setDragOverItemId] = useState(null);
   const [isDragOverCard, setIsDragOverCard] = useState(false);
@@ -112,7 +114,7 @@ export default function BudgetItemEditor({
         <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
           <h4 className="text-sm font-bold text-stone-900">{title}</h4>
           <span className="text-xs font-bold text-[#2E7D32]">
-            סה"כ: <span className="privacy-blur">{fmtILS(items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0))}</span>
+            סה"כ: <span className="privacy-blur">{fmtILS(items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0), isPrivacyMode)}</span>
           </span>
         </div>
 
@@ -201,7 +203,7 @@ export default function BudgetItemEditor({
 
                 {/* Amount input */}
                 <input
-                  type="number"
+                  type={isPrivacyMode ? "password" : "number"}
                   step="any"
                   value={item.amount ?? ''}
                   onChange={(e) => handleAmount(item.id, e.target.value)}

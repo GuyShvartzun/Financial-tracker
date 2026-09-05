@@ -1,7 +1,9 @@
 import React from 'react';
 import { fmtILS, fmtPct } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function DonutDistributionChart({ personalStats }) {
+  const { isPrivacyMode } = usePrivacy();
   const short = personalStats.short || 0;
   const medium = personalStats.medium || 0;
   const long = personalStats.long || 0;
@@ -45,7 +47,7 @@ export default function DonutDistributionChart({ personalStats }) {
 
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-[10px] text-stone-500 font-bold">סך נכסים</span>
-            <span className="text-xs font-black text-stone-900 privacy-blur">{fmtILS(sum)}</span>
+            <span className="text-xs font-black text-stone-900 privacy-blur">{fmtILS(sum, isPrivacyMode)}</span>
           </div>
         </div>
 
@@ -56,8 +58,8 @@ export default function DonutDistributionChart({ personalStats }) {
               <span className="font-bold text-stone-800">טווח קצר</span>
             </div>
             <div className="text-left">
-              <strong className="text-[#E65100] block privacy-blur">{fmtILS(short)}</strong>
-              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(shortPct)}</span>
+              <strong className="text-[#E65100] block privacy-blur">{fmtILS(short, isPrivacyMode)}</strong>
+              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(shortPct, isPrivacyMode)}</span>
             </div>
           </div>
 
@@ -67,8 +69,8 @@ export default function DonutDistributionChart({ personalStats }) {
               <span className="font-bold text-stone-800">טווח בינוני</span>
             </div>
             <div className="text-left">
-              <strong className="text-[#1976D2] block privacy-blur">{fmtILS(medium)}</strong>
-              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(mediumPct)}</span>
+              <strong className="text-[#1976D2] block privacy-blur">{fmtILS(medium, isPrivacyMode)}</strong>
+              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(mediumPct, isPrivacyMode)}</span>
             </div>
           </div>
 
@@ -78,8 +80,8 @@ export default function DonutDistributionChart({ personalStats }) {
               <span className="font-bold text-stone-800">טווח ארוך</span>
             </div>
             <div className="text-left">
-              <strong className="text-[#7B1FA2] block privacy-blur">{fmtILS(long)}</strong>
-              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(longPct)}</span>
+              <strong className="text-[#7B1FA2] block privacy-blur">{fmtILS(long, isPrivacyMode)}</strong>
+              <span className="text-[10px] text-stone-500 privacy-blur">{fmtPct(longPct, isPrivacyMode)}</span>
             </div>
           </div>
         </div>

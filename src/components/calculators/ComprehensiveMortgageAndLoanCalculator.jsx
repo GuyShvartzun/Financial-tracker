@@ -332,7 +332,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 שווי בטוחה / נכס (₪) <span className="text-stone-400 font-normal">(אופציונלי)</span>:
               </label>
               <input 
-                type="number" 
+                type={isPrivacyMode ? "password" : "number"} 
                 step="any"
                 value={safeData.propertyValue ?? ''} 
                 onChange={(e) => handleChange('propertyValue', e.target.value)} 
@@ -346,7 +346,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 הכנסה חודשית פנויה נטו (₪) <span className="text-stone-400 font-normal">(אופציונלי)</span>:
               </label>
               <input 
-                type="number" 
+                type={isPrivacyMode ? "password" : "number"} 
                 step="any"
                 value={safeData.monthlyIncome ?? ''} 
                 onChange={(e) => handleChange('monthlyIncome', e.target.value)} 
@@ -380,7 +380,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 </div>
                 <div className="relative">
                   <input 
-                    type="number" 
+                    type={isPrivacyMode ? "password" : "number"} 
                     step="any" 
                     value={safeData.expectedInflation ?? ''} 
                     onChange={(e) => handleChange('expectedInflation', e.target.value)} 
@@ -404,7 +404,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 </div>
                 <div className="relative">
                   <input 
-                    type="number" 
+                    type={isPrivacyMode ? "password" : "number"} 
                     step="any" 
                     value={safeData.constructionInflation ?? ''} 
                     onChange={(e) => handleChange('constructionInflation', e.target.value)} 
@@ -435,7 +435,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">החזר חודשי התחלתי</span>
-              <div className="text-xl font-black text-[#2E7D32] privacy-blur">{fmtILS(aggregateResults.totalInitialMonthly)}</div>
+              <div className="text-xl font-black text-[#2E7D32] privacy-blur">{fmtILS(aggregateResults.totalInitialMonthly, isPrivacyMode)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               {parseFloat(safeData.monthlyIncome) > 0 ? (
@@ -447,7 +447,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       ? 'bg-[#FFF3E0] text-[#E65100] border-[#FFE0B2]'
                       : 'bg-[#FFEBEE] text-[#C62828] border-[#FFCDD2]'
                   }`}>
-                    PTI: <span className="privacy-blur">{aggregateResults.ptiRatio.toFixed(1)}%</span> {aggregateResults.ptiRatio > 40 ? '(חריגה מהנחיית בנק ישראל)' : aggregateResults.ptiRatio > 35 ? '(גבולי)' : '(תקין)'}
+                    PTI: <span className="privacy-blur">{isPrivacyMode ? '•••%' : `${aggregateResults.ptiRatio.toFixed(1)}%`}</span> {aggregateResults.ptiRatio > 40 ? '(חריגה מהנחיית בנק ישראל)' : aggregateResults.ptiRatio > 35 ? '(גבולי)' : '(תקין)'}
                   </span>
                 </div>
               ) : (
@@ -460,7 +460,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">החזר חודשי שיא (צפוי)</span>
-              <div className="text-xl font-black text-[#E65100] privacy-blur">{fmtILS(aggregateResults.totalPeakMonthly)}</div>
+              <div className="text-xl font-black text-[#E65100] privacy-blur">{fmtILS(aggregateResults.totalPeakMonthly, isPrivacyMode)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               <span className="text-[10px] text-stone-500">תחת אינפלציה מצטברת</span>
@@ -471,7 +471,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">סך התחייבויות (קרן)</span>
-              <div className="text-xl font-black text-[#1976D2] privacy-blur">{fmtILS(aggregateResults.totalMortgage)}</div>
+              <div className="text-xl font-black text-[#1976D2] privacy-blur">{fmtILS(aggregateResults.totalMortgage, isPrivacyMode)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               {parseFloat(safeData.propertyValue) > 0 ? (
@@ -483,7 +483,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       ? 'bg-[#E3F2FD] text-[#1565C0] border-[#BBDEFB]'
                       : 'bg-[#FFEBEE] text-[#C62828] border-[#FFCDD2]'
                   }`}>
-                    LTV: <span className="privacy-blur">{aggregateResults.ltvRatio.toFixed(1)}%</span> {aggregateResults.ltvRatio > 75 ? '(חריגה ממגבלת 75%)' : aggregateResults.ltvRatio <= 60 ? '(שמרני)' : '(דירה יחידה)'}
+                    LTV: <span className="privacy-blur">{isPrivacyMode ? '•••%' : `${aggregateResults.ltvRatio.toFixed(1)}%`}</span> {aggregateResults.ltvRatio > 75 ? '(חריגה ממגבלת 75%)' : aggregateResults.ltvRatio <= 60 ? '(שמרני)' : '(דירה יחידה)'}
                   </span>
                 </div>
               ) : (
@@ -496,7 +496,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">ריבית משוקללת נטו</span>
-              <div className="text-xl font-black text-[#7B1FA2] privacy-blur">{aggregateResults.weightedAvgInterest.toFixed(2)}%</div>
+              <div className="text-xl font-black text-[#7B1FA2] privacy-blur">{isPrivacyMode ? '•••%' : `${aggregateResults.weightedAvgInterest.toFixed(2)}%`}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               <span className="text-[10px] text-stone-500">ממוצע משוקלל לפי גודל הקרן</span>
@@ -507,11 +507,11 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">עלות מימון (ריבית והצמדה)</span>
-              <div className="text-xl font-black text-[#C62828] privacy-blur">{fmtILS(aggregateResults.totalInterestAndLinkage)}</div>
+              <div className="text-xl font-black text-[#C62828] privacy-blur">{fmtILS(aggregateResults.totalInterestAndLinkage, isPrivacyMode)}</div>
             </div>
             <div className="mt-2 pt-2 border-t border-[#E8E2D8]">
               <span className="text-[10px] text-stone-600 block truncate" title={isPrivacyMode ? undefined : `סה"כ להחזר כולל קרן: ${fmtILS(aggregateResults.totalPaidOverall)}`}>
-                סה"כ להחזר: <strong className="privacy-blur">{fmtILS(aggregateResults.totalPaidOverall)}</strong>
+                סה"כ להחזר: <strong className="privacy-blur">{fmtILS(aggregateResults.totalPaidOverall, isPrivacyMode)}</strong>
               </span>
             </div>
           </div>
@@ -520,9 +520,9 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         {/* Tracks List */}
         <div className="space-y-4">
           <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
-            <h4 className="text-sm font-bold text-stone-900">הרכב מסלולי ההלוואה (<span className="privacy-blur">{tracks.length}</span> מסלולים)</h4>
+            <h4 className="text-sm font-bold text-stone-900">הרכב מסלולי ההלוואה (<span className="privacy-blur">{isPrivacyMode ? '•' : tracks.length}</span> מסלולים)</h4>
             <span className="text-xs font-bold bg-[#E8F5E9] text-[#2E7D32] px-3 py-1 rounded-full border border-[#C8E6C9]">
-              סך התחייבות: <span className="privacy-blur">{fmtILS(aggregateResults.totalMortgage)}</span>
+              סך התחייבות: <span className="privacy-blur">{fmtILS(aggregateResults.totalMortgage, isPrivacyMode)}</span>
             </span>
           </div>
           
@@ -551,7 +551,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-1 min-w-[200px]">
                     <span className="w-6 h-6 rounded-full bg-[#FFFFFF] text-stone-800 flex items-center justify-center font-bold text-xs border border-[#DDD6CA] shadow-2xs">
-                      <span className="privacy-blur">{idx + 1}</span>
+                      <span className="privacy-blur">{isPrivacyMode ? '•' : idx + 1}</span>
                     </span>
                     <input
                       type="text"
@@ -567,7 +567,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                           <span>{trackTypeObj?.name || linkInfo.name}</span>
                           {linkInfo.isLinked && (
                             <span className="font-mono bg-white/70 px-1 rounded text-[9px] border border-black/5 privacy-blur">
-                              {linkInfo.rate}%
+                              {isPrivacyMode ? '•••%' : `${linkInfo.rate}%`}
                             </span>
                           )}
                         </span>
@@ -589,7 +589,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div>
                     <label className="text-xs text-stone-700 font-bold block mb-1">סכום הקרן (₪):</label>
                     <input 
-                      type="number" 
+                      type={isPrivacyMode ? "password" : "number"} 
                       step="any"
                       value={track.amount ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'amount', e.target.value)} 
@@ -601,7 +601,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div>
                     <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (שנים):</label>
                     <input 
-                      type="number" 
+                      type={isPrivacyMode ? "password" : "number"} 
                       step="any"
                       value={displayYears} 
                       onChange={(e) => handleUpdateTrack(track.id, 'years', e.target.value)} 
@@ -613,7 +613,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div>
                     <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (חודשים):</label>
                     <input 
-                      type="number" 
+                      type={isPrivacyMode ? "password" : "number"} 
                       step="1"
                       value={displayMonths} 
                       onChange={(e) => handleUpdateTrack(track.id, 'months', e.target.value)} 
@@ -642,7 +642,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div>
                     <label className="text-xs text-stone-700 font-bold block mb-1">ריבית שנתית (%):</label>
                     <input 
-                      type="number" 
+                      type={isPrivacyMode ? "password" : "number"} 
                       step="any" 
                       value={track.interest ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'interest', e.target.value)} 
@@ -666,7 +666,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     <div className="col-span-2 sm:col-span-1">
                       <label className="text-xs text-stone-700 font-bold block mb-1">חודשי גרייס (ריבית בלבד):</label>
                       <input 
-                        type="number" 
+                        type={isPrivacyMode ? "password" : "number"} 
                         step="1"
                         value={track.graceMonths ?? ''} 
                         onChange={(e) => handleUpdateTrack(track.id, 'graceMonths', e.target.value)} 
@@ -681,19 +681,19 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E8E2D8] flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
                   <div className="flex flex-wrap items-center gap-4 font-bold text-xs">
                     <div className="text-[#2E7D32]">
-                      החזר התחלתי: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.initialMonthly)}</span>
+                      החזר התחלתי: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.initialMonthly, isPrivacyMode)}</span>
                     </div>
                     <div className="text-stone-300 hidden sm:block">|</div>
                     <div className="text-[#E65100]">
-                      החזר שיא: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.peakMonthly)}</span>
+                      החזר שיא: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.peakMonthly, isPrivacyMode)}</span>
                     </div>
                     <div className="text-stone-300 hidden sm:block">|</div>
                     <div className="text-[#C62828]">
-                      סך ריבית והצמדה: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.totalInterestAndLinkage)}</span>
+                      סך ריבית והצמדה: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.totalInterestAndLinkage, isPrivacyMode)}</span>
                     </div>
                     <div className="text-stone-300 hidden sm:block">|</div>
                     <div className="text-stone-700">
-                      סה"כ להחזר: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.totalPaidOverall)}</span>
+                      סה"כ להחזר: <span className="font-black font-mono privacy-blur">{fmtILS(metrics?.totalPaidOverall, isPrivacyMode)}</span>
                     </div>
                   </div>
 
@@ -711,7 +711,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div className="mt-3 bg-[#FFFFFF] border border-[#E8E2D8] rounded-xl overflow-hidden shadow-xs">
                     <div className="bg-[#F2ECE1] px-4 py-2 border-b border-[#E8E2D8] flex justify-between items-center">
                       <span className="font-bold text-xs text-stone-800">
-                        לוח סילוקין שנתי – {track.name || `מסלול ${idx + 1}`} (<span className="privacy-blur">{metrics?.yearlySchedule?.length || 0}</span> שנים)
+                        לוח סילוקין שנתי – {track.name || `מסלול ${idx + 1}`} (<span className="privacy-blur">{isPrivacyMode ? '••' : (metrics?.yearlySchedule?.length || 0)}</span> שנים)
                       </span>
                       <span className="text-[11px] text-stone-500">
                         חישוב מדויק לפי פרקטיקת הבנקאות בישראל
@@ -732,12 +732,12 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                         <tbody className="divide-y divide-[#F2ECE1]">
                           {metrics?.yearlySchedule?.map((row) => (
                             <tr key={row.year} className="hover:bg-[#FAF7F2] transition font-mono">
-                              <td className="p-2.5 font-bold font-sans text-stone-800">שנה {row.year}</td>
-                              <td className="p-2.5 text-stone-800 privacy-blur">{fmtILS(row.openingBalance)}</td>
-                              <td className="p-2.5 text-[#2E7D32] font-semibold privacy-blur">{fmtILS(row.principalPaid)}</td>
-                              <td className="p-2.5 text-[#C62828] privacy-blur">{fmtILS(row.interestPaid)}</td>
-                              <td className="p-2.5 font-bold text-stone-900 privacy-blur">{fmtILS(row.totalPaid)}</td>
-                              <td className="p-2.5 font-bold text-stone-800 privacy-blur">{fmtILS(row.closingBalance)}</td>
+                              <td className="p-2.5 font-bold font-sans text-stone-800">שנה <span className="privacy-blur">{isPrivacyMode ? '•' : row.year}</span></td>
+                              <td className="p-2.5 text-stone-800 privacy-blur">{fmtILS(row.openingBalance, isPrivacyMode)}</td>
+                              <td className="p-2.5 text-[#2E7D32] font-semibold privacy-blur">{fmtILS(row.principalPaid, isPrivacyMode)}</td>
+                              <td className="p-2.5 text-[#C62828] privacy-blur">{fmtILS(row.interestPaid, isPrivacyMode)}</td>
+                              <td className="p-2.5 font-bold text-stone-900 privacy-blur">{fmtILS(row.totalPaid, isPrivacyMode)}</td>
+                              <td className="p-2.5 font-bold text-stone-800 privacy-blur">{fmtILS(row.closingBalance, isPrivacyMode)}</td>
                             </tr>
                           ))}
                         </tbody>

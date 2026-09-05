@@ -1,8 +1,10 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, monthlyExp }) {
+  const { isPrivacyMode } = usePrivacy();
   const progressPct = Math.min(((emergencyMonths || 0) / 6) * 100, 100);
 
   return (
@@ -15,11 +17,11 @@ export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, mo
           </div>
         </div>
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="text-4xl font-black text-[#E65100] privacy-blur">{(emergencyMonths || 0).toFixed(1)}</span>
+          <span className="text-4xl font-black text-[#E65100] privacy-blur">{isPrivacyMode ? '•••' : (emergencyMonths || 0).toFixed(1)}</span>
           <span className="text-stone-600 font-bold">חודשים</span>
         </div>
         <p className="text-xs text-stone-500 leading-relaxed mb-4">
-          מבוסס על נכסים נזילים לטווח קצר (<span className="privacy-blur font-bold text-stone-700">{fmtILS(shortTermAssets)}</span>) חלקי סך ההוצאות החודשיות מהתקציב (<span className="privacy-blur font-bold text-stone-700">{fmtILS(monthlyExp)}</span>).
+          מבוסס על נכסים נזילים לטווח קצר (<span className="privacy-blur font-bold text-stone-700">{fmtILS(shortTermAssets, isPrivacyMode)}</span>) חלקי סך ההוצאות החודשיות מהתקציב (<span className="privacy-blur font-bold text-stone-700">{fmtILS(monthlyExp, isPrivacyMode)}</span>).
         </p>
       </div>
       <div>
@@ -30,8 +32,8 @@ export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, mo
           ></div>
         </div>
         <div className="flex justify-between text-[11px] text-stone-500 mt-2 font-bold">
-          <span><span className="privacy-blur">0</span> חודשים</span>
-          <span className="text-[#2E7D32]">יעד מומלץ: <span className="privacy-blur">6</span> חודשים (<span className="privacy-blur">100%</span>)</span>
+          <span><span className="privacy-blur">{isPrivacyMode ? '•' : '0'}</span> חודשים</span>
+          <span className="text-[#2E7D32]">יעד מומלץ: <span className="privacy-blur">{isPrivacyMode ? '•' : '6'}</span> חודשים (<span className="privacy-blur">{isPrivacyMode ? '•••%' : '100%'}</span>)</span>
         </div>
       </div>
     </div>

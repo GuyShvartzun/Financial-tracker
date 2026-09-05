@@ -3,6 +3,7 @@ import { Landmark } from 'lucide-react';
 import { PENSION_TRACKS } from '../../constants/pensionTracks';
 import { getDynamicHistoricalReturn, getAccountTotalsForMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 const DEFAULT_PENSION = {
   balance: '',
@@ -27,6 +28,7 @@ export default function PensionCalculator({
   isSingleMember = false,
   activeUserId = ''
 }) {
+  const { isPrivacyMode } = usePrivacy();
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || '';
   const preferredUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
@@ -140,9 +142,9 @@ export default function PensionCalculator({
                 title="לחץ למשיכת צבירה פנסיונית עדכנית"
               >
                 {isSingleUser ? (
-                  <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.long)}</span>)</span>
+                  <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.long, isPrivacyMode)}</span>)</span>
                 ) : (
-                  <span>עבור לנתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.long)}</span>)</span>
+                  <span>עבור לנתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.long, isPrivacyMode)}</span>)</span>
                 )}
               </button>
             );
@@ -156,7 +158,7 @@ export default function PensionCalculator({
             <div>
               <label className="text-xs text-stone-700 font-bold block mb-1">צבירה פנסיונית קיימת (₪):</label>
               <input
-                type="number"
+                type={isPrivacyMode ? "password" : "number"}
                 step="any"
                 value={pensionData.balance ?? ''}
                 onChange={(e) => handlePensionChange('balance', e.target.value)}
@@ -167,7 +169,7 @@ export default function PensionCalculator({
             <div>
               <label className="text-xs text-stone-700 font-bold block mb-1">הפקדה חודשית נוכחית (₪):</label>
               <input
-                type="number"
+                type={isPrivacyMode ? "password" : "number"}
                 step="any"
                 value={pensionData.monthlyDeposit ?? ''}
                 onChange={(e) => handlePensionChange('monthlyDeposit', e.target.value)}
@@ -178,7 +180,7 @@ export default function PensionCalculator({
             <div>
               <label className="text-xs text-stone-700 font-bold block mb-1">גיל נוכחי:</label>
               <input
-                type="number"
+                type={isPrivacyMode ? "password" : "number"}
                 step="any"
                 value={pensionData.currentAge ?? ''}
                 onChange={(e) => handlePensionChange('currentAge', e.target.value)}
@@ -189,7 +191,7 @@ export default function PensionCalculator({
             <div>
               <label className="text-xs text-stone-700 font-bold block mb-1">גיל פרישה מתוכנן:</label>
               <input
-                type="number"
+                type={isPrivacyMode ? "password" : "number"}
                 step="any"
                 value={pensionData.retireAge ?? ''}
                 onChange={(e) => handlePensionChange('retireAge', e.target.value)}
@@ -202,7 +204,7 @@ export default function PensionCalculator({
             <div className="flex justify-between items-center">
               <label className="text-xs font-bold text-stone-800 block">בחר מסלול השקעה רשמי:</label>
               <span className="text-[11px] text-[#7B1FA2] font-bold bg-[#F3E5F5] px-2 py-0.5 rounded border border-[#E1BEE7]">
-                אופק זמן מחושב: <span className="privacy-blur">{remainingYears}</span> שנים
+                אופק זמן מחושב: <span className="privacy-blur">{isPrivacyMode ? '••' : remainingYears}</span> שנים
               </span>
             </div>
             
@@ -221,7 +223,7 @@ export default function PensionCalculator({
                       <span className="text-xs font-bold text-stone-900">{track.name}</span>
                       {track.id !== 'custom' && (
                         <span className="text-[11px] font-black text-[#7B1FA2] bg-[#FFFFFF] px-2 py-0.5 rounded border border-[#E1BEE7] privacy-blur">
-                          ~{dynamicTrackReturn}% שנתי
+                          ~{isPrivacyMode ? '•••%' : `${dynamicTrackReturn}%`} שנתי
                         </span>
                       )}
                     </div>
@@ -235,7 +237,7 @@ export default function PensionCalculator({
               <div className="pt-2">
                 <label className="text-xs text-stone-700 font-bold block mb-1">תשואה שנתית מותאמת אישית (%):</label>
                 <input
-                  type="number"
+                  type={isPrivacyMode ? "password" : "number"}
                   step="any"
                   value={pensionData.customReturnRate ?? ''}
                   onChange={(e) => handlePensionChange('customReturnRate', e.target.value)}
@@ -252,7 +254,7 @@ export default function PensionCalculator({
               <div>
                 <label className="text-xs text-stone-700 font-bold block mb-1">דמי ניהול מהפקדה (%):</label>
                 <input
-                  type="number"
+                  type={isPrivacyMode ? "password" : "number"}
                   step="any"
                   value={pensionData.managementFeeDeposit ?? ''}
                   onChange={(e) => handlePensionChange('managementFeeDeposit', e.target.value)}
@@ -263,7 +265,7 @@ export default function PensionCalculator({
               <div>
                 <label className="text-xs text-stone-700 font-bold block mb-1">דמי ניהול מצבירה (%):</label>
                 <input
-                  type="number"
+                  type={isPrivacyMode ? "password" : "number"}
                   step="any"
                   value={pensionData.managementFeeBalance ?? ''}
                   onChange={(e) => handlePensionChange('managementFeeBalance', e.target.value)}
@@ -274,7 +276,7 @@ export default function PensionCalculator({
               <div>
                 <label className="text-xs text-stone-700 font-bold block mb-1">אינפלציה שנתית (%):</label>
                 <input
-                  type="number"
+                  type={isPrivacyMode ? "password" : "number"}
                   step="any"
                   value={pensionData.annualInflationRate ?? ''}
                   onChange={(e) => handlePensionChange('annualInflationRate', e.target.value)}
@@ -285,7 +287,7 @@ export default function PensionCalculator({
               <div>
                 <label className="text-xs text-stone-700 font-bold block mb-1">מקדם קצבה (200):</label>
                 <input
-                  type="number"
+                  type={isPrivacyMode ? "password" : "number"}
                   step="any"
                   value={pensionData.annuityFactor ?? ''}
                   onChange={(e) => handlePensionChange('annuityFactor', e.target.value)}
@@ -297,7 +299,7 @@ export default function PensionCalculator({
             <div className="pt-1">
               <label className="text-xs text-stone-700 font-bold block mb-1">גידול שנתי ממוצע בהפקדות (קידום שכר %):</label>
               <input
-                type="number"
+                type={isPrivacyMode ? "password" : "number"}
                 step="any"
                 value={pensionData.annualDepositGrowth ?? ''}
                 onChange={(e) => handlePensionChange('annualDepositGrowth', e.target.value)}
@@ -311,50 +313,50 @@ export default function PensionCalculator({
           <div className="space-y-4">
             <div>
               <span className="text-xs text-stone-500 font-bold block">
-                צבירה משוערת בגיל פרישה (<span className="privacy-blur">{pensionData.retireAge || 67}</span>) בכוח קנייה של היום:
+                צבירה משוערת בגיל פרישה (<span className="privacy-blur">{isPrivacyMode ? '••' : (pensionData.retireAge || 67)}</span>) בכוח קנייה של היום:
               </span>
               <div className="text-3xl font-black text-[#7B1FA2] mt-1 tracking-tight privacy-blur">
-                {fmtILS(pensionSimulationResult.finalRealBalance)}
+                {fmtILS(pensionSimulationResult.finalRealBalance, isPrivacyMode)}
               </div>
               <div className="text-xs font-bold text-stone-500 mt-0.5">
-                (סכום נומינלי: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.finalNominalBalance)}</span>)
+                (סכום נומינלי: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.finalNominalBalance, isPrivacyMode)}</span>)
               </div>
             </div>
 
             <div className="p-4 bg-[#FFFFFF] rounded-2xl border border-[#C8E6C9] space-y-1 shadow-xs hover:shadow-card transition">
               <span className="text-xs text-stone-500 font-bold block">קצבה חודשית צפויה בפרישה (בכוח קנייה של היום):</span>
               <div className="text-2xl font-black text-[#2E7D32] privacy-blur">
-                {fmtILS(pensionSimulationResult.realMonthlyAnnuity)}
+                {fmtILS(pensionSimulationResult.realMonthlyAnnuity, isPrivacyMode)}
               </div>
               <div className="text-xs font-bold text-stone-500 mt-0.5">
-                (קצבה נומינלית: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.nominalMonthlyAnnuity)}</span>)
+                (קצבה נומינלית: <span className="privacy-blur font-bold">{fmtILS(pensionSimulationResult.nominalMonthlyAnnuity, isPrivacyMode)}</span>)
               </div>
               <div className="text-[10px] text-stone-400 mt-1 font-bold">
-                לפי מקדם קצבה של <span className="privacy-blur">{pensionData.annuityFactor || 200}</span>
+                לפי מקדם קצבה של <span className="privacy-blur">{isPrivacyMode ? '•••' : (pensionData.annuityFactor || 200)}</span>
               </div>
             </div>
 
             <div className="space-y-2 text-xs border-t border-[#E8E2D8] pt-3">
               <div className="flex justify-between text-stone-700">
                 <span>תקופת חיסכון נותרת:</span>
-                <strong className="text-stone-900 privacy-blur">{pensionSimulationResult.years} שנים</strong>
+                <strong className="text-stone-900 privacy-blur">{isPrivacyMode ? '••' : pensionSimulationResult.years} שנים</strong>
               </div>
               <div className="flex justify-between text-stone-700">
-                <span>תשואה היסטורית למסלול (<span className="privacy-blur">{remainingYears}</span> שנים):</span>
-                <strong className="text-[#7B1FA2] privacy-blur">{nominalReturnRate.toFixed(1)}%</strong>
+                <span>תשואה היסטורית למסלול (<span className="privacy-blur">{isPrivacyMode ? '••' : remainingYears}</span> שנים):</span>
+                <strong className="text-[#7B1FA2] privacy-blur">{isPrivacyMode ? '•••%' : `${nominalReturnRate.toFixed(1)}%`}</strong>
               </div>
               <div className="flex justify-between text-stone-700">
                 <span>סה"כ הפקדות מצטברות:</span>
                 <div className="text-left">
-                  <strong className="text-stone-900 privacy-blur">{fmtILS(pensionSimulationResult.totalRealDeposited)}</strong>
-                  <span className="text-[10px] text-stone-500 block">(נומינלי: <span className="privacy-blur">{fmtILS(pensionSimulationResult.totalNominalDeposited)}</span>)</span>
+                  <strong className="text-stone-900 privacy-blur">{fmtILS(pensionSimulationResult.totalRealDeposited, isPrivacyMode)}</strong>
+                  <span className="text-[10px] text-stone-500 block">(נומינלי: <span className="privacy-blur">{fmtILS(pensionSimulationResult.totalNominalDeposited, isPrivacyMode)}</span>)</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E8E2D8] text-[11px] text-stone-500">
-            <strong>מקור והערת ייחוס:</strong> התשואות ההיסטוריות מחושבות באופן דינמי בהתאם לאופק הזמן (<span className="privacy-blur">{remainingYears}</span> שנים) ומעובדות מתוך נתוני <em>"פנסיה נט" ו-"גמל נט"</em> מבית <strong>רשות שוק ההון, ביטוח וחיסכון במשרד האוצר</strong>.
+            <strong>מקור והערת ייחוס:</strong> התשואות ההיסטוריות מחושבות באופן דינמי בהתאם לאופק הזמן (<span className="privacy-blur">{isPrivacyMode ? '••' : remainingYears}</span> שנים) ומעובדות מתוך נתוני <em>"פנסיה נט" ו-"גמל נט"</em> מבית <strong>רשות שוק ההון, ביטוח וחיסכון במשרד האוצר</strong>.
           </div>
         </div>
       </div>

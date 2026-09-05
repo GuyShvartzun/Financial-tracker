@@ -2,8 +2,11 @@ import React from 'react';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
 import BudgetItemEditor from './BudgetItemEditor';
 import { fmtILS, fmtPct } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
+  const { isPrivacyMode } = usePrivacy();
+
   const handleMoveCategory = (sourceKey, itemId, targetKey) => {
     if (sourceKey === targetKey) return;
     const sourceList = budget[sourceKey] || [];
@@ -51,26 +54,26 @@ export default function BudgetTab({ budget, budgetTotals, onUpdateBudget }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 font-sans">
         <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">סה"כ הכנסות חודשיות</div>
-          <div className="text-xl sm:text-2xl font-black text-[#2E7D32] privacy-blur">{fmtILS(budgetTotals.totalIncome)}</div>
-          <div className="text-[11px] text-stone-500 mt-1"><span className="privacy-blur">100%</span> מסך התקציב</div>
+          <div className="text-xl sm:text-2xl font-black text-[#2E7D32] privacy-blur">{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</div>
+          <div className="text-[11px] text-stone-500 mt-1"><span className="privacy-blur">{isPrivacyMode ? '•••%' : '100%'}</span> מסך התקציב</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">הוצאות קבועות</div>
-          <div className="text-xl sm:text-2xl font-black text-[#C62828] privacy-blur">{fmtILS(budgetTotals.totalFixed)}</div>
-          <div className="text-[11px] text-[#C62828] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.fixedPct)}</span> מההכנסה</div>
+          <div className="text-xl sm:text-2xl font-black text-[#C62828] privacy-blur">{fmtILS(budgetTotals.totalFixed, isPrivacyMode)}</div>
+          <div className="text-[11px] text-[#C62828] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.fixedPct, isPrivacyMode)}</span> מההכנסה</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">הוצאות משתנות</div>
-          <div className="text-xl sm:text-2xl font-black text-[#E65100] privacy-blur">{fmtILS(budgetTotals.totalVar)}</div>
-          <div className="text-[11px] text-[#E65100] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.varPct)}</span> מההכנסה</div>
+          <div className="text-xl sm:text-2xl font-black text-[#E65100] privacy-blur">{fmtILS(budgetTotals.totalVar, isPrivacyMode)}</div>
+          <div className="text-[11px] text-[#E65100] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.varPct, isPrivacyMode)}</span> מההכנסה</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">חיסכון והשקעה</div>
-          <div className="text-xl sm:text-2xl font-black text-[#1976D2] privacy-blur">{fmtILS(budgetTotals.totalSavings)}</div>
-          <div className="text-[11px] text-[#1976D2] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.savingsPct)}</span> מההכנסה</div>
+          <div className="text-xl sm:text-2xl font-black text-[#1976D2] privacy-blur">{fmtILS(budgetTotals.totalSavings, isPrivacyMode)}</div>
+          <div className="text-[11px] text-[#1976D2] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.savingsPct, isPrivacyMode)}</span> מההכנסה</div>
         </div>
       </div>
 

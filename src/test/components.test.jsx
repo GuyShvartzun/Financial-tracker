@@ -727,8 +727,25 @@ describe('Privacy Mode Enforcement Tests', () => {
     expect(select).toBeInTheDocument();
   });
 
-  it('PensionCalculator renders member pull button amount with privacy-blur class', () => {
-    const { container } = render(
+  it('PensionCalculator renders member pull button amount with privacy-blur class and masks in privacy mode', () => {
+    const { container, rerender } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
+        <PensionCalculator
+          calculatorsData={DEFAULT_CALCULATORS_DATA}
+          onUpdateData={vi.fn()}
+          accounts={[{ id: '1', ownerId: 'u1', category: 'long', balances: { '08/2026': 250000 } }]}
+          selectedMonth="08/2026"
+          users={[{ uid: 'u1', displayName: 'ישראל ישראלי' }]}
+          isSingleMember={true}
+        />
+      </PrivacyContext.Provider>
+    );
+    let blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThan(0);
+    let buttonWithBlur = Array.from(blurred).find(el => el.textContent.includes('250,000'));
+    expect(buttonWithBlur).toBeDefined();
+
+    rerender(
       <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
         <PensionCalculator
           calculatorsData={DEFAULT_CALCULATORS_DATA}
@@ -740,10 +757,11 @@ describe('Privacy Mode Enforcement Tests', () => {
         />
       </PrivacyContext.Provider>
     );
-    const blurred = container.querySelectorAll('.privacy-blur');
+    blurred = container.querySelectorAll('.privacy-blur');
     expect(blurred.length).toBeGreaterThan(0);
-    const buttonWithBlur = Array.from(blurred).find(el => el.textContent.includes('250,000'));
+    buttonWithBlur = Array.from(blurred).find(el => el.textContent.includes('••••••'));
     expect(buttonWithBlur).toBeDefined();
+    expect(container.textContent).not.toContain('250,000');
   });
 
   it('AdvancedFIRECalculator renders base age with privacy-blur class', () => {
@@ -852,6 +870,212 @@ describe('Privacy Mode Enforcement Tests', () => {
     );
     const blurredCounts = container.querySelectorAll('.privacy-blur');
     expect(blurredCounts.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Comprehensive Privacy Mode Hardening Tests across All Modules', () => {
+  it('DataEntryModule toggles balance inputs to type="password" and masks order badges in privacy mode', () => {
+    const mockAccounts = [
+      { id: 'acc_1', name: 'עו"ש דיסקונט', category: 'short', balances: { '08/2026': 25000 }, order: 0, ownerId: 'u1' }
+    ];
+
+    const { container, rerender } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
+        <DataEntryModule
+          accounts={mockAccounts}
+          setAccounts={vi.fn()}
+          selectedMonth="08/2026"
+          monthsList={['08/2026']}
+          users={[{ uid: 'u1', displayName: 'ישראל' }]}
+          isMultiUser={false}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    let balanceInputs = container.querySelectorAll('input[type="number"]');
+    expect(balanceInputs.length).toBeGreaterThan(0);
+    expect(container.textContent).toContain('#1');
+
+    // Switch to privacy mode
+    rerender(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <DataEntryModule
+          accounts={mockAccounts}
+          setAccounts={vi.fn()}
+          selectedMonth="08/2026"
+          monthsList={['08/2026']}
+          users={[{ uid: 'u1', displayName: 'ישראל' }]}
+          isMultiUser={false}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    const passwordInputs = container.querySelectorAll('input[type="password"]');
+    expect(passwordInputs.length).toBeGreaterThan(0);
+    expect(container.textContent).toContain('#•');
+    expect(container.textContent).not.toContain('#1');
+  });
+
+  it('QuickLogModal converts numeric inputs to type="password" when isPrivacyMode is active', () => {
+    const mockAccounts = [
+      { id: 'acc_1', name: 'עו"ש', category: 'short', balances: { '08/2026': 15000 } }
+    ];
+
+    const { container, rerender } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
+        <QuickLogModal
+          isOpen={true}
+          onClose={vi.fn()}
+          accounts={mockAccounts}
+          selectedMonth="08/2026"
+          onUpdateAccountBalance={vi.fn()}
+          budget={DEFAULT_BUDGET}
+          onUpdateBudget={vi.fn()}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    let numInputs = container.querySelectorAll('input[type="number"]');
+    expect(numInputs.length).toBeGreaterThanOrEqual(1);
+
+    rerender(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <QuickLogModal
+          isOpen={true}
+          onClose={vi.fn()}
+          accounts={mockAccounts}
+          selectedMonth="08/2026"
+          onUpdateAccountBalance={vi.fn()}
+          budget={DEFAULT_BUDGET}
+          onUpdateBudget={vi.fn()}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    const passInputs = container.querySelectorAll('input[type="password"]');
+    expect(passInputs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('DemographicBox masks all CBS stats, percentiles, and year 2026 in privacy mode', () => {
+    const { container, rerender } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
+        <DemographicBox
+          netWorth={500000}
+          liquid={200000}
+          nonLiquid={300000}
+          isCouple={false}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    expect(container.textContent).toContain('2026');
+    expect(container.textContent).toMatch(/אחוזון \d+%/);
+
+    rerender(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <DemographicBox
+          netWorth={500000}
+          liquid={200000}
+          nonLiquid={300000}
+          isCouple={false}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    expect(container.textContent).not.toContain('2026');
+    expect(container.textContent).toContain('••••');
+    expect(container.textContent).toContain('אחוזון ••%');
+    expect(container.textContent).toContain('₪ ••••••');
+  });
+
+  it('ComprehensiveMortgageAndLoanCalculator masks inputs and percentages in privacy mode', () => {
+    const calcData = {
+      propertyValue: '2000000',
+      monthlyIncome: '25000',
+      expectedInflation: '2.5',
+      constructionInflation: '2.5',
+      tracks: [
+        {
+          id: 't1',
+          name: 'מסלול פריים',
+          amount: '500000',
+          years: '25',
+          months: '300',
+          interest: '5.5',
+          trackType: 'cpi_linked',
+          scheduleType: 'spitzer'
+        }
+      ]
+    };
+
+    const { container } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <ComprehensiveMortgageAndLoanCalculator
+          data={calcData}
+          onUpdate={vi.fn()}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    const passInputs = container.querySelectorAll('input[type="password"]');
+    expect(passInputs.length).toBeGreaterThanOrEqual(5);
+    expect(container.textContent).toContain('PTI: •••%');
+    expect(container.textContent).toContain('LTV: •••%');
+    expect(container.textContent).toContain('•••%');
+  });
+
+  it('AdvancedFIRECalculator masks all inputs, matrix, and proof table numbers in privacy mode', () => {
+    const { container } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <AdvancedFIRECalculator
+          calculatorsData={DEFAULT_CALCULATORS_DATA}
+          onUpdateData={vi.fn()}
+          accounts={[]}
+          selectedMonth="08/2026"
+          users={[{ uid: 'u1', displayName: 'ישראל' }]}
+          isSingleMember={true}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    const passInputs = container.querySelectorAll('input[type="password"]');
+    expect(passInputs.length).toBeGreaterThanOrEqual(10);
+    expect(container.textContent).toContain('•• שנים ו-•• ח׳');
+    expect(container.textContent).toContain('•••%');
+    expect(container.textContent).not.toContain('25%');
+  });
+
+  it('WaterfallChartModule and DonutDistributionChart mask all percentages in privacy mode', () => {
+    const mockBudgetTotals = {
+      totalIncome: 20000,
+      totalFixed: 8000,
+      totalVar: 6000,
+      totalSavings: 6000,
+      fixedPct: 40,
+      varPct: 30,
+      savingsPct: 30
+    };
+
+    const { container: waterfallContainer } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <WaterfallChartModule budgetTotals={mockBudgetTotals} />
+      </PrivacyContext.Provider>
+    );
+
+    expect(waterfallContainer.textContent).not.toContain('40.0%');
+    expect(waterfallContainer.textContent).not.toContain('30.0%');
+    expect(waterfallContainer.textContent).toContain('•••%');
+
+    const { container: donutContainer } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
+        <DonutDistributionChart personalStats={{ short: 10000, medium: 20000, long: 30000 }} />
+      </PrivacyContext.Provider>
+    );
+
+    expect(donutContainer.textContent).not.toContain('16.7%');
+    expect(donutContainer.textContent).not.toContain('33.3%');
+    expect(donutContainer.textContent).not.toContain('50.0%');
+    expect(donutContainer.textContent).toContain('•••%');
   });
 });
 

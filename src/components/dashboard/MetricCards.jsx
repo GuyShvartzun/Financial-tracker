@@ -1,8 +1,10 @@
 import React from 'react';
 import { TrendingUp, Wallet, Coins, Scale, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { fmtILS, fmtNum, fmtPct } from '../../utils/formatters';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, growthPct }) {
+  const { isPrivacyMode } = usePrivacy();
   const liquidityRatio = netWorth ? (liquid / netWorth) * 100 : 0;
 
   return (
@@ -16,12 +18,12 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
             <TrendingUp className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] tracking-tight privacy-blur">{fmtILS(netWorth)}</div>
+        <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] tracking-tight privacy-blur">{fmtILS(netWorth, isPrivacyMode)}</div>
         <div className="mt-2 text-xs text-stone-600 flex items-center gap-1.5">
           <span>צמיחה מתחילת מעקב:</span>
           <span className={`font-black flex items-center gap-0.5 privacy-blur ${growthPct < 0 ? 'text-[#C62828]' : 'text-[#2E7D32]'}`}>
             {growthPct < 0 ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
-            <span>{growthPct < 0 ? fmtPct(growthPct) : (growthPct > 0 ? `+${fmtPct(growthPct)}` : fmtPct(growthPct))}</span>
+            <span>{growthPct < 0 ? fmtPct(growthPct, isPrivacyMode) : (growthPct > 0 ? `+${fmtPct(growthPct, isPrivacyMode)}` : fmtPct(growthPct, isPrivacyMode))}</span>
           </span>
         </div>
       </div>
@@ -34,10 +36,10 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
             <Wallet className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-black text-[#1976D2] tracking-tight privacy-blur">{fmtILS(liquid)}</div>
+        <div className="text-2xl sm:text-3xl font-black text-[#1976D2] tracking-tight privacy-blur">{fmtILS(liquid, isPrivacyMode)}</div>
         <div className="mt-2 text-xs text-stone-600 flex items-center gap-1">
           <span>שיעור נזילות:</span>
-          <strong className="text-[#1976D2] font-black privacy-blur">{fmtPct(liquidityRatio)}</strong>
+          <strong className="text-[#1976D2] font-black privacy-blur">{fmtPct(liquidityRatio, isPrivacyMode)}</strong>
         </div>
       </div>
 
@@ -49,7 +51,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
             <Coins className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2] tracking-tight privacy-blur">{fmtILS(nonLiquid)}</div>
+        <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2] tracking-tight privacy-blur">{fmtILS(nonLiquid, isPrivacyMode)}</div>
         <div className="mt-2 text-xs text-stone-500 font-medium">חיסכון פנסיוני וקופות גמל</div>
       </div>
 
@@ -61,7 +63,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
             <Scale className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-black text-[#C62828] tracking-tight privacy-blur">₪{fmtNum(liabilities)}</div>
+        <div className="text-2xl sm:text-3xl font-black text-[#C62828] tracking-tight privacy-blur">{isPrivacyMode ? '₪ ••••••' : `₪${fmtNum(liabilities)}`}</div>
         <div className="mt-2 text-xs text-stone-500 font-medium">הלוואות ואשראי</div>
       </div>
 

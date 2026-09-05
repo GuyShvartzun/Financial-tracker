@@ -8,6 +8,7 @@ import PersonalGrowthLineChart from '../charts/PersonalGrowthLineChart';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
 import { fmtILS } from '../../utils/formatters';
 import { sortAccountsByDataEntryOrder } from '../../utils/calculations';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function PersonalDashboard({
   personalStats,
@@ -22,6 +23,7 @@ export default function PersonalDashboard({
   budgetTotals,
   activeUserId = ''
 }) {
+  const { isPrivacyMode } = usePrivacy();
   const activeUser = users.find(u => (u.uid || u.id) === selectedPersonalUserId) 
     || users.find(u => (u.uid || u.id) === activeUserId) 
     || users[0];
@@ -122,7 +124,7 @@ export default function PersonalDashboard({
                       </span>
                     </td>
                     <td className="py-2.5 px-2 text-left font-black text-[#2E7D32] privacy-blur">
-                      {fmtILS(acc.balances?.[selectedMonth] || 0)}
+                      {fmtILS(acc.balances?.[selectedMonth] || 0, isPrivacyMode)}
                     </td>
                   </tr>
                 ))}

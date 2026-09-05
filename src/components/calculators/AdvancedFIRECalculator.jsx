@@ -3,6 +3,7 @@ import { Flame } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
 import { getAccountTotalsForMonth } from '../../utils/calculations';
 import { DEFAULT_FIRE_DATA } from '../../constants/initialData';
+import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function AdvancedFIRECalculator({
   calculatorsData = {},
@@ -13,6 +14,7 @@ export default function AdvancedFIRECalculator({
   isSingleMember = false,
   activeUserId = ''
 }) {
+  const { isPrivacyMode } = usePrivacy();
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || 'single';
   const preferredFireUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
@@ -317,7 +319,7 @@ export default function AdvancedFIRECalculator({
                 }`}
                 title="לחץ למשיכת סך ההון הנזיל המשותף"
               >
-                הון משותף (<span className="privacy-blur">{fmtILS(sharedLiquid)}</span>)
+                הון משותף (<span className="privacy-blur">{fmtILS(sharedLiquid, isPrivacyMode)}</span>)
               </button>
             )}
             {users.map(member => {
@@ -338,8 +340,8 @@ export default function AdvancedFIRECalculator({
                   title="לחץ למשיכת יתרת ההון הנזיל העדכנית"
                 >
                   {isSingleUser 
-                    ? <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid)}</span>)</span>
-                    : <span>עבור לנתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid)}</span>)</span>}
+                    ? <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid, isPrivacyMode)}</span>)</span>
+                    : <span>עבור לנתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid, isPrivacyMode)}</span>)</span>}
                 </button>
               );
             })}
@@ -357,11 +359,11 @@ export default function AdvancedFIRECalculator({
                 className="text-[11px] text-[#2E7D32] hover:underline font-bold cursor-pointer"
                 title="טען הון נזיל עדכני (קצר + בינוני)"
               >
-                טען נזיל (<span className="privacy-blur">{fmtILS(activeUserLiquid)}</span>)
+                טען נזיל (<span className="privacy-blur">{fmtILS(activeUserLiquid, isPrivacyMode)}</span>)
               </button>
             </div>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any"
               value={userFireData.initialCapital ?? ''} 
               onChange={(e) => handleFireChange('initialCapital', e.target.value)} 
@@ -372,7 +374,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">הפקדה חודשית נוכחית (₪):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any"
               value={userFireData.monthlyDeposit ?? ''} 
               onChange={(e) => handleFireChange('monthlyDeposit', e.target.value)} 
@@ -383,7 +385,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">משיכה חודשית נטו מבוקשת (₪ היום):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any"
               value={userFireData.desiredNetMonthlyWithdrawal ?? ''} 
               onChange={(e) => handleFireChange('desiredNetMonthlyWithdrawal', e.target.value)} 
@@ -394,7 +396,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">גידול הפקדות שנתי (%) (אופציונלי):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.annualDepositGrowth ?? ''} 
               onChange={(e) => handleFireChange('annualDepositGrowth', e.target.value)} 
@@ -405,7 +407,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">הפקדה חד פעמית עתידית (₪) (אופציונלי):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.lumpSumAmount ?? ''} 
               onChange={(e) => handleFireChange('lumpSumAmount', e.target.value)} 
@@ -416,7 +418,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">בעוד כמה שנים (הפקדה חד פעמית):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.lumpSumYears ?? ''} 
               onChange={(e) => handleFireChange('lumpSumYears', e.target.value)} 
@@ -427,7 +429,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">גיל נוכחי:</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.currentAge ?? ''} 
               onChange={(e) => handleFireChange('currentAge', e.target.value)} 
@@ -438,7 +440,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">מס רווח הון (% על הרווחים):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.capitalGainsTax ?? ''} 
               onChange={(e) => handleFireChange('capitalGainsTax', e.target.value)} 
@@ -449,7 +451,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">תשואה בצבירה (% נומינלי):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.accumulationReturn ?? ''} 
               onChange={(e) => handleFireChange('accumulationReturn', e.target.value)} 
@@ -460,7 +462,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">תשואה בפרישה (% נומינלי):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.retirementReturn ?? ''} 
               onChange={(e) => handleFireChange('retirementReturn', e.target.value)} 
@@ -471,7 +473,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">אינפלציה שנתית צפויה (%):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.annualInflation ?? ''} 
               onChange={(e) => handleFireChange('annualInflation', e.target.value)} 
@@ -482,7 +484,7 @@ export default function AdvancedFIRECalculator({
           <div>
             <label className="text-xs text-stone-700 font-bold block mb-1">דמי ניהול שנתיים מצבירה (%):</label>
             <input 
-              type="number" 
+              type={isPrivacyMode ? "password" : "number"} 
               step="any" 
               value={userFireData.annualManagementFee ?? ''} 
               onChange={(e) => handleFireChange('annualManagementFee', e.target.value)} 
@@ -500,7 +502,7 @@ export default function AdvancedFIRECalculator({
           <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">זמן להגעה ליעד</span>
             <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] privacy-blur">
-              {calcResults.yearsToFIRE} שנים ו-{calcResults.remainingMonthsToFIRE} ח'
+              {isPrivacyMode ? '•• שנים ו-•• ח׳' : `${calcResults.yearsToFIRE} שנים ו-${calcResults.remainingMonthsToFIRE} ח'`}
             </div>
             <span className="text-[11px] text-stone-400 block mt-1">צבירה חודשית מחושבת</span>
           </div>
@@ -509,10 +511,10 @@ export default function AdvancedFIRECalculator({
           <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">גיל מוערך בפרישה</span>
             <div className="text-2xl sm:text-3xl font-black text-[#1976D2] privacy-blur">
-              {calcResults.estimatedRetireAge}
+              {isPrivacyMode ? '••' : calcResults.estimatedRetireAge}
             </div>
             <span className="text-[11px] text-stone-400 block mt-1">
-              מגיל בסיס <span className="privacy-blur">{userFireData.currentAge || 30}</span>
+              מגיל בסיס <span className="privacy-blur">{isPrivacyMode ? '••' : (userFireData.currentAge || 30)}</span>
             </span>
           </div>
         </div>
@@ -523,10 +525,10 @@ export default function AdvancedFIRECalculator({
           <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">קרן נדרשת נטו (בערכי היום)</span>
             <div className="text-2xl sm:text-3xl font-black text-stone-900 privacy-blur">
-              {fmtILS(calcResults.requiredCapitalReal)}
+              {fmtILS(calcResults.requiredCapitalReal, isPrivacyMode)}
             </div>
             <span className="text-[11px] text-stone-500 font-semibold block mt-1">
-              (נומינלי בפרישה: <span className="privacy-blur font-bold">{fmtILS(calcResults.requiredCapitalNominal)}</span>)
+              (נומינלי בפרישה: <span className="privacy-blur font-bold">{fmtILS(calcResults.requiredCapitalNominal, isPrivacyMode)}</span>)
             </span>
           </div>
 
@@ -534,10 +536,10 @@ export default function AdvancedFIRECalculator({
           <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">סה"כ יופקד מכיסך לאורך השנים</span>
             <div className="text-2xl sm:text-3xl font-black text-[#E65100] privacy-blur">
-              {fmtILS(calcResults.totalContributedReal)}
+              {fmtILS(calcResults.totalContributedReal, isPrivacyMode)}
             </div>
             <span className="text-[11px] text-stone-500 font-semibold block mt-1">
-              (נומינלי: <span className="privacy-blur font-bold">{fmtILS(calcResults.totalContributedNominal)}</span>)
+              (נומינלי: <span className="privacy-blur font-bold">{fmtILS(calcResults.totalContributedNominal, isPrivacyMode)}</span>)
             </span>
           </div>
 
@@ -545,10 +547,10 @@ export default function AdvancedFIRECalculator({
           <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
             <span className="text-xs text-stone-500 font-bold block mb-1">סה"כ רווח נקי מריבית דריבית</span>
             <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2] privacy-blur">
-              {fmtILS(calcResults.profitGeneratedReal)}
+              {fmtILS(calcResults.profitGeneratedReal, isPrivacyMode)}
             </div>
             <span className="text-[11px] text-stone-500 font-semibold block mt-1">
-              (נומינלי: <span className="privacy-blur font-bold">{fmtILS(calcResults.profitGeneratedNominal)}</span>)
+              (נומינלי: <span className="privacy-blur font-bold">{fmtILS(calcResults.profitGeneratedNominal, isPrivacyMode)}</span>)
             </span>
           </div>
         </div>
@@ -574,14 +576,14 @@ export default function AdvancedFIRECalculator({
                   <tr className="border-b border-[#E8E2D8] text-stone-600">
                     <th className="py-2.5 px-3 text-right">תשואה \ הפקדה</th>
                     {sensitivityData.deposits.map((d, idx) => (
-                      <th key={idx} className="py-2.5 px-3 privacy-blur">{fmtILS(d)}</th>
+                      <th key={idx} className="py-2.5 px-3 privacy-blur">{fmtILS(d, isPrivacyMode)}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8E2D8]">
                   {sensitivityData.matrix.map((row, rIdx) => (
                     <tr key={rIdx} className="hover:bg-[#FAF7F2]">
-                      <td className="py-2.5 px-3 font-bold text-right text-stone-900 privacy-blur">{row.returnRate.toFixed(1)}%</td>
+                      <td className="py-2.5 px-3 font-bold text-right text-stone-900 privacy-blur">{isPrivacyMode ? '•••%' : `${row.returnRate.toFixed(1)}%`}</td>
                       {row.cells.map((val, cIdx) => {
                         const ratio = span > 0 ? (val - minV) / span : 0;
                         let bgStyle = 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'; // Low = Green
@@ -596,7 +598,7 @@ export default function AdvancedFIRECalculator({
                         return (
                           <td key={cIdx} className="py-2 px-2">
                             <div className={`py-1.5 px-2 rounded-xl text-xs font-black privacy-blur ${bgStyle}`}>
-                              {val}
+                              {isPrivacyMode ? '••' : val}
                             </div>
                           </td>
                         );
@@ -621,11 +623,11 @@ export default function AdvancedFIRECalculator({
 
         <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8E2D8] text-xs text-stone-700 leading-relaxed space-y-2">
           <p>
-            הטבלה מדגימה את שימור הקרן ב-3 השנים הראשונות בפרישה <strong>בערכים נומינליים</strong>, בהתחשב במס רווח הון של <span className="privacy-blur">{userFireData.capitalGainsTax || 0}%</span>. 
-            על מנת להבטיח משיכה נטו בכוח קנייה של <strong className="privacy-blur">{fmtILS(userFireData.desiredNetMonthlyWithdrawal || 0)} לחודש במונחי היום</strong>, משיכת הברוטו גדלה מדי שנה בשיעור האינפלציה (<span className="privacy-blur">{(userFireData.annualInflation || 0)}%</span>).
+            הטבלה מדגימה את שימור הקרן ב-3 השנים הראשונות בפרישה <strong>בערכים נומינליים</strong>, בהתחשב במס רווח הון של <span className="privacy-blur">{isPrivacyMode ? '••%' : `${userFireData.capitalGainsTax || 0}%`}</span>. 
+            על מנת להבטיח משיכה נטו בכוח קנייה של <strong className="privacy-blur">{fmtILS(userFireData.desiredNetMonthlyWithdrawal || 0, isPrivacyMode)} לחודש במונחי היום</strong>, משיכת הברוטו גדלה מדי שנה בשיעור האינפלציה (<span className="privacy-blur">{isPrivacyMode ? '••%' : `${(userFireData.annualInflation || 0)}%`}</span>).
           </p>
           <p>
-            התשואה הנומינלית נטו מפצה על המשיכה והאינפלציה, כך שיתרת הסגירה גדלה בכל שנה בדיוק בשיעור האינפלציה השנתי (<span className="privacy-blur">{(userFireData.annualInflation || 0)}%</span>) — מה שמבטיח שכוח הקנייה הריאלי של הקרן ושל המשיכה החודשית נשמרים לנצח.
+            התשואה הנומינלית נטו מפצה על המשיכה והאינפלציה, כך שיתרת הסגירה גדלה בכל שנה בדיוק בשיעור האינפלציה השנתי (<span className="privacy-blur">{isPrivacyMode ? '••%' : `${(userFireData.annualInflation || 0)}%`}</span>) — מה שמבטיח שכוח הקנייה הריאלי של הקרן ושל המשיכה החודשית נשמרים לנצח.
           </p>
         </div>
 
@@ -645,15 +647,15 @@ export default function AdvancedFIRECalculator({
             <tbody className="divide-y divide-[#E8E2D8]">
               {calcResults.proofTable.map(row => (
                 <tr key={row.year} className="hover:bg-[#FAF7F2]">
-                  <td className="py-3 px-2 font-bold text-stone-900">שנה {row.year} בפרישה</td>
-                  <td className="py-3 px-2 text-stone-700 privacy-blur">{fmtILS(row.openingNominal)}</td>
-                  <td className="py-3 px-2 text-[#2E7D32] font-black privacy-blur">{fmtILS(row.grossReturnNominal)}</td>
-                  <td className="py-3 px-2 text-stone-700 privacy-blur">{fmtILS(row.grossWithdrawalNominal)}</td>
-                  <td className="py-3 px-2 text-[#C62828] font-bold privacy-blur">({fmtILS(row.taxPaidNominal)})</td>
+                  <td className="py-3 px-2 font-bold text-stone-900">שנה <span className="privacy-blur">{isPrivacyMode ? '•' : row.year}</span> בפרישה</td>
+                  <td className="py-3 px-2 text-stone-700 privacy-blur">{fmtILS(row.openingNominal, isPrivacyMode)}</td>
+                  <td className="py-3 px-2 text-[#2E7D32] font-black privacy-blur">{fmtILS(row.grossReturnNominal, isPrivacyMode)}</td>
+                  <td className="py-3 px-2 text-stone-700 privacy-blur">{fmtILS(row.grossWithdrawalNominal, isPrivacyMode)}</td>
+                  <td className="py-3 px-2 text-[#C62828] font-bold privacy-blur">({fmtILS(row.taxPaidNominal, isPrivacyMode)})</td>
                   <td className="py-3 px-2 text-[#1976D2] font-black privacy-blur">
-                    {fmtILS(row.netHandNominal)}
+                    {fmtILS(row.netHandNominal, isPrivacyMode)}
                   </td>
-                  <td className="py-3 px-2 text-stone-900 font-black text-left privacy-blur">{fmtILS(row.closingNominal)}</td>
+                  <td className="py-3 px-2 text-stone-900 font-black text-left privacy-blur">{fmtILS(row.closingNominal, isPrivacyMode)}</td>
                 </tr>
               ))}
             </tbody>
