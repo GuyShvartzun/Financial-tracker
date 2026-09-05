@@ -30,8 +30,8 @@ export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, mo
           ></div>
         </div>
         <div className="flex justify-between text-[11px] text-stone-500 mt-2 font-bold">
-          <span>0 חודשים</span>
-          <span className="text-[#2E7D32]">יעד מומלץ: 6 חודשים (100%)</span>
+          <span><span className="privacy-blur">0</span> חודשים</span>
+          <span className="text-[#2E7D32]">יעד מומלץ: <span className="privacy-blur">6</span> חודשים (<span className="privacy-blur">100%</span>)</span>
         </div>
       </div>
     </div>

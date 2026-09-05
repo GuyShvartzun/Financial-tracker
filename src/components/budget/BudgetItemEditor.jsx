@@ -182,14 +182,14 @@ export default function BudgetItemEditor({
                   value={item.name}
                   onChange={(e) => handleName(item.id, e.target.value)}
                   placeholder="שם הסעיף"
-                  className="flex-1 min-w-[75px] sm:min-w-[100px] bg-white border border-[#DDD6CA] text-xs font-semibold rounded-lg px-2 py-1 text-stone-900 outline-none focus:border-[#4A90E2]"
+                  className="flex-1 min-w-[75px] sm:min-w-[100px] bg-white border border-[#DDD6CA] text-xs font-semibold rounded-lg px-2 py-1 text-stone-900 outline-none focus:border-[#4A90E2] privacy-blur"
                 />
 
                 {/* Category Dropdown Selector */}
                 <select
                   value={categoryKey}
                   onChange={(e) => onMoveCategory && onMoveCategory(categoryKey, item.id, e.target.value)}
-                  className="bg-white border border-[#DDD6CA] text-[10px] sm:text-xs font-bold text-stone-600 rounded-lg px-1 sm:px-1.5 py-1 outline-none focus:border-[#4A90E2] cursor-pointer"
+                  className="bg-white border border-[#DDD6CA] text-[10px] sm:text-xs font-bold text-stone-600 rounded-lg px-1 sm:px-1.5 py-1 outline-none focus:border-[#4A90E2] cursor-pointer privacy-blur"
                   title="העבר לקטגוריה אחרת"
                 >
                   {BUDGET_CATEGORIES.map(cat => (

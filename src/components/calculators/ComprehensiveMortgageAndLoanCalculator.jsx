@@ -520,7 +520,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         {/* Tracks List */}
         <div className="space-y-4">
           <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
-            <h4 className="text-sm font-bold text-stone-900">הרכב מסלולי ההלוואה ({tracks.length} מסלולים)</h4>
+            <h4 className="text-sm font-bold text-stone-900">הרכב מסלולי ההלוואה (<span className="privacy-blur">{tracks.length}</span> מסלולים)</h4>
             <span className="text-xs font-bold bg-[#E8F5E9] text-[#2E7D32] px-3 py-1 rounded-full border border-[#C8E6C9]">
               סך התחייבות: <span className="privacy-blur">{fmtILS(aggregateResults.totalMortgage)}</span>
             </span>
@@ -551,14 +551,14 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-1 min-w-[200px]">
                     <span className="w-6 h-6 rounded-full bg-[#FFFFFF] text-stone-800 flex items-center justify-center font-bold text-xs border border-[#DDD6CA] shadow-2xs">
-                      {idx + 1}
+                      <span className="privacy-blur">{idx + 1}</span>
                     </span>
                     <input
                       type="text"
                       placeholder="שם הלוואה / מסלול..."
                       value={track.name || ''}
                       onChange={(e) => handleUpdateTrack(track.id, 'name', e.target.value)}
-                      className="bg-[#FFFFFF] border border-[#DDD6CA] focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] text-stone-900 font-bold text-xs rounded-xl px-2.5 py-1.5 flex-1 outline-none transition"
+                      className="bg-[#FFFFFF] border border-[#DDD6CA] focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] text-stone-900 font-bold text-xs rounded-xl px-2.5 py-1.5 flex-1 outline-none transition privacy-blur"
                     />
                     {(() => {
                       const linkInfo = getTrackLinkageInfo(track, safeData);
@@ -633,7 +633,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                           : (track.trackType || 'unlinked')
                       } 
                       onChange={(e) => handleUpdateTrack(track.id, 'trackType', e.target.value)} 
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none cursor-pointer focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition" 
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none cursor-pointer focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     >
                       {TRACK_TYPES.filter(tt => !tt.hidden).map(tt => <option key={tt.id} value={tt.id}>{tt.name}</option>)}
                     </select>
@@ -656,7 +656,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     <select 
                       value={track.scheduleType} 
                       onChange={(e) => handleUpdateTrack(track.id, 'scheduleType', e.target.value)} 
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none cursor-pointer focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition"
+                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none cursor-pointer focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur"
                     >
                       {SCHEDULE_TYPES.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
                     </select>
@@ -711,7 +711,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                   <div className="mt-3 bg-[#FFFFFF] border border-[#E8E2D8] rounded-xl overflow-hidden shadow-xs">
                     <div className="bg-[#F2ECE1] px-4 py-2 border-b border-[#E8E2D8] flex justify-between items-center">
                       <span className="font-bold text-xs text-stone-800">
-                        לוח סילוקין שנתי – {track.name || `מסלול ${idx + 1}`} ({metrics?.yearlySchedule?.length || 0} שנים)
+                        לוח סילוקין שנתי – {track.name || `מסלול ${idx + 1}`} (<span className="privacy-blur">{metrics?.yearlySchedule?.length || 0}</span> שנים)
                       </span>
                       <span className="text-[11px] text-stone-500">
                         חישוב מדויק לפי פרקטיקת הבנקאות בישראל

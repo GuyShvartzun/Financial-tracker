@@ -762,6 +762,97 @@ describe('Privacy Mode Enforcement Tests', () => {
     const blurred = container.querySelectorAll('.privacy-blur');
     expect(blurred.length).toBeGreaterThan(0);
   });
+
+  it('DemographicBox wraps comparison grid and age selector with privacy-blur class', () => {
+    const { container } = render(
+      <DemographicBox
+        totalNetWorth={200000}
+        liquidNetWorth={80000}
+        nonLiquidNetWorth={120000}
+      />
+    );
+    const grid = container.querySelector('.grid.privacy-blur');
+    expect(grid).toBeInTheDocument();
+    const select = container.querySelector('select.privacy-blur');
+    expect(select).toBeInTheDocument();
+    const ageContainer = select.closest('.privacy-blur');
+    expect(ageContainer).toBeInTheDocument();
+  });
+
+  it('BudgetItemEditor renders name input, category select, and amount input with privacy-blur', () => {
+    const items = [{ id: 'b1', name: 'שכירות', amount: 5000 }];
+    const { container } = render(
+      <BudgetItemEditor
+        title="הוצאות קבועות"
+        categoryKey="fixedExpenses"
+        items={items}
+        color="border-[#FFCDD2]"
+        onChange={vi.fn()}
+      />
+    );
+    const inputs = container.querySelectorAll('input.privacy-blur');
+    expect(inputs.length).toBeGreaterThanOrEqual(2); // name and amount
+    const select = container.querySelector('select.privacy-blur');
+    expect(select).toBeInTheDocument();
+  });
+
+  it('ComprehensiveMortgageAndLoanCalculator renders track name input and selects with privacy-blur', () => {
+    const calcData = {
+      propertyValue: '2000000',
+      monthlyIncome: '25000',
+      expectedInflation: '2.5',
+      constructionInflation: '2.5',
+      tracks: [
+        {
+          id: 't1',
+          name: 'מסלול פריים',
+          amount: '500000',
+          years: '25',
+          months: '300',
+          interest: '5.5',
+          trackType: 'prime',
+          scheduleType: 'spitzer'
+        }
+      ]
+    };
+    const { container } = render(
+      <ComprehensiveMortgageAndLoanCalculator
+        data={calcData}
+        onUpdate={vi.fn()}
+      />
+    );
+    const nameInput = container.querySelector('input[placeholder*="שם הלוואה"].privacy-blur');
+    expect(nameInput).toBeInTheDocument();
+    const selects = container.querySelectorAll('select.privacy-blur');
+    expect(selects.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('EmergencyFundCard renders numeric targets and months with privacy-blur class', () => {
+    const { container } = render(
+      <EmergencyFundCard
+        emergencyMonths={4.5}
+        shortTermAssets={45000}
+        monthlyExp={10000}
+      />
+    );
+    const blurred = container.querySelectorAll('.privacy-blur');
+    expect(blurred.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('DataEntryModule renders group accounts count with privacy-blur', () => {
+    const { container } = render(
+      <DataEntryModule
+        accounts={[{ id: 'acc_1', name: 'עו"ש', category: 'short', balances: { '08/2026': 10000 }, order: 0 }]}
+        setAccounts={vi.fn()}
+        selectedMonth="08/2026"
+        monthsList={['08/2026']}
+        users={[{ uid: 'u1', displayName: 'ישראל ישראלי' }]}
+        isMultiUser={false}
+      />
+    );
+    const blurredCounts = container.querySelectorAll('.privacy-blur');
+    expect(blurredCounts.length).toBeGreaterThan(0);
+  });
 });
 
 

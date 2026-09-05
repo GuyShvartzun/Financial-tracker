@@ -9,6 +9,7 @@ export default function DataEntryModule({
   onAddNewMonth,
   onDeleteMonth,
   activeRoomAccounts,
+  accounts,
   users = [],
   activeUserId = '',
   isSingleMember = false,
@@ -46,9 +47,10 @@ export default function DataEntryModule({
   const currentSelectedUser = users.find(u => (u.uid || u.id) === selectedUserId) || users[0];
   const currentUserId = currentSelectedUser?.uid || currentSelectedUser?.id || selectedUserId;
 
+  const safeAccounts = activeRoomAccounts || accounts || [];
   const displayedAccounts = isMultiUser
-    ? activeRoomAccounts.filter(a => a.ownerId === currentUserId)
-    : activeRoomAccounts;
+    ? safeAccounts.filter(a => a.ownerId === currentUserId)
+    : safeAccounts;
 
   // Drag & Drop State
   const [draggedAccId, setDraggedAccId] = useState(null);
@@ -259,7 +261,7 @@ export default function DataEntryModule({
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-stone-900">{group.title}</h3>
                 <span className="text-[11px] font-bold bg-[#FAF7F2] border border-[#DDD6CA] text-stone-600 px-2 py-0.5 rounded-full">
-                  {groupAccounts.length} חשבונות
+                  <span className="privacy-blur">{groupAccounts.length}</span> חשבונות
                 </span>
               </div>
               <span className="text-xs text-stone-500">
@@ -337,7 +339,7 @@ export default function DataEntryModule({
 
                         {/* Order badge */}
                         <span className="text-[10px] font-bold text-stone-400 w-5 text-center">
-                          #{idx + 1}
+                          #<span className="privacy-blur">{idx + 1}</span>
                         </span>
 
                         {/* Account Name */}
@@ -347,7 +349,7 @@ export default function DataEntryModule({
                             type="text"
                             value={acc.name}
                             onChange={(e) => handleAccountNameChange(acc.id, e.target.value)}
-                            className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-sm font-bold rounded-lg px-3 py-1.5 outline-none focus:border-[#4A90E2]"
+                            className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-sm font-bold rounded-lg px-3 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur"
                           />
                         </div>
 
@@ -437,14 +439,14 @@ export default function DataEntryModule({
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 flex-1 min-w-0">
                             <span className="text-[11px] font-black text-stone-400 bg-white px-2 py-1 rounded-md border border-[#DDD6CA]">
-                              #{idx + 1}
+                              #<span className="privacy-blur">{idx + 1}</span>
                             </span>
                             <input
                               type="text"
                               value={acc.name}
                               onChange={(e) => handleAccountNameChange(acc.id, e.target.value)}
                               placeholder="שם החשבון"
-                              className="flex-1 min-w-0 bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-sm font-bold rounded-lg px-2.5 py-1.5 outline-none focus:border-[#4A90E2]"
+                              className="flex-1 min-w-0 bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-sm font-bold rounded-lg px-2.5 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur"
                             />
                           </div>
 

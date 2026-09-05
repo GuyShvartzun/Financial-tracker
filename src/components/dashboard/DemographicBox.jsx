@@ -28,7 +28,7 @@ export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, 
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 privacy-blur">
           <span className="text-xs text-stone-600 font-bold">קבוצת גיל:</span>
           <select
             value={selectedAgeBracket}
@@ -44,8 +44,8 @@ export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#C8E6C9] space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs privacy-blur">
+        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#C8E6C9] space-y-2 privacy-blur">
           <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
             <span className="font-bold text-stone-900">סך הון כולל נטו</span>
             <span className="text-[10px] bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] px-2 py-0.5 rounded-md font-bold privacy-blur">
@@ -65,7 +65,7 @@ export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, 
           </div>
         </div>
 
-        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#BBDEFB] space-y-2">
+        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#BBDEFB] space-y-2 privacy-blur">
           <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
             <span className="font-bold text-stone-900">סך הון נזיל</span>
             <span className="text-[10px] bg-[#E3F2FD] text-[#1976D2] border border-[#BBDEFB] px-2 py-0.5 rounded-md font-bold privacy-blur">
@@ -85,7 +85,7 @@ export default function DemographicBox({ netWorth, liquid, nonLiquid, isCouple, 
           </div>
         </div>
 
-        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E1BEE7] space-y-2">
+        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E1BEE7] space-y-2 privacy-blur">
           <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
             <span className="font-bold text-stone-900">סך הון לא נזיל</span>
             <span className="text-[10px] bg-[#F3E5F5] text-[#7B1FA2] border border-[#E1BEE7] px-2 py-0.5 rounded-md font-bold privacy-blur">

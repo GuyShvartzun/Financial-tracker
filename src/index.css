@@ -19,11 +19,22 @@
     cursor: default;
   }
 
-  /* Automatic blurring of numeric inputs in privacy mode */
-  .privacy-active input[type="number"],
-  .privacy-active input.privacy-blur {
+  /* Automatic masking and blurring of all data inputs and textareas in privacy mode (Desktop & Mobile) */
+  .privacy-active input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="file"]):not(:focus),
+  .privacy-active textarea:not(:focus),
+  .privacy-active select.privacy-blur:not(:focus) {
     filter: blur(8px) !important;
+    color: transparent !important;
+    text-shadow: 0 0 12px rgba(100, 116, 139, 0.85) !important;
     user-select: none !important;
+    cursor: default;
+  }
+
+  /* Mask placeholder text when not focused */
+  .privacy-active input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="file"]):not(:focus)::placeholder,
+  .privacy-active textarea:not(:focus)::placeholder {
+    color: transparent !important;
+    text-shadow: 0 0 12px rgba(156, 163, 175, 0.85) !important;
   }
 
   /* Privacy dropdowns */
@@ -38,11 +49,13 @@
     user-select: none !important;
   }
 
-  /* ONLY active input/select being directly edited gets unblurred */
-  .privacy-active input[type="number"]:focus,
-  .privacy-active input.privacy-blur:focus,
+  /* ONLY active input/textarea/select being directly edited gets unblurred */
+  .privacy-active input:focus,
+  .privacy-active textarea:focus,
   .privacy-active select.privacy-blur:focus {
     filter: blur(0px) !important;
+    color: inherit !important;
+    text-shadow: none !important;
     user-select: auto !important;
   }
 }

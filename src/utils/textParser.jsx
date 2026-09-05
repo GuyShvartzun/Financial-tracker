@@ -1,7 +1,7 @@
 import React from 'react';
 
-const QUANTITATIVE_REGEX = /(₪\s*[\d,]+(?:\.\d+)?|[\d,]+(?:\.\d+)?\s*₪|\b\d+(?:\.\d+)?%|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b)/;
-const QUANTITATIVE_SPLIT_REGEX = /(₪\s*[\d,]+(?:\.\d+)?|[\d,]+(?:\.\d+)?\s*₪|\b\d+(?:\.\d+)?%|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b)/g;
+const QUANTITATIVE_REGEX = /(₪\s*[\d,]+(?:\.\d+)?|[\d,]+(?:\.\d+)?\s*₪|\b\d+(?:\.\d+)?%|%\s*\d+(?:\.\d+)?|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d+(?:\.\d+)?\b)/;
+const QUANTITATIVE_SPLIT_REGEX = /(₪\s*[\d,]+(?:\.\d+)?|[\d,]+(?:\.\d+)?\s*₪|\b\d+(?:\.\d+)?%|%\s*\d+(?:\.\d+)?|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d+(?:\.\d+)?\b)/g;
 
 export function parseQuantitative(str) {
   if (typeof str !== 'string') return str;
