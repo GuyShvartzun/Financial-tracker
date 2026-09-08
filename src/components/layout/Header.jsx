@@ -189,19 +189,21 @@ export default function Header({
               aria-label={isDarkMode ? "עבור למצב בהיר" : "עבור למצב כהה"}
               className={`py-2 px-2.5 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-between ${
                 isDarkMode
-                  ? 'bg-indigo-950/60 text-indigo-300 border-indigo-700/60 shadow-xs'
-                  : 'bg-[#FAF7F2] text-stone-600 hover:text-stone-900 hover:bg-[#F2ECE1] border-[#DDD6CA]'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs'
+                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200'
               }`}
             >
               <div className="flex items-center gap-1.5 min-w-0 truncate">
                 {isDarkMode ? (
                   <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 ) : (
-                  <Moon className="w-3.5 h-3.5 text-stone-500 shrink-0" />
+                  <Moon className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                 )}
                 <span className="truncate">{isDarkMode ? 'בהיר' : 'כהה'}</span>
               </div>
-              <span className="text-[9px] text-stone-500 bg-white/80 px-1 py-0.2 rounded border border-[#E8E2D8] shrink-0">D</span>
+              <span className={`text-[9px] px-1 py-0.2 rounded border shrink-0 ${
+                isDarkMode ? 'bg-amber-900/40 border-amber-700/50 text-amber-300' : 'bg-white border-indigo-200 text-indigo-700'
+              }`}>D</span>
             </button>
           </div>
 
@@ -241,19 +243,19 @@ export default function Header({
         dir="rtl"
       >
         {/* Right: Logo & Room Controls */}
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           <div className="bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] w-7 h-7 rounded-lg shadow-xs font-black text-sm flex items-center justify-center shrink-0 select-none">
             ₪
           </div>
           {currentRoom && (
             <div className="flex items-center gap-1 min-w-0">
-              <span className="text-[11px] font-black text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-md border border-[#C8E6C9] truncate max-w-[110px]">
+              <span className="text-[11px] font-black text-[#2E7D32] bg-[#E8F5E9] px-1.5 py-0.5 rounded-md border border-[#C8E6C9] truncate max-w-[85px] xs:max-w-[110px]">
                 {currentRoom.name}
               </span>
               <button
                 type="button"
                 onClick={onOpenManageRoom}
-                className="p-1 rounded-md text-stone-600 hover:text-stone-900 bg-[#FAF7F2] border border-[#DDD6CA]"
+                className="p-1 rounded-md text-stone-600 hover:text-stone-900 bg-[#FAF7F2] border border-[#DDD6CA] shrink-0"
                 title="הגדרות חדר"
                 aria-label="הגדרות חדר (נייד)"
               >
@@ -262,7 +264,7 @@ export default function Header({
               <button
                 type="button"
                 onClick={onSwitchRoom}
-                className="p-1 rounded-md text-stone-600 hover:text-stone-900 bg-[#FAF7F2] border border-[#DDD6CA]"
+                className="p-1 rounded-md text-stone-600 hover:text-stone-900 bg-[#FAF7F2] border border-[#DDD6CA] shrink-0"
                 title="החלף חדר"
                 aria-label="החלף חדר (נייד)"
               >
@@ -272,12 +274,12 @@ export default function Header({
           )}
         </div>
 
-        {/* Left: Export, Privacy, Profile / Logout */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Left: Export, Dark Mode, Privacy, Profile / Logout */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('export')}
-            className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
+            className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center justify-center shrink-0 ${
               activeTab === 'export'
                 ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]'
                 : 'bg-[#FAF7F2] text-stone-600 border-[#DDD6CA]'
@@ -285,7 +287,7 @@ export default function Header({
             title="ייצוא וייבוא נתונים"
             aria-label="ייצוא וייבוא נתונים (נייד)"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <FileSpreadsheet className="w-4 h-4" />
           </button>
 
           <button
@@ -293,13 +295,13 @@ export default function Header({
             onClick={onToggleDarkMode}
             title={isDarkMode ? "עבור למצב בהיר" : "עבור למצב כהה"}
             aria-label={isDarkMode ? "מצב בהיר (נייד)" : "מצב כהה (נייד)"}
-            className={`p-1.5 rounded-lg border transition cursor-pointer ${
+            className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center justify-center shrink-0 ${
               isDarkMode
-                ? 'bg-indigo-950/60 text-indigo-300 border-indigo-700/60'
-                : 'bg-[#FAF7F2] text-stone-600 border-[#DDD6CA]'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs'
+                : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200 shadow-xs'
             }`}
           >
-            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-stone-500" />}
+            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
           </button>
 
           <button
@@ -307,13 +309,13 @@ export default function Header({
             onClick={onTogglePrivacyMode}
             title={isPrivacyMode ? "הצג סכומים" : "טשטש סכומים"}
             aria-label={isPrivacyMode ? "הצג סכומים (נייד)" : "מצב פרטיות (נייד)"}
-            className={`p-1.5 rounded-lg border transition cursor-pointer ${
+            className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center justify-center shrink-0 ${
               isPrivacyMode
                 ? 'bg-amber-50 text-amber-800 border-amber-300'
                 : 'bg-[#FAF7F2] text-stone-600 border-[#DDD6CA]'
             }`}
           >
-            {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            {isPrivacyMode ? <EyeOff className="w-4 h-4 text-amber-700" /> : <Eye className="w-4 h-4 text-stone-600" />}
           </button>
 
           <button
@@ -321,9 +323,9 @@ export default function Header({
             onClick={onLogout}
             title="התנתק"
             aria-label="התנתק (נייד)"
-            className="p-1.5 rounded-lg bg-[#FFEBEE] text-[#C62828] border border-[#EF9A9A] transition cursor-pointer"
+            className="p-1.5 rounded-lg bg-[#FFEBEE] text-[#C62828] border border-[#EF9A9A] transition cursor-pointer flex items-center justify-center shrink-0"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </header>
