@@ -30,9 +30,7 @@ import RoomLobby from './components/room/RoomLobby';
 import RoomSettingsModal from './components/room/RoomSettingsModal';
 import Header from './components/layout/Header';
 import MonthSelector from './components/layout/MonthSelector';
-import SharedDashboard from './components/dashboard/SharedDashboard';
-import PersonalDashboard from './components/dashboard/PersonalDashboard';
-import BudgetTab from './components/budget/BudgetTab';
+import DashboardModule from './components/dashboard/DashboardModule';
 import CalculatorsModule from './components/calculators/CalculatorsModule';
 import AIAdvisorTab from './components/ai/AIAdvisorTab';
 import DataEntryModule from './components/data/DataEntryModule';
@@ -40,7 +38,8 @@ import DataExport from './components/data/DataExport';
 import { PrivacyContext } from './context/PrivacyContext';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('shared_dash');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [dashboardSubTab, setDashboardSubTab] = useState('shared');
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -417,7 +416,8 @@ export default function App() {
       if (lastEnteredRoomIdRef.current !== currentRoom.id) {
         lastEnteredRoomIdRef.current = currentRoom.id;
         const isSingle = (currentRoom.members || []).length <= 1;
-        setActiveTab(isSingle ? 'personal_dash' : 'shared_dash');
+        setActiveTab('dashboard');
+        setDashboardSubTab(isSingle ? 'personal' : 'shared');
         setSelectedPersonalUserId(authUser?.uid || currentRoom.members?.[0]?.uid || '');
       }
     } else {
@@ -427,10 +427,10 @@ export default function App() {
 
   // Auto-switch to personal dashboard when there is only one member
   useEffect(() => {
-    if (isSingleMember && activeTab === 'shared_dash') {
-      setActiveTab('personal_dash');
+    if (isSingleMember && dashboardSubTab === 'shared') {
+      setDashboardSubTab('personal');
     }
-  }, [isSingleMember, activeTab]);
+  }, [isSingleMember, dashboardSubTab]);
 
   // Auto-sanitization: ensure all existing accounts possess a valid member UID
   useEffect(() => {
@@ -788,7 +788,8 @@ export default function App() {
         rooms={userRooms}
         onSelectRoom={(room) => {
           const isSingle = (room?.members?.length || 1) <= 1;
-          setActiveTab(isSingle ? 'personal_dash' : 'shared_dash');
+          setActiveTab('dashboard');
+          setDashboardSubTab(isSingle ? 'personal' : 'shared');
           setSelectedPersonalUserId(authUser?.uid || room?.members?.[0]?.uid || '');
           setCurrentRoom(room);
         }}
@@ -821,16 +822,22 @@ export default function App() {
             monthsList={monthsList}
           />
 
-          {!isSingleMember && activeTab === 'shared_dash' && (
-            <SharedDashboard
+          {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
+            <DashboardModule
+              subTab={
+                activeTab === 'shared_dash' ? 'shared' :
+                activeTab === 'personal_dash' ? 'personal' :
+                activeTab === 'budget' ? 'budget' :
+                dashboardSubTab
+              }
+              onSubTabChange={(newSub) => {
+                setActiveTab('dashboard');
+                setDashboardSubTab(newSub);
+              }}
+              isSingleMember={isSingleMember}
               roomStats={roomStats}
               budgetTotals={budgetTotals}
               isPrivacyMode={isPrivacyMode}
-            />
-          )}
-
-          {activeTab === 'personal_dash' && (
-            <PersonalDashboard
               personalStats={personalStats}
               selectedPersonalUserId={selectedPersonalUserId}
               setSelectedPersonalUserId={setSelectedPersonalUserId}
@@ -838,25 +845,12 @@ export default function App() {
               monthsList={monthsList}
               accounts={accounts}
               users={roomMembers}
-              isSingleMember={isSingleMember}
-              roomStats={roomStats}
-              budgetTotals={budgetTotals}
               activeUserId={authUser?.uid}
-              isPrivacyMode={isPrivacyMode}
-            />
-          )}
-
-          {activeTab === 'budget' && (
-            <BudgetTab
               budget={budget}
-              budgetTotals={budgetTotals}
-              users={roomMembers}
-              isSingleMember={isSingleMember}
               onUpdateBudget={(updated) => {
                 setBudget(updated);
                 syncBudgetToCloud(updated);
               }}
-              isPrivacyMode={isPrivacyMode}
             />
           )}
 

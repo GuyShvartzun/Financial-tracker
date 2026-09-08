@@ -74,15 +74,15 @@ describe('Header & Navigation Component', () => {
     expect(screen.getByText('משתמש בדיקה')).toBeInTheDocument();
     expect(screen.getByText(/מחובר/i)).toBeInTheDocument();
 
-    // Click on personal dashboard tab
-    const personalTab = screen.getByRole('button', { name: 'דשבורד אישי' });
-    fireEvent.click(personalTab);
-    expect(handleTabChange).toHaveBeenCalledWith('personal_dash');
+    // Click on calculators tab
+    const calcsTab = screen.getByRole('button', { name: 'מחשבונים פיננסיים' });
+    fireEvent.click(calcsTab);
+    expect(handleTabChange).toHaveBeenCalledWith('calculators');
 
-    // Click on budget tab
-    const budgetTab = screen.getByRole('button', { name: 'תקציב' });
-    fireEvent.click(budgetTab);
-    expect(handleTabChange).toHaveBeenCalledWith('budget');
+    // Click on data export button
+    const exportBtn = screen.getByRole('button', { name: 'ייצוא וייבוא נתונים' });
+    fireEvent.click(exportBtn);
+    expect(handleTabChange).toHaveBeenCalledWith('export');
 
     // Logout button click
     const logoutBtn = screen.getByRole('button', { name: 'התנתק' });

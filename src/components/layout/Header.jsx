@@ -5,7 +5,8 @@ import {
   Cloud, 
   Settings, 
   ArrowLeftRight, 
-  LogOut 
+  LogOut,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function Header({ 
@@ -23,19 +24,18 @@ export default function Header({
   const isSingleMember = (currentRoom?.members?.length || 1) <= 1;
 
   const tabs = [
-    ...(isSingleMember 
-      ? [{ id: 'personal_dash', label: 'דשבורד' }]
-      : [
-          { id: 'shared_dash', label: 'דשבורד משותף' },
-          { id: 'personal_dash', label: 'דשבורד אישי' }
-        ]
-    ),
-    { id: 'budget', label: 'תקציב' },
+    { id: 'dashboard', label: 'דשבורד' },
     { id: 'calculators', label: 'מחשבונים פיננסיים' },
     { id: 'ai_advisor', label: 'יועץ פיננסי' },
     { id: 'data_entry', label: 'הזנת נתונים' },
-    { id: 'export', label: 'ייצוא וייבוא אקסל' },
   ];
+
+  const isTabActive = (tabId) => {
+    if (tabId === 'dashboard') {
+      return activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget';
+    }
+    return activeTab === tabId;
+  };
 
   // Room-specific display name for the logged-in user
   const localMember = currentRoom?.members?.find(m => (m.uid || m.id) === authUser?.uid);
@@ -149,26 +149,42 @@ export default function Header({
                 <ArrowLeftRight className="w-3 h-3" />
                 <span>החלף חדר</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('export')}
+                className={`text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md border transition cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'export'
+                    ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900 bg-[#FAF7F2] hover:bg-[#F2ECE1] border-[#DDD6CA]'
+                }`}
+                title="ייצוא וייבוא נתונים"
+              >
+                <FileSpreadsheet className="w-3 h-3" />
+                <span>ייצוא וייבוא נתונים</span>
+              </button>
             </div>
           </div>
         )}
 
         {/* Navigation Tabs (Smooth Horizontal Scroll with Touch Momentum) */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1.5 border-t border-[#E8E2D8]">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap border cursor-pointer shrink-0 ${
-                activeTab === tab.id 
-                  ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
-                  : 'text-stone-600 border-transparent hover:bg-[#F2ECE1] bg-white/60'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {tabs.map(tab => {
+            const active = isTabActive(tab.id);
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap border cursor-pointer shrink-0 ${
+                  active 
+                    ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9] shadow-xs' 
+                    : 'text-stone-600 border-transparent hover:bg-[#F2ECE1] bg-white/60'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
       </div>

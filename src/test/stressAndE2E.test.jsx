@@ -329,16 +329,16 @@ describe('App End-to-End User Journey Simulation', () => {
       expect(screen.getByText('מעקב פיננסי משותף')).toBeInTheDocument();
     });
 
-    // 1. Navigate to Personal Dashboard
-    const personalTab = screen.getByRole('button', { name: 'דשבורד אישי' });
-    fireEvent.click(personalTab);
+    // 1. Navigate to Personal Dashboard sub-tab
+    const personalSubTab = screen.getByRole('button', { name: /אישי/i });
+    fireEvent.click(personalSubTab);
     await waitFor(() => {
       expect(screen.getByText(/פירוט חשבונות אישיים/i)).toBeInTheDocument();
     });
 
-    // 2. Navigate to Budget Tab
-    const budgetTab = screen.getByRole('button', { name: 'תקציב' });
-    fireEvent.click(budgetTab);
+    // 2. Navigate to Budget sub-tab
+    const budgetSubTab = screen.getByRole('button', { name: /תקציב/i });
+    fireEvent.click(budgetSubTab);
     await waitFor(() => {
       expect(screen.getByText('סה"כ הכנסות חודשיות')).toBeInTheDocument();
     });
@@ -365,7 +365,7 @@ describe('App End-to-End User Journey Simulation', () => {
     });
 
     // 6. Navigate to Export Tab
-    const exportTab = screen.getByRole('button', { name: 'ייצוא וייבוא אקסל' });
+    const exportTab = screen.getByRole('button', { name: 'ייצוא וייבוא נתונים' });
     fireEvent.click(exportTab);
     await waitFor(() => {
       expect(screen.getByText('ייצוא, גיבוי וייבוא נתונים')).toBeInTheDocument();
