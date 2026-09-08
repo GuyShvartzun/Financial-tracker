@@ -112,6 +112,8 @@ export default function DashboardModule({
             isSingleMember={isSingleMember}
             onUpdateBudget={onUpdateBudget}
             isPrivacyMode={isPrivacyMode}
+            roomCurrency={roomCurrency}
+            rates={rates}
           />
         )}
       </div>

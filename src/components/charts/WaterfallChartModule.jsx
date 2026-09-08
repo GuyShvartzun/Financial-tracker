@@ -1,8 +1,8 @@
 import React from 'react';
-import { fmtILS, fmtPct } from '../../utils/formatters';
+import { fmtCurrency, fmtPct, SUPPORTED_CURRENCIES } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function WaterfallChartModule({ budgetTotals, isPrivacyMode: propPrivacy }) {
+export default function WaterfallChartModule({ budgetTotals, isPrivacyMode: propPrivacy, roomCurrency = 'ILS' }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const balance = budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings;
@@ -27,14 +27,14 @@ export default function WaterfallChartModule({ budgetTotals, isPrivacyMode: prop
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#2E7D32] mb-0.5 sm:mb-1 privacy-blur">{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#2E7D32] mb-0.5 sm:mb-1 privacy-blur">{fmtCurrency(budgetTotals.totalIncome, roomCurrency, isPrivacyMode)}</div>
             <div className="text-[9px] text-[#2E7D32] mb-1 font-bold privacy-blur">{isPrivacyMode ? '•••%' : '100%'}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] bg-[#A5D6A7] rounded-t-lg h-full transition-all duration-500 shadow-xs privacy-blur"></div>
             <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 mt-2 text-center whitespace-nowrap">הכנסות</span>
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#C62828] mb-0.5 sm:mb-1 privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalFixed, true) : `-${fmtILS(budgetTotals.totalFixed)}`}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#C62828] mb-0.5 sm:mb-1 privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalFixed, roomCurrency, true) : `-${fmtCurrency(budgetTotals.totalFixed, roomCurrency)}`}</div>
             <div className="text-[9px] text-[#C62828] mb-1 font-bold privacy-blur">{isPrivacyMode ? '•••%' : `-${fmtPct(budgetTotals.fixedPct)}`}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
@@ -49,7 +49,7 @@ export default function WaterfallChartModule({ budgetTotals, isPrivacyMode: prop
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#E65100] mb-0.5 sm:mb-1 privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalVar, true) : `-${fmtILS(budgetTotals.totalVar)}`}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#E65100] mb-0.5 sm:mb-1 privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalVar, roomCurrency, true) : `-${fmtCurrency(budgetTotals.totalVar, roomCurrency)}`}</div>
             <div className="text-[9px] text-[#E65100] mb-1 font-bold privacy-blur">{isPrivacyMode ? '•••%' : `-${fmtPct(budgetTotals.varPct)}`}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
@@ -64,7 +64,7 @@ export default function WaterfallChartModule({ budgetTotals, isPrivacyMode: prop
           </div>
 
           <div className="flex-1 h-full flex flex-col justify-end items-center relative group z-10">
-            <div className="text-[10px] sm:text-[11px] font-black text-[#1976D2] mb-0.5 sm:mb-1 privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalSavings, true) : `-${fmtILS(budgetTotals.totalSavings)}`}</div>
+            <div className="text-[10px] sm:text-[11px] font-black text-[#1976D2] mb-0.5 sm:mb-1 privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalSavings, roomCurrency, true) : `-${fmtCurrency(budgetTotals.totalSavings, roomCurrency)}`}</div>
             <div className="text-[9px] text-[#1976D2] mb-1 font-bold privacy-blur">{isPrivacyMode ? '•••%' : `-${fmtPct(budgetTotals.savingsPct)}`}</div>
             <div className="w-full max-w-[42px] sm:max-w-[54px] h-full relative">
               <div 
@@ -94,37 +94,39 @@ export default function WaterfallChartModule({ budgetTotals, isPrivacyMode: prop
           <tbody className="divide-y divide-[#E8E2D8] text-[11px]">
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#2E7D32]">הכנסות</td>
-              <td className="py-2 px-2 font-bold text-[#2E7D32] privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalIncome, true) : `+${fmtILS(budgetTotals.totalIncome)}`}</td>
+              <td className="py-2 px-2 font-bold text-[#2E7D32] privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalIncome, roomCurrency, true) : `+${fmtCurrency(budgetTotals.totalIncome, roomCurrency)}`}</td>
               <td className="py-2 px-2 text-stone-600 font-bold privacy-blur">{isPrivacyMode ? '•••%' : '100.0%'}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-900 privacy-blur">{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-900 privacy-blur">{fmtCurrency(budgetTotals.totalIncome, roomCurrency, isPrivacyMode)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#C62828]">הוצאות קבועות</td>
-              <td className="py-2 px-2 font-bold text-[#C62828] privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalFixed, true) : `-${fmtILS(budgetTotals.totalFixed)}`}</td>
+              <td className="py-2 px-2 font-bold text-[#C62828] privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalFixed, roomCurrency, true) : `-${fmtCurrency(budgetTotals.totalFixed, roomCurrency)}`}</td>
               <td className="py-2 px-2 text-[#C62828] font-bold privacy-blur">{isPrivacyMode ? '•••%' : `-${fmtPct(budgetTotals.fixedPct)}`}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtCurrency(budgetTotals.totalIncome - budgetTotals.totalFixed, roomCurrency, isPrivacyMode)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#E65100]">הוצאות משתנות</td>
-              <td className="py-2 px-2 font-bold text-[#E65100] privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalVar, true) : `-${fmtILS(budgetTotals.totalVar)}`}</td>
+              <td className="py-2 px-2 font-bold text-[#E65100] privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalVar, roomCurrency, true) : `-${fmtCurrency(budgetTotals.totalVar, roomCurrency)}`}</td>
               <td className="py-2 px-2 text-[#E65100] font-bold privacy-blur">{isPrivacyMode ? '•••%' : `-${fmtPct(budgetTotals.varPct)}`}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtCurrency(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar, roomCurrency, isPrivacyMode)}</td>
             </tr>
             <tr className="hover:bg-[#FAF7F2]">
               <td className="py-2 px-2 font-bold text-[#1976D2]">חיסכון והשקעה</td>
-              <td className="py-2 px-2 font-bold text-[#1976D2] privacy-blur">{isPrivacyMode ? fmtILS(budgetTotals.totalSavings, true) : `-${fmtILS(budgetTotals.totalSavings)}`}</td>
+              <td className="py-2 px-2 font-bold text-[#1976D2] privacy-blur">{isPrivacyMode ? fmtCurrency(budgetTotals.totalSavings, roomCurrency, true) : `-${fmtCurrency(budgetTotals.totalSavings, roomCurrency)}`}</td>
               <td className="py-2 px-2 text-[#1976D2] font-bold privacy-blur">{isPrivacyMode ? '•••%' : `-${fmtPct(budgetTotals.savingsPct)}`}</td>
-              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtILS(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings, isPrivacyMode)}</td>
+              <td className="py-2 px-2 text-left font-bold text-stone-800 privacy-blur">{fmtCurrency(budgetTotals.totalIncome - budgetTotals.totalFixed - budgetTotals.totalVar - budgetTotals.totalSavings, roomCurrency, isPrivacyMode)}</td>
             </tr>
             <tr className="bg-[#F9FAFB] border-t-2 border-[#DDD6CA]">
               <td colSpan={3} className="py-3 px-2 font-black text-stone-900">יתרה סופית מהתקציב:</td>
               <td className="py-3 px-2 text-left font-black privacy-blur">
                 {isBalanced ? (
-                  <span className="text-[#2E7D32]">{isPrivacyMode ? '₪ •••••• (מאוזן)' : '₪0 (מאוזן)'}</span>
+                  <span className="text-[#2E7D32]">
+                    {isPrivacyMode ? `${SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'} •••••• (מאוזן)` : `${SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'}0 (מאוזן)`}
+                  </span>
                 ) : balance > 0 ? (
-                  <span className="text-[#1976D2]">+{fmtILS(balance, isPrivacyMode)} (עודף)</span>
+                  <span className="text-[#1976D2]">+{fmtCurrency(balance, roomCurrency, isPrivacyMode)} (עודף)</span>
                 ) : (
-                  <span className="text-[#C62828]">{fmtILS(balance, isPrivacyMode)} (חריגה)</span>
+                  <span className="text-[#C62828]">{fmtCurrency(balance, roomCurrency, isPrivacyMode)} (חריגה)</span>
                 )}
               </td>
             </tr>

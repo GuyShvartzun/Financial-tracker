@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getAccountTotalsForMonth, sortAccountsByDataEntryOrder, DEFAULT_EXCHANGE_RATES } from '../utils/calculations';
+import { getAccountTotalsForMonth, sortAccountsByDataEntryOrder, convertCurrency, DEFAULT_EXCHANGE_RATES } from '../utils/calculations';
 import { getCachedRatesForMonth } from '../utils/exchangeRates';
 
 export function useFinancialStats({
@@ -37,8 +37,8 @@ export function useFinancialStats({
     const avgMonthlyTotalGrowth = totalGrowthAmount / monthsElapsed;
     const avgMonthlyLiquidGrowth = liquidGrowthAmount / monthsElapsed;
 
-    const monthlyExp = (budget.fixedExpenses || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0) + 
-                       (budget.variableExpenses || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+    const monthlyExp = (budget.fixedExpenses || []).reduce((s, i) => s + convertCurrency(parseFloat(i.amount) || 0, i.currency || 'ILS', roomCurrency, rates), 0) + 
+                       (budget.variableExpenses || []).reduce((s, i) => s + convertCurrency(parseFloat(i.amount) || 0, i.currency || 'ILS', roomCurrency, rates), 0);
     const shortTermAssets = currentTotals.short;
     const emergencyMonths = monthlyExp > 0 ? (shortTermAssets / monthlyExp) : 0;
 
@@ -89,17 +89,17 @@ export function useFinancialStats({
 
   // Budget Aggregates
   const budgetTotals = useMemo(() => {
-    const totalIncome = (budget.incomes || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const totalFixed = (budget.fixedExpenses || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const totalVar = (budget.variableExpenses || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const totalSavings = (budget.savings || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const totalIncome = (budget.incomes || []).reduce((sum, item) => sum + convertCurrency(parseFloat(item.amount) || 0, item.currency || 'ILS', roomCurrency, rates), 0);
+    const totalFixed = (budget.fixedExpenses || []).reduce((sum, item) => sum + convertCurrency(parseFloat(item.amount) || 0, item.currency || 'ILS', roomCurrency, rates), 0);
+    const totalVar = (budget.variableExpenses || []).reduce((sum, item) => sum + convertCurrency(parseFloat(item.amount) || 0, item.currency || 'ILS', roomCurrency, rates), 0);
+    const totalSavings = (budget.savings || []).reduce((sum, item) => sum + convertCurrency(parseFloat(item.amount) || 0, item.currency || 'ILS', roomCurrency, rates), 0);
 
     const fixedPct = totalIncome > 0 ? (totalFixed / totalIncome) * 100 : 0;
     const varPct = totalIncome > 0 ? (totalVar / totalIncome) * 100 : 0;
     const savingsPct = totalIncome > 0 ? (totalSavings / totalIncome) * 100 : 0;
 
     return { totalIncome, totalFixed, totalVar, totalSavings, fixedPct, varPct, savingsPct };
-  }, [budget]);
+  }, [budget, roomCurrency, rates]);
 
   return {
     roomStats,

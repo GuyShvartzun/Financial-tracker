@@ -1516,6 +1516,108 @@ describe('WorkHoursCostCalculator Component', () => {
     // Income formatted with privacy bullets
     expect(container.textContent).toContain('₪ ••••••');
   });
+
+  describe('BudgetItemEditor Multi-Currency & Conversion Tests', () => {
+    const mockItems = [
+      { id: 'item_1', name: 'משכורת דולרית', amount: 2000, currency: 'USD' },
+      { id: 'item_2', name: 'הכנסה שקלית', amount: 5000, currency: 'ILS' }
+    ];
+
+    it('renders currency selector for each budget item', () => {
+      const onChange = vi.fn();
+      render(
+        <BudgetItemEditor
+          title="הכנסות חודשיות"
+          categoryKey="incomes"
+          items={mockItems}
+          onChange={onChange}
+          roomCurrency="ILS"
+        />
+      );
+
+      const selects = screen.getAllByTitle('בחר מטבע');
+      expect(selects.length).toBe(2);
+      expect(selects[0].value).toBe('USD');
+      expect(selects[1].value).toBe('ILS');
+    });
+
+    it('triggers onChange with updated currency when changed', () => {
+      const onChange = vi.fn();
+      render(
+        <BudgetItemEditor
+          title="הכנסות חודשיות"
+          categoryKey="incomes"
+          items={mockItems}
+          onChange={onChange}
+          roomCurrency="ILS"
+        />
+      );
+
+      const selects = screen.getAllByTitle('בחר מטבע');
+      fireEvent.change(selects[1], { target: { value: 'EUR' } });
+
+      expect(onChange).toHaveBeenCalledWith([
+        { id: 'item_1', name: 'משכורת דולרית', amount: 2000, currency: 'USD' },
+        { id: 'item_2', name: 'הכנסה שקלית', amount: 5000, currency: 'EUR' }
+      ]);
+    });
+
+    it('renders converted equivalent line when item currency differs from roomCurrency', () => {
+      const customRates = { USD: 3.70, EUR: 4.05, ILS: 1 };
+      const { container } = render(
+        <BudgetItemEditor
+          title="הכנסות חודשיות"
+          categoryKey="incomes"
+          items={mockItems}
+          onChange={() => {}}
+          roomCurrency="ILS"
+          rates={customRates}
+        />
+      );
+
+      // item_1 is 2000 USD * 3.7 = 7,400 ILS
+      expect(container.textContent).toContain('שווה ערך ב-₪:');
+      expect(container.textContent).toContain('7,400');
+    });
+
+    it('calculates category total in roomCurrency using exchange rates', () => {
+      const customRates = { USD: 3.70, EUR: 4.05, ILS: 1 };
+      const { container } = render(
+        <BudgetItemEditor
+          title="הכנסות חודשיות"
+          categoryKey="incomes"
+          items={mockItems}
+          onChange={() => {}}
+          roomCurrency="ILS"
+          rates={customRates}
+        />
+      );
+
+      // 2000 * 3.70 (7,400) + 5000 = 12,400 ILS
+      expect(container.textContent).toContain('12,400');
+    });
+
+    it('adds new item with default currency matching roomCurrency', () => {
+      const onChange = vi.fn();
+      render(
+        <BudgetItemEditor
+          title="הכנסות חודשיות"
+          categoryKey="incomes"
+          items={[]}
+          onChange={onChange}
+          roomCurrency="USD"
+        />
+      );
+
+      const addBtn = screen.getByRole('button', { name: /הוסף סעיף/i });
+      fireEvent.click(addBtn);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const newItems = onChange.mock.calls[0][0];
+      expect(newItems.length).toBe(1);
+      expect(newItems[0].currency).toBe('USD');
+    });
+  });
 });
 
 

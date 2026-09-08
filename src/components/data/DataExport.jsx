@@ -230,15 +230,16 @@ export default function DataExport({
               'מזהה סעיף': item.id || '',
               'קטגוריה': budgetToHeb[cat] || cat,
               'שם הסעיף': item.name,
-              'סכום (₪)': item.amount || 0
+              'מטבע': normalizeCurrencyCode(item.currency),
+              'סכום': item.amount || 0
             });
           });
         });
       }
 
       const budgetHeaders = isTemplate 
-        ? ['קטגוריה', 'שם הסעיף', 'סכום (₪)']
-        : ['מזהה סעיף', 'קטגוריה', 'שם הסעיף', 'סכום (₪)'];
+        ? ['קטגוריה', 'שם הסעיף', 'מטבע', 'סכום']
+        : ['מזהה סעיף', 'קטגוריה', 'שם הסעיף', 'מטבע', 'סכום'];
 
       let wsBudget;
       if (budgetExport.length > 0) {
@@ -248,8 +249,8 @@ export default function DataExport({
       }
 
       wsBudget['!cols'] = isTemplate
-        ? [{ wch: 22 }, { wch: 35 }, { wch: 16 }]
-        : [{ wch: 18 }, { wch: 18 }, { wch: 35 }, { wch: 16 }];
+        ? [{ wch: 22 }, { wch: 35 }, { wch: 10 }, { wch: 16 }]
+        : [{ wch: 18 }, { wch: 18 }, { wch: 35 }, { wch: 10 }, { wch: 16 }];
       XLSX.utils.book_append_sheet(wb, wsBudget, "תקציב חודשי");
 
       // 3. Sheet 3: "מחשבונים פיננסיים" (Financial Calculators)
@@ -891,14 +892,24 @@ export default function DataExport({
               formattedBudget[bCat].push({
                 id: row['מזהה סעיף'] || row.id || ('item_' + Date.now() + Math.random().toString(36).substr(2, 9)),
                 name: row['שם הסעיף'] || row['שם החשבון'] || row['Name'] || row.name || 'סעיף תקציב',
-                amount: parseFloat(row['סכום (₪)'] || row['סכום'] || row['Amount'] || row.amount) || 0
+                currency: normalizeCurrencyCode(row['מטבע'] || row['Currency'] || row.currency || 'ILS'),
+                amount: parseFloat(row['סכום'] || row['סכום (₪)'] || row['Amount'] || row.amount) || 0
               });
               budgetItemsCount++;
             }
           });
         } else if (typeof rawBudget === 'object') {
-          formattedBudget = rawBudget;
-          budgetItemsCount = Object.values(rawBudget).reduce((acc, curr) => acc + (Array.isArray(curr) ? curr.length : 0), 0);
+          formattedBudget = { incomes: [], fixedExpenses: [], variableExpenses: [], savings: [] };
+          ['incomes', 'fixedExpenses', 'variableExpenses', 'savings'].forEach(cat => {
+            if (Array.isArray(rawBudget[cat])) {
+              formattedBudget[cat] = rawBudget[cat].map(item => ({
+                ...item,
+                currency: normalizeCurrencyCode(item.currency || 'ILS'),
+                amount: parseFloat(item.amount) || 0
+              }));
+            }
+          });
+          budgetItemsCount = Object.values(formattedBudget).reduce((acc, curr) => acc + (Array.isArray(curr) ? curr.length : 0), 0);
         }
       }
 

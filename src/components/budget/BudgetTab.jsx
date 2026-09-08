@@ -2,10 +2,20 @@ import React from 'react';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
 import BudgetItemEditor from './BudgetItemEditor';
 import WorkHoursCostCalculator from './WorkHoursCostCalculator';
-import { fmtILS, fmtPct } from '../../utils/formatters';
+import { fmtCurrency, fmtPct } from '../../utils/formatters';
+import { DEFAULT_EXCHANGE_RATES } from '../../utils/calculations';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMember = false, onUpdateBudget, isPrivacyMode: propPrivacy }) {
+export default function BudgetTab({
+  budget,
+  budgetTotals,
+  users = [],
+  isSingleMember = false,
+  onUpdateBudget,
+  isPrivacyMode: propPrivacy,
+  roomCurrency = 'ILS',
+  rates = DEFAULT_EXCHANGE_RATES
+}) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
 
@@ -56,35 +66,36 @@ export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMe
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 font-sans">
         <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">סה"כ הכנסות חודשיות</div>
-          <div className="text-xl sm:text-2xl font-black text-[#2E7D32] privacy-blur">{fmtILS(budgetTotals.totalIncome, isPrivacyMode)}</div>
+          <div className="text-xl sm:text-2xl font-black text-[#2E7D32] privacy-blur">{fmtCurrency(budgetTotals.totalIncome, roomCurrency, isPrivacyMode)}</div>
           <div className="text-[11px] text-stone-500 mt-1"><span className="privacy-blur">{isPrivacyMode ? '•••%' : '100%'}</span> מסך התקציב</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">הוצאות קבועות</div>
-          <div className="text-xl sm:text-2xl font-black text-[#C62828] privacy-blur">{fmtILS(budgetTotals.totalFixed, isPrivacyMode)}</div>
+          <div className="text-xl sm:text-2xl font-black text-[#C62828] privacy-blur">{fmtCurrency(budgetTotals.totalFixed, roomCurrency, isPrivacyMode)}</div>
           <div className="text-[11px] text-[#C62828] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.fixedPct, isPrivacyMode)}</span> מההכנסה</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">הוצאות משתנות</div>
-          <div className="text-xl sm:text-2xl font-black text-[#E65100] privacy-blur">{fmtILS(budgetTotals.totalVar, isPrivacyMode)}</div>
+          <div className="text-xl sm:text-2xl font-black text-[#E65100] privacy-blur">{fmtCurrency(budgetTotals.totalVar, roomCurrency, isPrivacyMode)}</div>
           <div className="text-[11px] text-[#E65100] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.varPct, isPrivacyMode)}</span> מההכנסה</div>
         </div>
 
         <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 sm:p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-card">
           <div className="text-xs text-stone-500 font-bold mb-1">חיסכון והשקעה</div>
-          <div className="text-xl sm:text-2xl font-black text-[#1976D2] privacy-blur">{fmtILS(budgetTotals.totalSavings, isPrivacyMode)}</div>
+          <div className="text-xl sm:text-2xl font-black text-[#1976D2] privacy-blur">{fmtCurrency(budgetTotals.totalSavings, roomCurrency, isPrivacyMode)}</div>
           <div className="text-[11px] text-[#1976D2] mt-1"><span className="privacy-blur font-bold">{fmtPct(budgetTotals.savingsPct, isPrivacyMode)}</span> מההכנסה</div>
         </div>
       </div>
 
-      <WaterfallChartModule budgetTotals={budgetTotals} isPrivacyMode={isPrivacyMode} />
+      <WaterfallChartModule budgetTotals={budgetTotals} isPrivacyMode={isPrivacyMode} roomCurrency={roomCurrency} />
 
       <WorkHoursCostCalculator
         totalIncome={budgetTotals.totalIncome}
         usersCount={users?.length || 1}
         isPrivacyMode={isPrivacyMode}
+        roomCurrency={roomCurrency}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -97,6 +108,8 @@ export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMe
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
           isPrivacyMode={isPrivacyMode}
+          roomCurrency={roomCurrency}
+          rates={rates}
         />
         <BudgetItemEditor 
           title="הוצאות קבועות" 
@@ -107,6 +120,8 @@ export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMe
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
           isPrivacyMode={isPrivacyMode}
+          roomCurrency={roomCurrency}
+          rates={rates}
         />
         <BudgetItemEditor 
           title="הוצאות משתנות" 
@@ -117,6 +132,8 @@ export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMe
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
           isPrivacyMode={isPrivacyMode}
+          roomCurrency={roomCurrency}
+          rates={rates}
         />
         <BudgetItemEditor 
           title="חסכונות והשקעות" 
@@ -127,6 +144,8 @@ export default function BudgetTab({ budget, budgetTotals, users = [], isSingleMe
           onMoveCategory={handleMoveCategory}
           onMoveItemToPosition={handleMoveItemToPosition}
           isPrivacyMode={isPrivacyMode}
+          roomCurrency={roomCurrency}
+          rates={rates}
         />
       </div>
     </div>

@@ -56,10 +56,10 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
   ];
 
   const sampleBudget = {
-    incomes: [{ id: 'inc_1', name: 'משכורת', amount: 20000 }],
-    fixedExpenses: [{ id: 'fix_1', name: 'שכר דירה', amount: 5000 }],
-    variableExpenses: [{ id: 'var_1', name: 'סופר', amount: 3000 }],
-    savings: [{ id: 'sav_1', name: 'חיסכון', amount: 4000 }]
+    incomes: [{ id: 'inc_1', name: 'משכורת', amount: 20000, currency: 'ILS' }],
+    fixedExpenses: [{ id: 'fix_1', name: 'שכר דירה', amount: 5000, currency: 'ILS' }],
+    variableExpenses: [{ id: 'var_1', name: 'סופר', amount: 3000, currency: 'ILS' }],
+    savings: [{ id: 'sav_1', name: 'חיסכון', amount: 4000, currency: 'ILS' }]
   };
 
   const sampleCalculators = {

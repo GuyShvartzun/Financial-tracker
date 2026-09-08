@@ -110,6 +110,32 @@ describe('New Architecture & Hooks Unit Tests', () => {
       expect(result.current.budgetTotals.varPct).toBe(20);
       expect(result.current.budgetTotals.savingsPct).toBe(40);
     });
+
+    it('calculates budgetTotals accurately with multi-currency items converted to roomCurrency', () => {
+      const multiCurBudget = {
+        incomes: [{ id: 'inc_usd', amount: 1000, currency: 'USD' }], // 1000 * 3.70 = 3700 ILS
+        fixedExpenses: [{ id: 'fix_eur', amount: 500, currency: 'EUR' }], // 500 * 4.05 = 2025 ILS
+        variableExpenses: [{ id: 'var_ils', amount: 1000, currency: 'ILS' }], // 1000 ILS
+        savings: [{ id: 'sav_ils', amount: 675, currency: 'ILS' }] // 675 ILS
+      };
+
+      const customRates = { USD: 3.70, EUR: 4.05, ILS: 1 };
+
+      const { result } = renderHook(() => useFinancialStats({
+        accounts: [],
+        monthsList: ['08/2026'],
+        selectedMonth: '08/2026',
+        budget: multiCurBudget,
+        roomCurrency: 'ILS',
+        rates: customRates
+      }));
+
+      expect(result.current.budgetTotals.totalIncome).toBe(3700);
+      expect(result.current.budgetTotals.totalFixed).toBe(2025);
+      expect(result.current.budgetTotals.totalVar).toBe(1000);
+      expect(result.current.budgetTotals.totalSavings).toBe(675);
+      expect(result.current.roomStats.monthlyExp).toBe(3025); // 2025 + 1000
+    });
   });
 
   describe('useKeyboardShortcuts Hook', () => {

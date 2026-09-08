@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { fmtILS } from '../../utils/formatters';
+import { fmtCurrency, CURRENCY_LIST, normalizeCurrencyCode, SUPPORTED_CURRENCIES } from '../../utils/formatters';
+import { convertCurrency, DEFAULT_EXCHANGE_RATES } from '../../utils/calculations';
 import { usePrivacy } from '../../context/PrivacyContext';
 
 const BUDGET_CATEGORIES = [
@@ -17,7 +18,9 @@ export default function BudgetItemEditor({
   onChange,
   onMoveCategory,
   onMoveItemToPosition,
-  isPrivacyMode: propPrivacy
+  isPrivacyMode: propPrivacy,
+  roomCurrency = 'ILS',
+  rates = DEFAULT_EXCHANGE_RATES
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
@@ -33,8 +36,12 @@ export default function BudgetItemEditor({
     onChange(items.map(i => i.id === id ? { ...i, name } : i));
   };
 
+  const handleCurrency = (id, newCurrency) => {
+    onChange(items.map(i => i.id === id ? { ...i, currency: newCurrency } : i));
+  };
+
   const handleAdd = () => {
-    onChange([...items, { id: 'item_' + Date.now(), name: 'סעיף חדש', amount: 0 }]);
+    onChange([...items, { id: 'item_' + Date.now(), name: 'סעיף חדש', amount: 0, currency: roomCurrency || 'ILS' }]);
   };
 
   const handleDelete = (id) => {
@@ -103,6 +110,11 @@ export default function BudgetItemEditor({
     }
   };
 
+  const categoryTotal = items.reduce((s, i) => {
+    const amt = parseFloat(i.amount) || 0;
+    return s + convertCurrency(amt, i.currency || 'ILS', roomCurrency, rates);
+  }, 0);
+
   return (
     <div
       onDragOver={handleCardDragOver}
@@ -116,7 +128,7 @@ export default function BudgetItemEditor({
         <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">
           <h4 className="text-sm font-bold text-stone-900">{title}</h4>
           <span className="text-xs font-bold text-[#2E7D32]">
-            סה"כ: <span className="privacy-blur">{fmtILS(items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0), isPrivacyMode)}</span>
+            סה"כ: <span className="privacy-blur">{fmtCurrency(categoryTotal, roomCurrency, isPrivacyMode)}</span>
           </span>
         </div>
 
@@ -130,6 +142,8 @@ export default function BudgetItemEditor({
           {items.map((item, index) => {
             const isDragging = draggedItemId === item.id;
             const isDragOver = dragOverItemId === item.id;
+            const itemCurrency = normalizeCurrencyCode(item.currency);
+            const isDifferentCurrency = itemCurrency !== roomCurrency;
 
             return (
               <div
@@ -144,85 +158,111 @@ export default function BudgetItemEditor({
                 }}
                 onDragLeave={() => setDragOverItemId(null)}
                 onDrop={(e) => handleItemDrop(e, index)}
-                className={`flex items-center gap-1 sm:gap-2 p-1.5 rounded-xl border transition ${
+                className={`flex flex-col gap-1.5 p-2 rounded-xl border transition ${
                   isDragging ? 'opacity-40 border-dashed border-stone-400' :
                   isDragOver ? 'border-[#4A90E2] bg-blue-50/40' :
                   'bg-[#FAF7F2] border-[#E8E2D8] hover:border-[#DDD6CA]'
                 }`}
               >
-                {/* Drag Handle & Up/Down Arrows */}
-                <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-                  <span 
-                    className="cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-700 select-none text-xs px-0.5" 
-                    title="גרור לשינוי מיקום או קטגוריה"
-                  >
-                    ⋮⋮
-                  </span>
-                  <div className="flex flex-col gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => handleReorder(index, 'up')}
-                      disabled={index === 0}
-                      className="w-4 h-3.5 sm:w-4 sm:h-3 bg-white border border-[#DDD6CA] hover:bg-stone-100 disabled:opacity-20 disabled:cursor-not-allowed rounded flex items-center justify-center text-[7px] font-bold text-stone-700 cursor-pointer"
-                      title="הזז למעלה"
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  {/* Drag Handle & Up/Down Arrows */}
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <span 
+                      className="cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-700 select-none text-xs px-0.5" 
+                      title="גרור לשינוי מיקום או קטגוריה"
                     >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleReorder(index, 'down')}
-                      disabled={index === items.length - 1}
-                      className="w-4 h-3.5 sm:w-4 sm:h-3 bg-white border border-[#DDD6CA] hover:bg-stone-100 disabled:opacity-20 disabled:cursor-not-allowed rounded flex items-center justify-center text-[7px] font-bold text-stone-700 cursor-pointer"
-                      title="הזז למטה"
-                    >
-                      ▼
-                    </button>
+                      ⋮⋮
+                    </span>
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleReorder(index, 'up')}
+                        disabled={index === 0}
+                        className="w-4 h-3.5 bg-white border border-[#DDD6CA] hover:bg-stone-100 disabled:opacity-20 disabled:cursor-not-allowed rounded flex items-center justify-center text-[7px] font-bold text-stone-700 cursor-pointer"
+                        title="הזז למעלה"
+                      >
+                        ▲
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReorder(index, 'down')}
+                        disabled={index === items.length - 1}
+                        className="w-4 h-3.5 bg-white border border-[#DDD6CA] hover:bg-stone-100 disabled:opacity-20 disabled:cursor-not-allowed rounded flex items-center justify-center text-[7px] font-bold text-stone-700 cursor-pointer"
+                        title="הזז למטה"
+                      >
+                        ▼
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Name input */}
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => handleName(item.id, e.target.value)}
+                    placeholder="שם הסעיף"
+                    className="flex-1 min-w-[70px] sm:min-w-[90px] bg-white border border-[#DDD6CA] text-xs font-semibold rounded-lg px-2 py-1.5 text-stone-900 outline-none focus:border-[#4A90E2] privacy-blur"
+                  />
+
+                  {/* Category Dropdown Selector */}
+                  <select
+                    value={categoryKey}
+                    onChange={(e) => onMoveCategory && onMoveCategory(categoryKey, item.id, e.target.value)}
+                    className="bg-white border border-[#DDD6CA] text-[10px] sm:text-xs font-bold text-stone-600 rounded-lg px-1 sm:px-1.5 py-1.5 outline-none focus:border-[#4A90E2] cursor-pointer privacy-blur"
+                    title="העבר לקטגוריה אחרת"
+                  >
+                    {BUDGET_CATEGORIES.map(cat => (
+                      <option key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Currency Dropdown Selector */}
+                  <select
+                    value={itemCurrency}
+                    onChange={(e) => handleCurrency(item.id, e.target.value)}
+                    className="bg-white border border-[#DDD6CA] text-[10px] sm:text-xs font-bold text-stone-700 rounded-lg px-1 sm:px-1.5 py-1.5 outline-none focus:border-[#4A90E2] cursor-pointer shrink-0"
+                    title="בחר מטבע"
+                  >
+                    {CURRENCY_LIST.map(cur => (
+                      <option key={cur.code} value={cur.code}>
+                        {cur.symbol} {cur.code}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Amount input */}
+                  <input
+                    type={isPrivacyMode ? "password" : "number"}
+                    step="any"
+                    value={isPrivacyMode ? '••••••' : (item.amount ?? '')}
+                    readOnly={isPrivacyMode}
+                    onChange={(e) => !isPrivacyMode && handleAmount(item.id, e.target.value)}
+                    placeholder={isPrivacyMode ? '••••' : '0'}
+                    className="w-16 sm:w-20 bg-white border border-[#DDD6CA] text-xs font-bold text-[#2E7D32] rounded-lg px-1.5 sm:px-2 py-1.5 outline-none focus:border-[#4A90E2] privacy-blur text-left"
+                  />
+
+                  {/* Delete button */}
+                  <button 
+                    type="button"
+                    onClick={() => handleDelete(item.id)} 
+                    className="w-6 h-6 sm:w-7 sm:h-7 text-xs text-[#C62828] font-bold hover:bg-[#FFEBEE] rounded-lg border border-transparent hover:border-[#FFCDD2] flex items-center justify-center cursor-pointer transition shrink-0"
+                    title="מחק סעיף"
+                  >
+                    ✕
+                  </button>
                 </div>
 
-                {/* Name input */}
-                <input
-                  type="text"
-                  value={item.name}
-                  onChange={(e) => handleName(item.id, e.target.value)}
-                  placeholder="שם הסעיף"
-                  className="flex-1 min-w-[75px] sm:min-w-[100px] bg-white border border-[#DDD6CA] text-xs font-semibold rounded-lg px-2 py-1 text-stone-900 outline-none focus:border-[#4A90E2] privacy-blur"
-                />
-
-                {/* Category Dropdown Selector */}
-                <select
-                  value={categoryKey}
-                  onChange={(e) => onMoveCategory && onMoveCategory(categoryKey, item.id, e.target.value)}
-                  className="bg-white border border-[#DDD6CA] text-[10px] sm:text-xs font-bold text-stone-600 rounded-lg px-1 sm:px-1.5 py-1 outline-none focus:border-[#4A90E2] cursor-pointer privacy-blur"
-                  title="העבר לקטגוריה אחרת"
-                >
-                  {BUDGET_CATEGORIES.map(cat => (
-                    <option key={cat.key} value={cat.key}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Amount input */}
-                <input
-                  type={isPrivacyMode ? "password" : "number"}
-                  step="any"
-                  value={isPrivacyMode ? '••••••' : (item.amount ?? '')}
-                  readOnly={isPrivacyMode}
-                  onChange={(e) => !isPrivacyMode && handleAmount(item.id, e.target.value)}
-                  placeholder={isPrivacyMode ? '••••' : '0'}
-                  className="w-16 sm:w-20 bg-white border border-[#DDD6CA] text-xs font-bold text-[#2E7D32] rounded-lg px-1.5 sm:px-2 py-1 outline-none focus:border-[#4A90E2] privacy-blur"
-                />
-
-                {/* Delete button */}
-                <button 
-                  type="button"
-                  onClick={() => handleDelete(item.id)} 
-                  className="w-6 h-6 sm:w-7 sm:h-7 text-xs text-[#C62828] font-bold hover:bg-[#FFEBEE] rounded-lg border border-transparent hover:border-[#FFCDD2] flex items-center justify-center cursor-pointer transition shrink-0"
-                  title="מחק סעיף"
-                >
-                  ✕
-                </button>
+                {/* Conversion row if item currency differs from roomCurrency */}
+                {isDifferentCurrency && (
+                  <div className="flex items-center justify-end px-2 text-[10px] text-stone-500 font-medium">
+                    <span>שווה ערך ב-{SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'}:&nbsp;</span>
+                    <span className="font-bold text-stone-700 privacy-blur">
+                      ≈ {fmtCurrency(convertCurrency(item.amount || 0, item.currency || 'ILS', roomCurrency, rates), roomCurrency, isPrivacyMode)}
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })}

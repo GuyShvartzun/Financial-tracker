@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Clock, ShoppingBag, Coins, RotateCcw, Edit3 } from 'lucide-react';
-import { fmtILS } from '../../utils/formatters';
+import { fmtCurrency, SUPPORTED_CURRENCIES } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function WorkHoursCostCalculator({
   totalIncome = 0,
   usersCount = 1,
-  isPrivacyMode: propPrivacy
+  isPrivacyMode: propPrivacy,
+  roomCurrency = 'ILS'
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
@@ -82,13 +83,13 @@ export default function WorkHoursCostCalculator({
         <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xs">
           <label className="block text-xs font-bold text-stone-700 flex items-center gap-1.5">
             <ShoppingBag className="w-3.5 h-3.5 text-indigo-600" />
-            מחיר המוצר (₪)
+            מחיר המוצר ({SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'})
           </label>
           <input
             type={isPrivacyMode ? "password" : "number"}
             min="0"
             step="any"
-            aria-label="מחיר המוצר (₪)"
+            aria-label={`מחיר המוצר (${SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'})`}
             value={isPrivacyMode ? '••••••' : productPrice}
             readOnly={isPrivacyMode}
             onChange={(e) => !isPrivacyMode && setProductPrice(e.target.value)}
@@ -148,12 +149,12 @@ export default function WorkHoursCostCalculator({
               value={isPrivacyMode ? '••••••' : customIncomeValue}
               readOnly={isPrivacyMode}
               onChange={(e) => !isPrivacyMode && setCustomIncomeValue(e.target.value)}
-              placeholder={isPrivacyMode ? '••••' : 'הזן הכנסה ידנית (₪)'}
+              placeholder={isPrivacyMode ? '••••' : `הזן הכנסה ידנית (${SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'})`}
               className="w-full bg-white border border-indigo-300 text-sm font-bold text-[#2E7D32] rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 privacy-blur transition"
             />
           ) : (
             <div className="w-full bg-white border border-[#DDD6CA] text-sm font-bold text-[#2E7D32] rounded-lg px-3 py-2 flex items-center justify-between privacy-blur">
-              <span>{fmtILS(totalIncome, isPrivacyMode)}</span>
+              <span>{fmtCurrency(totalIncome, roomCurrency, isPrivacyMode)}</span>
               <span className="text-[10px] font-semibold text-stone-400">מהתקציב</span>
             </div>
           )}
