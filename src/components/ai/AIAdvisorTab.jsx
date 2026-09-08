@@ -153,50 +153,9 @@ ${personalBreakdownStr}
     }
   };
 
-  const importActionItemsAsTasks = () => {
-    if (!aiAuditReport) return;
-    const parts = aiAuditReport.split(/## צעדים אופרטיביים מומלצים/i);
-    let items = [];
-    if (parts.length > 1) {
-      const section = parts[1];
-      items = section
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.startsWith('*') || l.startsWith('-'))
-        .map(l => l.replace(/^[\*\-]\s*/, '').replace(/\*\*/g, '').trim())
-        .filter(Boolean);
-    }
-    if (items.length === 0) {
-      items = aiAuditReport
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.startsWith('*') || l.startsWith('-'))
-        .slice(-4)
-        .map(l => l.replace(/^[\*\-]\s*/, '').replace(/\*\*/g, '').trim())
-        .filter(Boolean);
-    }
-
-    if (items.length > 0) {
-      const newTasks = items.map((text, idx) => ({
-        id: `task_ai_audit_${Date.now()}_${idx}`,
-        title: text.length > 70 ? text.substring(0, 70) + '...' : text,
-        description: text.length > 70 ? text : '',
-        category: 'budget',
-        priority: 'high',
-        assignedTo: '',
-        targetMonth: selectedMonth,
-        completed: false,
-        createdAt: new Date().toISOString()
-      }));
-
-      handleUpdateTasks([...newTasks, ...(currentTasks || [])]);
-      setActiveSubTab('tasks');
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Sub navigation: דוח וצ'אט AI vs משימות פיננסיות */}
+      {/* Sub navigation: דוח וצ'אט AI vs משימות */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#FFFFFF] p-1.5 sm:p-2 rounded-2xl border border-[#E8E2D8] shadow-xs">
         <button
           type="button"
@@ -220,7 +179,7 @@ ${personalBreakdownStr}
           }`}
         >
           <ListTodo className="w-4 h-4 shrink-0" />
-          <span>רשימת משימות פיננסיות</span>
+          <span>רשימת משימות</span>
           {pendingTasksCount > 0 && (
             <span className="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
               {pendingTasksCount}
@@ -275,17 +234,7 @@ ${personalBreakdownStr}
 
             {aiAuditReport && (
               <div className="bg-[#FAF7F2] p-4 sm:p-6 rounded-2xl border border-[#E8E2D8] space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8E2D8] pb-2">
-                  <h3 className="text-sm sm:text-base font-bold text-stone-900">דוח אבחון וייעוץ פיננסי</h3>
-                  <button
-                    type="button"
-                    onClick={importActionItemsAsTasks}
-                    className="bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] border border-[#A5D6A7] font-bold px-3 py-1.5 rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-                  >
-                    <ListTodo className="w-3.5 h-3.5" />
-                    <span>המר צעדים אופרטיביים למשימות</span>
-                  </button>
-                </div>
+                <h3 className="text-sm sm:text-base font-bold text-stone-900 border-b border-[#E8E2D8] pb-2">דוח אבחון וייעוץ פיננסי</h3>
                 <FormattedText text={aiAuditReport} />
               </div>
             )}

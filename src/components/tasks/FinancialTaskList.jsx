@@ -5,59 +5,39 @@ import {
   Plus, 
   Trash2, 
   Edit3, 
-  Sparkles, 
   Calendar, 
   User, 
   Check, 
   X, 
   Search,
-  ListTodo,
-  CheckCheck
+  ListTodo
 } from 'lucide-react';
-import { callGeminiAPI } from '../../utils/gemini';
-import { fmtILS } from '../../utils/formatters';
-
-export const TASK_CATEGORIES = [
-  { id: 'savings', label: 'חיסכון וקרן חירום', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { id: 'investments', label: 'השקעות ושוק ההון', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  { id: 'budget', label: 'תזרים וניהול הוצאות', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { id: 'pension', label: 'פנסיה, גמל וביטוחים', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  { id: 'debt', label: 'חובות, הלוואות ומשכנתה', color: 'bg-rose-50 text-rose-700 border-rose-200' },
-  { id: 'general', label: 'כללי ומנהלה', color: 'bg-stone-50 text-stone-700 border-stone-200' },
-];
 
 export const TASK_PRIORITIES = [
   { id: 'high', label: 'עדיפות גבוהה', badge: 'bg-red-50 text-red-700 border-red-200' },
   { id: 'medium', label: 'עדיפות בינונית', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { id: 'low', label: 'עדיפות רגילה', badge: 'bg-stone-100 text-stone-600 border-stone-200' },
+  { id: 'low', label: 'עדיפות נמוכה', badge: 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' },
 ];
 
 export default function FinancialTaskList({
   tasks = [],
   onUpdateTasks,
   users = [],
-  selectedMonth = '08/2026',
-  roomStats = {},
-  budgetTotals = {},
-  accounts = []
+  selectedMonth = '08/2026'
 }) {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'pending' | 'completed'
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [isGeneratingAiTasks, setIsGeneratingAiTasks] = useState(false);
-  const [aiNotice, setAiNotice] = useState('');
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: 'savings',
     priority: 'medium',
     assignedTo: '',
-    targetMonth: selectedMonth
+    targetDate: ''
   });
 
   // Calculate stats
@@ -72,7 +52,6 @@ export default function FinancialTaskList({
     return tasks.filter(task => {
       if (statusFilter === 'pending' && task.completed) return false;
       if (statusFilter === 'completed' && !task.completed) return false;
-      if (categoryFilter !== 'all' && task.category !== categoryFilter) return false;
       if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -82,7 +61,7 @@ export default function FinancialTaskList({
       }
       return true;
     });
-  }, [tasks, statusFilter, categoryFilter, priorityFilter, searchQuery]);
+  }, [tasks, statusFilter, priorityFilter, searchQuery]);
 
   // Handlers
   const handleToggleComplete = (taskId) => {
@@ -110,10 +89,9 @@ export default function FinancialTaskList({
     setFormData({
       title: task.title || '',
       description: task.description || '',
-      category: task.category || 'savings',
       priority: task.priority || 'medium',
       assignedTo: task.assignedTo || '',
-      targetMonth: task.targetMonth || selectedMonth
+      targetDate: task.targetDate || task.targetMonth || ''
     });
     setShowAddForm(true);
   };
@@ -122,10 +100,9 @@ export default function FinancialTaskList({
     setFormData({
       title: '',
       description: '',
-      category: 'savings',
       priority: 'medium',
       assignedTo: '',
-      targetMonth: selectedMonth
+      targetDate: ''
     });
     setEditingTaskId(null);
     setShowAddForm(false);
@@ -136,32 +113,28 @@ export default function FinancialTaskList({
     if (!formData.title.trim()) return;
 
     if (editingTaskId) {
-      // Update existing
       const updated = tasks.map(t => {
         if (t.id === editingTaskId) {
           return {
             ...t,
             title: formData.title.trim(),
             description: formData.description.trim(),
-            category: formData.category,
             priority: formData.priority,
             assignedTo: formData.assignedTo,
-            targetMonth: formData.targetMonth
+            targetDate: formData.targetDate.trim()
           };
         }
         return t;
       });
       onUpdateTasks(updated);
     } else {
-      // Add new
       const newTask = {
         id: `task_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         title: formData.title.trim(),
         description: formData.description.trim(),
-        category: formData.category,
         priority: formData.priority,
         assignedTo: formData.assignedTo,
-        targetMonth: formData.targetMonth,
+        targetDate: formData.targetDate.trim(),
         completed: false,
         createdAt: new Date().toISOString()
       };
@@ -169,68 +142,6 @@ export default function FinancialTaskList({
     }
 
     handleResetForm();
-  };
-
-  // AI Task Generator: Analyze current metrics and propose 3 concrete tasks
-  const handleGenerateAiTasks = async () => {
-    setIsGeneratingAiTasks(true);
-    setAiNotice('');
-    try {
-      const netWorthStr = fmtILS(roomStats?.netWorth || 0);
-      const liquidStr = fmtILS(roomStats?.liquid || 0);
-      const incomeStr = fmtILS(budgetTotals?.totalIncome || 0);
-      const savingsStr = fmtILS(budgetTotals?.totalSavings || 0);
-      const prompt = `
-אתה יועץ פיננסי בכיר. בהתבסס על הנתונים הבאים של משק הבית:
-- הון נטו: ${netWorthStr}
-- הון נזיל: ${liquidStr}
-- הכנסה חודשית נטו: ${incomeStr}
-- חיסכון חודשי: ${savingsStr}
-- חודשי כיסוי קרן חירום: ${(roomStats?.emergencyMonths || 0).toFixed(1)} חודשים
-
-צור 3 משימות פיננסיות מעשיות, מדויקות וקצרות שמומלץ לבצע החודש.
-החזר אך ורק מערך JSON תקין (ללא markdown, ללא backticks, ללא הסברים מסביב) במבנה הבא:
-[
-  {
-    "title": "כותרת משימה קצרה וממוקדת",
-    "description": "פירוט והנחיות ביצוע קצרות",
-    "category": "savings",
-    "priority": "high"
-  }
-]
-הקטגוריות האפשריות: savings, investments, budget, pension, debt, general.
-רמות עדיפות: high, medium, low.
-`;
-      const reply = await callGeminiAPI(prompt, "אתה יועץ פיננסי מומחה. החזר JSON תקין בלבד ללא טקסט נוסף.");
-      
-      // Clean possible json code blocks
-      const cleanJson = reply.replace(/```json/gi, '').replace(/```/g, '').trim();
-      const parsedTasks = JSON.parse(cleanJson);
-
-      if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
-        const newTasksWithIds = parsedTasks.map(item => ({
-          id: `task_ai_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          title: item.title || 'משימה פיננסית',
-          description: item.description || '',
-          category: item.category || 'general',
-          priority: item.priority || 'medium',
-          assignedTo: '',
-          targetMonth: selectedMonth,
-          completed: false,
-          createdAt: new Date().toISOString()
-        }));
-
-        onUpdateTasks([...newTasksWithIds, ...tasks]);
-        setAiNotice(`נוספו בהצלחה ${newTasksWithIds.length} משימות מומלצות מה-AI!`);
-        setTimeout(() => setAiNotice(''), 5000);
-      }
-    } catch (err) {
-      console.error("Failed to generate AI tasks:", err);
-      setAiNotice("לא ניתן היה להפיק משימות אוטומטיות כעת. אנא נסה שוב.");
-      setTimeout(() => setAiNotice(''), 5000);
-    } finally {
-      setIsGeneratingAiTasks(false);
-    }
   };
 
   return (
@@ -244,35 +155,16 @@ export default function FinancialTaskList({
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-stone-900 flex items-center gap-2">
-                <span>משימות ותוכנית פעולה פיננסית</span>
+                <span>רשימת משימות</span>
               </h2>
               <p className="text-xs text-stone-500 mt-0.5">
-                מעקב ביצוע אחר צעדים אופרטיביים, משימות חיסכון, השקעות והתייעלות
+                רשימת משימות
               </p>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleGenerateAiTasks}
-              disabled={isGeneratingAiTasks}
-              className="bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#2E7D32] border border-[#DDD6CA] font-bold px-3.5 py-2 rounded-xl text-xs shadow-xs transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-            >
-              {isGeneratingAiTasks ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-[#2E7D32] border-t-transparent rounded-full animate-spin"></div>
-                  <span>מפיק משימות ב-AI...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>הפק משימות ב-AI</span>
-                </>
-              )}
-            </button>
-
             <button
               type="button"
               onClick={() => {
@@ -286,14 +178,6 @@ export default function FinancialTaskList({
             </button>
           </div>
         </div>
-
-        {/* AI Notice if triggered */}
-        {aiNotice && (
-          <div className="bg-[#E8F5E9] border border-[#C8E6C9] text-[#2E7D32] px-4 py-2.5 rounded-xl text-xs flex items-center gap-2">
-            <CheckCheck className="w-4 h-4 shrink-0" />
-            <span>{aiNotice}</span>
-          </div>
-        )}
 
         {/* Progress Metrics Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
@@ -363,7 +247,7 @@ export default function FinancialTaskList({
               <input
                 type="text"
                 required
-                placeholder="למשל: פתיחת קרן השתלמות, מיקוח עמלות, בדיקת פוליסת ביטוח..."
+                placeholder="הכנס כותרת למשימה..."
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs sm:text-sm rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
@@ -376,29 +260,14 @@ export default function FinancialTaskList({
               </label>
               <textarea
                 rows={2}
-                placeholder="הסבר קצר, מספרי טלפון, סכום יעד או צעדים מפורטים..."
+                placeholder="הסבר קצר, הערות או צעדים מפורטים..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs sm:text-sm rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32] resize-none"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  קטגוריה
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32]"
-                >
-                  {TASK_CATEGORIES.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
-                  ))}
-                </select>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">
                   עדיפות
@@ -423,7 +292,7 @@ export default function FinancialTaskList({
                   onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
                   className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32]"
                 >
-                  <option value="">משותף / כללי</option>
+                  <option value="">כללי</option>
                   {users.map(u => (
                     <option key={u.uid || u.id} value={u.uid || u.id}>
                       {u.displayName || u.name || 'משתמש'}
@@ -434,13 +303,13 @@ export default function FinancialTaskList({
 
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  חודש יעד
+                  תאריך יעד
                 </label>
                 <input
                   type="text"
-                  placeholder="MM/YYYY"
-                  value={formData.targetMonth}
-                  onChange={(e) => setFormData({ ...formData, targetMonth: e.target.value })}
+                  placeholder="DD/MM/YYYY או תאריך מבוקש"
+                  value={formData.targetDate}
+                  onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
                   className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32]"
                 />
               </div>
@@ -519,20 +388,9 @@ export default function FinancialTaskList({
           </div>
         </div>
 
-        {/* Secondary Category & Priority Filters */}
+        {/* Priority Filter */}
         <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#E8E2D8]">
-          <span className="text-[11px] font-semibold text-stone-500">סינון מהיר:</span>
-          
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-[#FAF7F2] border border-[#DDD6CA] text-stone-700 text-xs rounded-lg px-2 py-1 outline-none focus:border-[#2E7D32]"
-          >
-            <option value="all">כל הקטגוריות</option>
-            {TASK_CATEGORIES.map(c => (
-              <option key={c.id} value={c.id}>{c.label}</option>
-            ))}
-          </select>
+          <span className="text-[11px] font-semibold text-stone-500">סינון עדיפות:</span>
 
           <select
             value={priorityFilter}
@@ -545,11 +403,10 @@ export default function FinancialTaskList({
             ))}
           </select>
 
-          {(categoryFilter !== 'all' || priorityFilter !== 'all' || searchQuery) && (
+          {(priorityFilter !== 'all' || searchQuery) && (
             <button
               type="button"
               onClick={() => {
-                setCategoryFilter('all');
                 setPriorityFilter('all');
                 setSearchQuery('');
               }}
@@ -574,8 +431,8 @@ export default function FinancialTaskList({
               </p>
               <p className="text-xs text-stone-500 mt-1">
                 {tasks.length === 0 
-                  ? 'לחץ על "משימה חדשה" או "הפק משימות ב-AI" כדי להתחיל לתכנן את הצעדים הפיננסיים שלך.'
-                  : 'נסה לשנות את הסינונים או לחפש מילת מפתח אחרת.'}
+                  ? 'לחץ על "משימה חדשה" כדי להתחיל להוסיף משימות.'
+                  : 'נסה לשנות את הסינון או לחפש מילת מפתח אחרת.'}
               </p>
             </div>
             {tasks.length === 0 && (
@@ -592,9 +449,9 @@ export default function FinancialTaskList({
           </div>
         ) : (
           filteredTasks.map(task => {
-            const catObj = TASK_CATEGORIES.find(c => c.id === task.category) || TASK_CATEGORIES[5];
             const prioObj = TASK_PRIORITIES.find(p => p.id === task.priority) || TASK_PRIORITIES[2];
             const assignedUser = users.find(u => (u.uid || u.id) === task.assignedTo);
+            const targetDateDisplay = task.targetDate || task.targetMonth;
 
             return (
               <div
@@ -628,11 +485,7 @@ export default function FinancialTaskList({
                         {task.title}
                       </h4>
 
-                      {/* Badges */}
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${catObj.color}`}>
-                        {catObj.label}
-                      </span>
-
+                      {/* Priority Badge */}
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${prioObj.badge}`}>
                         {prioObj.label}
                       </span>
@@ -648,10 +501,10 @@ export default function FinancialTaskList({
 
                     {/* Metadata line: due date, assigned user */}
                     <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-stone-500">
-                      {task.targetMonth && (
+                      {targetDateDisplay && (
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-stone-400" />
-                          <span>יעד: {task.targetMonth}</span>
+                          <span>תאריך יעד: {targetDateDisplay}</span>
                         </span>
                       )}
 
@@ -663,14 +516,7 @@ export default function FinancialTaskList({
                       ) : (
                         <span className="flex items-center gap-1 text-stone-400">
                           <User className="w-3 h-3" />
-                          <span>משותף</span>
-                        </span>
-                      )}
-
-                      {task.completed && task.completedAt && (
-                        <span className="flex items-center gap-1 text-[#2E7D32]">
-                          <CheckCheck className="w-3 h-3" />
-                          <span>הושלם</span>
+                          <span>כללי</span>
                         </span>
                       )}
                     </div>
