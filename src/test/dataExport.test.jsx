@@ -102,7 +102,7 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     vi.clearAllMocks();
   });
 
-  it('renders all 3 export actions: Full Excel, Blank Template, Full JSON', () => {
+  it('renders only Excel export actions: Full Excel and Blank Template, and NO JSON button', () => {
     render(
       <DataExport
         accounts={sampleAccounts}
@@ -131,7 +131,7 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     expect(screen.getByText('ייצוא נתונים מלא')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /הורד קובץ Excel/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /הורד תבנית ריקה/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /הורד קובץ JSON/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /הורד קובץ JSON/i })).not.toBeInTheDocument();
   });
 
   it('triggers full Excel export and downloads with correct filename', () => {
@@ -157,12 +157,13 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     expect(calls[0][1]).toContain('.xlsx');
   });
 
-  it('triggers blank template Excel export with ONLY headers and zero personal data rows', () => {
+  it('triggers blank template Excel export with ONLY headers, zero personal data rows, and single current month', () => {
     render(
       <DataExport
         accounts={[]}
         budget={DEFAULT_BUDGET}
-        monthsList={['08/2026']}
+        monthsList={['07/2026', '08/2026']}
+        selectedMonth="08/2026"
         users={sampleUsers}
         authUser={{ uid: 'u1' }}
         calculatorsData={DEFAULT_CALCULATORS_DATA}
@@ -188,6 +189,13 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     const accountsData = XLSX.utils.sheet_to_json(wb.Sheets['הון וחשבונות']);
     expect(accountsData.length).toBe(0);
 
+    // Verify accounts sheet has ONLY ONE month column
+    const headerRow = XLSX.utils.sheet_to_json(wb.Sheets['הון וחשבונות'], { header: 1 })[0];
+    expect(headerRow).toContain('08/2026');
+    expect(headerRow).not.toContain('07/2026');
+    const monthCols = headerRow.filter(h => /^\d{2}\/\d{4}$/.test(h));
+    expect(monthCols.length).toBe(1);
+
     const budgetData = XLSX.utils.sheet_to_json(wb.Sheets['תקציב חודשי']);
     expect(budgetData.length).toBe(0);
 
@@ -202,18 +210,7 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     expect(DEFAULT_TASKS).toEqual([]);
   });
 
-  it('triggers JSON v2.0 export containing all system subsystems', () => {
-    // Mock URL.createObjectURL and click
-    const createObjectURLMock = vi.fn().mockReturnValue('blob:mock-url');
-    const revokeObjectURLMock = vi.fn();
-    window.URL.createObjectURL = createObjectURLMock;
-    window.URL.revokeObjectURL = revokeObjectURLMock;
-
-    let downloadedContent = '';
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function() {
-      // noop
-    });
-
+  it('exports human-friendly calculations with dedicated readable columns rather than raw JSON strings', () => {
     render(
       <DataExport
         accounts={sampleAccounts}
@@ -227,11 +224,19 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
       />
     );
 
-    const jsonBtn = screen.getByRole('button', { name: /הורד קובץ JSON/i });
-    fireEvent.click(jsonBtn);
+    const excelBtn = screen.getByRole('button', { name: /הורד קובץ Excel/i });
+    fireEvent.click(excelBtn);
 
-    expect(createObjectURLMock).toHaveBeenCalled();
-    clickSpy.mockRestore();
+    const calls = vi.mocked(XLSX.writeFile).mock.calls;
+    const wb = calls[calls.length - 1][0];
+    const calcsData = XLSX.utils.sheet_to_json(wb.Sheets['מחשבונים פיננסיים']);
+
+    // Check track row has clean columns instead of raw JSON
+    const trackRow = calcsData.find(r => r['שם שדה / מסלול'] === 'פריים');
+    expect(trackRow).toBeDefined();
+    expect(trackRow['ערך']).toBe(500000);
+    expect(trackRow['ריבית (%)']).toBe(5);
+    expect(trackRow['לוח סילוקין']).toBe('שפיצר');
   });
 
   it('restores complete system state on full JSON v2.0 import', async () => {

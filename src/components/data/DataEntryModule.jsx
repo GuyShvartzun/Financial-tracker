@@ -730,14 +730,14 @@ export default function DataEntryModule({
           <div className="bg-[#FFFFFF] border border-[#E8E2D8] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
             <h3 className="text-lg font-bold text-stone-900">פתיחת חודש חדש במערכת</h3>
             <p className="text-xs text-stone-600 leading-relaxed">
-              הכנס את תאריך החודש החדש (למשל: 09/2026). היתרות הראשוניות יועתקו אוטומטית מנתוני החודש האחרון (<strong>{latestMonth}</strong>).
+              הכנס את תאריך החודש החדש (תבנית MM/YYYY). היתרות הראשוניות יועתקו אוטומטית מנתוני החודש האחרון (<strong>{latestMonth}</strong>).
             </p>
 
             <div>
               <label className="text-xs text-stone-600 font-bold block mb-1">שם/תאריך החודש החדש:</label>
               <input
                 type="text"
-                placeholder="09/2026"
+                placeholder=""
                 value={newMonthInput}
                 onChange={(e) => setNewMonthInput(e.target.value)}
                 className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-sm rounded-xl px-3 py-2 outline-none focus:border-[#4A90E2]"

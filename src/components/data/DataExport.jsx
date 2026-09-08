@@ -113,6 +113,7 @@ export default function DataExport({
       row['שיוך למשתמש'] || 
       row['שיוך משתמש'] || 
       row['שם בעל החשבון'] || 
+      row['בעל החשבון'] || 
       row['בעל חשבון'] || 
       row['OwnerID'] || 
       row['ownerId'] || 
@@ -125,12 +126,25 @@ export default function DataExport({
 
   /**
    * Generates and downloads Excel (.xlsx) file.
-   * If isTemplate === true, produces a clean template containing ONLY headers and NO personal data.
+   * If isTemplate === true:
+   *  - Contains ONLY the current active month (e.g. "09/2026").
+   *  - Zero data rows (empty header-only sheets) so it is 100% clean and private.
+   * If isTemplate === false:
+   *  - Comprehensive human-readable backup of all system modules.
    */
   const handleExportXLSX = (isTemplate = false) => {
     try {
       const wb = XLSX.utils.book_new();
-      const currentMonths = (monthsList && monthsList.length > 0) ? monthsList : ['08/2026'];
+
+      // Determine active month
+      const now = new Date();
+      const currentCalMonth = `${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      const activeCurrentMonth = selectedMonth || (monthsList && monthsList.length > 0 ? monthsList[monthsList.length - 1] : currentCalMonth);
+
+      // In template mode: ONLY the single current month!
+      // In backup mode: all tracked months.
+      const exportMonths = isTemplate ? [activeCurrentMonth] : ((monthsList && monthsList.length > 0) ? monthsList : [activeCurrentMonth]);
+
       const defaultOwner = users[0] || { uid: 'u1', displayName: 'משתמש ראשי' };
       const defaultOwnerName = defaultOwner.displayName || defaultOwner.name || 'משתמש ראשי';
       const defaultOwnerUid = defaultOwner.uid || defaultOwner.id || 'u1';
@@ -144,7 +158,6 @@ export default function DataExport({
           const ownerMember = users.find(u => (u.uid || u.id) === a.ownerId);
           const ownerName = ownerMember ? (ownerMember.displayName || ownerMember.name) : defaultOwnerName;
           
-          // Formatted list of flagged months
           const flaggedList = a.flaggedMonths 
             ? Object.entries(a.flaggedMonths).filter(([_, v]) => Boolean(v)).map(([m]) => m).join(', ')
             : '';
@@ -158,45 +171,43 @@ export default function DataExport({
             'שם בעל החשבון': ownerName,
             'חודשים מסומנים בדגל': flaggedList || 'ללא'
           };
-          currentMonths.forEach(m => {
+          exportMonths.forEach(m => {
             row[m] = a.balances && a.balances[m] !== undefined ? a.balances[m] : 0;
           });
           return row;
         });
-      } else {
-        // In template mode: ONLY headers, ZERO personal data rows!
-        accountsExport = [];
       }
 
-      // If empty (template), create sheet with headers only
-      let wsAccounts;
-      const accountHeaders = [
-        'מזהה חשבון',
-        'סדר',
-        'שם החשבון',
-        'סוג החשבון',
-        'שיוך למשתמש',
-        'שם בעל החשבון',
-        'חודשים מסומנים בדגל',
-        ...currentMonths
-      ];
+      const accountHeaders = isTemplate
+        ? ['סדר', 'שם החשבון', 'סוג החשבון', 'בעל החשבון', 'מסומן בדגל', ...exportMonths]
+        : ['מזהה חשבון', 'סדר', 'שם החשבון', 'סוג החשבון', 'שיוך למשתמש', 'שם בעל החשבון', 'חודשים מסומנים בדגל', ...exportMonths];
 
+      let wsAccounts;
       if (accountsExport.length > 0) {
         wsAccounts = XLSX.utils.json_to_sheet(accountsExport, { header: accountHeaders });
       } else {
         wsAccounts = XLSX.utils.aoa_to_sheet([accountHeaders]);
       }
 
-      wsAccounts['!cols'] = [
-        { wch: 18 }, // מזהה חשבון
-        { wch: 8 },  // סדר
-        { wch: 30 }, // שם החשבון
-        { wch: 16 }, // סוג החשבון
-        { wch: 22 }, // שיוך למשתמש
-        { wch: 20 }, // שם בעל החשבון
-        { wch: 22 }, // חודשים מסומנים בדגל
-        ...currentMonths.map(() => ({ wch: 14 })) // חודשים
-      ];
+      wsAccounts['!cols'] = isTemplate
+        ? [
+            { wch: 8 },  // סדר
+            { wch: 30 }, // שם החשבון
+            { wch: 18 }, // סוג החשבון
+            { wch: 20 }, // בעל החשבון
+            { wch: 16 }, // מסומן בדגל
+            ...exportMonths.map(() => ({ wch: 14 })) // חודש נוכחי
+          ]
+        : [
+            { wch: 18 }, // מזהה חשבון
+            { wch: 8 },  // סדר
+            { wch: 30 }, // שם החשבון
+            { wch: 16 }, // סוג החשבון
+            { wch: 22 }, // שיוך למשתמש
+            { wch: 20 }, // שם בעל החשבון
+            { wch: 22 }, // חודשים מסומנים בדגל
+            ...exportMonths.map(() => ({ wch: 14 })) // חודשים
+          ];
       XLSX.utils.book_append_sheet(wb, wsAccounts, "הון וחשבונות");
 
       // 2. Sheet 2: "תקציב חודשי" (Monthly Budget)
@@ -219,12 +230,12 @@ export default function DataExport({
             });
           });
         });
-      } else {
-        // In template mode: ONLY headers, ZERO personal data rows!
-        budgetExport = [];
       }
 
-      const budgetHeaders = ['מזהה סעיף', 'קטגוריה', 'שם הסעיף', 'סכום (₪)'];
+      const budgetHeaders = isTemplate 
+        ? ['קטגוריה', 'שם הסעיף', 'סכום (₪)']
+        : ['מזהה סעיף', 'קטגוריה', 'שם הסעיף', 'סכום (₪)'];
+
       let wsBudget;
       if (budgetExport.length > 0) {
         wsBudget = XLSX.utils.json_to_sheet(budgetExport, { header: budgetHeaders });
@@ -232,17 +243,23 @@ export default function DataExport({
         wsBudget = XLSX.utils.aoa_to_sheet([budgetHeaders]);
       }
 
-      wsBudget['!cols'] = [
-        { wch: 18 }, // מזהה סעיף
-        { wch: 18 }, // קטגוריה
-        { wch: 35 }, // שם הסעיף
-        { wch: 15 }  // סכום
-      ];
+      wsBudget['!cols'] = isTemplate
+        ? [{ wch: 22 }, { wch: 35 }, { wch: 16 }]
+        : [{ wch: 18 }, { wch: 18 }, { wch: 35 }, { wch: 16 }];
       XLSX.utils.book_append_sheet(wb, wsBudget, "תקציב חודשי");
 
       // 3. Sheet 3: "מחשבונים פיננסיים" (Financial Calculators)
       let calcsExport = [];
-      const calcsHeaders = ['מודול', 'שיוך משתמש', 'שם שדה / מסלול', 'ערך', 'הערות'];
+      const calcsHeaders = [
+        'מודול', 
+        'שיוך משתמש', 
+        'שם שדה / מסלול', 
+        'ערך', 
+        'ריבית (%)', 
+        'תקופה (שנים)', 
+        'לוח סילוקין', 
+        'הערות'
+      ];
 
       if (!isTemplate) {
         const currentCalcs = calculatorsData || DEFAULT_CALCULATORS_DATA;
@@ -250,20 +267,23 @@ export default function DataExport({
         const fire = currentCalcs.fire || {};
         const pension = currentCalcs.pension || {};
 
-        // Mortgage general params
-        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'שווי נכס', 'ערך': mortgage.propertyValue || '', 'הערות': 'בשקלים' });
-        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'הכנסה חודשית נטו', 'ערך': mortgage.monthlyIncome || '', 'הערות': 'בשקלים' });
-        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'מדד המחירים לצרכן (אינפלציה צפויה %)', 'ערך': mortgage.expectedInflation || '', 'הערות': 'באחוזים שנתיים' });
-        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'מדד תשומות הבנייה (%)', 'ערך': mortgage.constructionInflation || '', 'הערות': 'באחוזים שנתיים' });
+        // Mortgage general parameters
+        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'שווי נכס', 'ערך': mortgage.propertyValue || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'שווי הנכס בשקלים' });
+        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'הכנסה חודשית נטו', 'ערך': mortgage.monthlyIncome || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'הכנסה חודשית משפחתית בשקלים' });
+        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'מדד המחירים לצרכן (אינפלציה צפויה %)', 'ערך': mortgage.expectedInflation || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'אינפלציה שנתית צפויה' });
+        calcsExport.push({ 'מודול': 'משכנתא והלוואות', 'שיוך משתמש': 'כללי', 'שם שדה / מסלול': 'מדד תשומות הבנייה (%)', 'ערך': mortgage.constructionInflation || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'מדד בנייה צפוי' });
 
-        // Mortgage tracks
+        // Mortgage tracks (Clean tabular format - no ugly JSON dump!)
         (mortgage.tracks || []).forEach(track => {
           calcsExport.push({
             'מודול': 'מסלול הלוואה / משכנתא',
             'שיוך משתמש': 'כללי',
             'שם שדה / מסלול': track.name || 'מסלול',
             'ערך': track.amount || 0,
-            'הערות': JSON.stringify(track)
+            'ריבית (%)': track.interest !== undefined ? track.interest : 5.0,
+            'תקופה (שנים)': track.years || 25,
+            'לוח סילוקין': track.scheduleType === 'equal_principal' ? 'קרן שווה' : 'שפיצר',
+            'הערות': track.isLinked ? 'צמוד מדד' : 'לא צמוד'
           });
         });
 
@@ -276,18 +296,18 @@ export default function DataExport({
           const uMember = users.find(u => (u.uid || u.id) === uKey);
           const uLabel = uMember ? `${uMember.displayName || uMember.name} (${uKey})` : uKey;
 
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הון התחלתי (₪)', 'ערך': fData.initialCapital || '', 'הערות': 'בשקלים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הפקדה חודשית (₪)', 'ערך': fData.monthlyDeposit || '', 'הערות': 'בשקלים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'משיכה חודשית רצויה נטו (₪)', 'ערך': fData.desiredNetMonthlyWithdrawal || '', 'הערות': 'בשקלים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'תשואה שנתית בצבירה (%)', 'ערך': fData.accumulationReturn || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'תשואה שנתית בפרישה (%)', 'ערך': fData.retirementReturn || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'מס רווחי הון (%)', 'ערך': fData.capitalGainsTax || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'אינפלציה שנתית (%)', 'ערך': fData.annualInflation || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גיל נוכחי', 'ערך': fData.currentAge || '', 'הערות': 'שנים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'דמי ניהול שנתיים מתיק (%)', 'ערך': fData.annualManagementFee || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גידול שנתי בהפקדות (%)', 'ערך': fData.annualDepositGrowth || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'סכום חד פעמי עתידי (₪)', 'ערך': fData.lumpSumAmount || '', 'הערות': 'בשקלים' });
-          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'שנים עד לקבלת סכום חד פעמי', 'ערך': fData.lumpSumYears || '', 'הערות': 'שנים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הון התחלתי (₪)', 'ערך': fData.initialCapital || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הפקדה חודשית (₪)', 'ערך': fData.monthlyDeposit || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'משיכה חודשית רצויה נטו (₪)', 'ערך': fData.desiredNetMonthlyWithdrawal || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'תשואה שנתית בצבירה (%)', 'ערך': fData.accumulationReturn || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'תשואה שנתית בפרישה (%)', 'ערך': fData.retirementReturn || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'מס רווחי הון (%)', 'ערך': fData.capitalGainsTax || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'אינפלציה שנתית (%)', 'ערך': fData.annualInflation || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גיל נוכחי', 'ערך': fData.currentAge || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'שנים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'דמי ניהול שנתיים מתיק (%)', 'ערך': fData.annualManagementFee || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גידול שנתי בהפקדות (%)', 'ערך': fData.annualDepositGrowth || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'סכום חד פעמי עתידי (₪)', 'ערך': fData.lumpSumAmount || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'עצמאות כלכלית (FIRE)', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'שנים עד לקבלת סכום חד פעמי', 'ערך': fData.lumpSumYears || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'שנים' });
         });
 
         // Pension simulator params across all users
@@ -299,19 +319,18 @@ export default function DataExport({
           const uMember = users.find(u => (u.uid || u.id) === uKey);
           const uLabel = uMember ? `${uMember.displayName || uMember.name} (${uKey})` : uKey;
 
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'צבירה נוכחית (₪)', 'ערך': pData.balance || '', 'הערות': 'בשקלים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הפקדה חודשית (₪)', 'ערך': pData.monthlyDeposit || '', 'הערות': 'בשקלים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גיל נוכחי', 'ערך': pData.currentAge || '', 'הערות': 'שנים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גיל פרישה', 'ערך': pData.retireAge || '', 'הערות': 'שנים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'מסלול השקעה', 'ערך': pData.trackId || '', 'הערות': 'קוד מסלול' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'תשואה שנתית צפויה (%)', 'ערך': pData.customReturnRate || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'דמי ניהול מהפקדה (%)', 'ערך': pData.managementFeeDeposit || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'דמי ניהול מצבירה (%)', 'ערך': pData.managementFeeBalance || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'אינפלציה שנתית (%)', 'ערך': pData.annualInflationRate || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גידול שנתי בהפקדות (%)', 'ערך': pData.annualDepositGrowth || '', 'הערות': 'באחוזים' });
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'מקדם קצבה', 'ערך': pData.annuityFactor || '', 'הערות': 'מקדם המרה' });
-          // Full JSON backup in notes for 100% loss-free restoration
-          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הגדרות פנסיה מלאות (JSON)', 'ערך': JSON.stringify(pData), 'הערות': 'גיבוי מלא' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'צבירה נוכחית (₪)', 'ערך': pData.balance || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'הפקדה חודשית (₪)', 'ערך': pData.monthlyDeposit || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גיל נוכחי', 'ערך': pData.currentAge || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'שנים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גיל פרישה', 'ערך': pData.retireAge || pData.retirementAge || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'שנים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'משכורת חודשית (₪)', 'ערך': pData.salary || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'בשקלים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'מסלול השקעה', 'ערך': pData.trackId || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'קוד מסלול' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'תשואה שנתית צפויה (%)', 'ערך': pData.customReturnRate || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'דמי ניהול מהפקדה (%)', 'ערך': pData.managementFeeDeposit || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'דמי ניהול מצבירה (%)', 'ערך': pData.managementFeeBalance || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'אינפלציה שנתית (%)', 'ערך': pData.annualInflationRate || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'גידול שנתי בהפקדות (%)', 'ערך': pData.annualDepositGrowth || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'באחוזים' });
+          calcsExport.push({ 'מודול': 'סימולטור פנסיוני', 'שיוך משתמש': uLabel, 'שם שדה / מסלול': 'מקדם קצבה', 'ערך': pData.annuityFactor || '', 'ריבית (%)': '', 'תקופה (שנים)': '', 'לוח סילוקין': '', 'הערות': 'מקדם המרה לקצבה' });
         });
       }
 
@@ -326,14 +345,19 @@ export default function DataExport({
         { wch: 24 }, // מודול
         { wch: 22 }, // שיוך משתמש
         { wch: 35 }, // שם שדה
-        { wch: 20 }, // ערך
-        { wch: 45 }  // הערות
+        { wch: 18 }, // ערך
+        { wch: 14 }, // ריבית
+        { wch: 15 }, // תקופה
+        { wch: 16 }, // לוח סילוקין
+        { wch: 35 }  // הערות
       ];
       XLSX.utils.book_append_sheet(wb, wsCalcs, "מחשבונים פיננסיים");
 
       // 4. Sheet 4: "משימות פיננסיות" (Financial Tasks)
       let tasksExport = [];
-      const tasksHeaders = ['מזהה ייחודי', 'כותרת המשימה', 'תיאור המשימה', 'עדיפות', 'סטטוס', 'תאריך יעד', 'שויך אל', 'נוצר בתאריך', 'הושלם בתאריך'];
+      const tasksHeaders = isTemplate
+        ? ['כותרת המשימה', 'תיאור המשימה', 'עדיפות', 'סטטוס', 'תאריך יעד', 'שיוך למשתמש']
+        : ['מזהה ייחודי', 'כותרת המשימה', 'תיאור המשימה', 'עדיפות', 'סטטוס', 'תאריך יעד', 'שויך אל', 'נוצר בתאריך', 'הושלם בתאריך'];
 
       if (tasks && tasks.length > 0 && !isTemplate) {
         tasksExport = tasks.map(t => ({
@@ -356,17 +380,26 @@ export default function DataExport({
         wsTasks = XLSX.utils.aoa_to_sheet([tasksHeaders]);
       }
 
-      wsTasks['!cols'] = [
-        { wch: 20 }, // מזהה ייחודי
-        { wch: 35 }, // כותרת המשימה
-        { wch: 45 }, // תיאור המשימה
-        { wch: 14 }, // עדיפות
-        { wch: 14 }, // סטטוס
-        { wch: 16 }, // תאריך יעד
-        { wch: 18 }, // שויך אל
-        { wch: 22 }, // נוצר בתאריך
-        { wch: 22 }  // הושלם בתאריך
-      ];
+      wsTasks['!cols'] = isTemplate
+        ? [
+            { wch: 32 }, // כותרת המשימה
+            { wch: 45 }, // תיאור המשימה
+            { wch: 14 }, // עדיפות
+            { wch: 14 }, // סטטוס
+            { wch: 16 }, // תאריך יעד
+            { wch: 20 }  // שיוך למשתמש
+          ]
+        : [
+            { wch: 18 }, // מזהה ייחודי
+            { wch: 32 }, // כותרת המשימה
+            { wch: 40 }, // תיאור המשימה
+            { wch: 14 }, // עדיפות
+            { wch: 14 }, // סטטוס
+            { wch: 16 }, // תאריך יעד
+            { wch: 18 }, // שויך אל
+            { wch: 20 }, // נוצר בתאריך
+            { wch: 20 }  // הושלם בתאריך
+          ];
       XLSX.utils.book_append_sheet(wb, wsTasks, "משימות פיננסיות");
 
       // 5. Sheet 5: "מדריך והנחיות" (Guide & Instructions)
@@ -374,26 +407,26 @@ export default function DataExport({
         {
           'שם הלשונית': 'הון וחשבונות',
           'מטרת הלשונית': 'ניהול יתרות הנכסים וההתחייבויות בחלוקה לחודשים',
-          'ערכים מותרים': 'סוג חשבון: טווח קצר, טווח בינוני, טווח ארוך, התחייבויות. עמודות חודשים: תבנית MM/YYYY (כגון 08/2026).',
-          'הנחיות למילוי': 'ניתן להוסיף שורות לחשבונות חדשים, או עמודות חודשים חדשות. יש לוודא שהסכומים מוזנים כמספרים בלבד.'
+          'ערכים מותרים': 'סוג חשבון: טווח קצר, טווח בינוני, טווח ארוך, התחייבויות. עמודת חודש: MM/YYYY (כגון ' + activeCurrentMonth + ').',
+          'הנחיות למילוי': 'הזינו שורה לכל חשבון. סכומים מוזנים כמספרים חיוביים (המערכת מחשבת התחייבויות בהתאם לסוג).'
         },
         {
           'שם הלשונית': 'תקציב חודשי',
           'מטרת הלשונית': 'מעקב שוטף אחר הכנסות, הוצאות קבועות, הוצאות משתנות וחסכונות',
           'ערכים מותרים': 'קטגוריה: הכנסה, הוצאה קבועה, הוצאה משתנה, חיסכון והשקעה.',
-          'הנחיות למילוי': 'יש להזין שם סעיף מובן וסכום חודשי ממוצע משוער בשקלים.'
+          'הנחיות למילוי': 'הזינו שם סעיף וסכום חודשי ממוצע בשקלים.'
         },
         {
           'שם הלשונית': 'מחשבונים פיננסיים',
-          'מטרת הלשונית': 'שמירת הנחות עבודה של מחשבוני הלוואות, פנסיה ו-FIRE',
-          'ערכים מותרים': 'שדות ריבית ותשואה באחוזים, שווי נכסים וסכומים בשקלים.',
-          'הנחיות למילוי': 'עמודת "הערות" מכילה מידע מפורט בפורמט JSON עבור מסלולים מורכבים.'
+          'מטרת הלשונית': 'שמירת הנחות עבודה של מחשבוני משכנתא, FIRE ופנסיה',
+          'ערכים מותרים': 'אחוזים, סכומים בשקלים, שפיצר / קרן שווה.',
+          'הנחיות למילוי': 'בייבוא, המערכת קוראת את הפרמטרים ומשחזרת את המחשבונים במדויק.'
         },
         {
           'שם הלשונית': 'משימות פיננסיות',
-          'מטרת הלשונית': 'רשימת פעולות אישיות ומשימות לביצוע לתכנון כלכלי',
+          'מטרת הלשונית': 'רשימת פעולות אישיות לביצוע לתכנון כלכלי',
           'ערכים מותרים': 'עדיפות: גבוהה / בינונית / נמוכה. סטטוס: הושלם / לביצוע.',
-          'הנחיות למילוי': 'הזינו כותרת משימה, תאריך יעד רצוי וסמנו את סטטוס הביצוע.'
+          'הנחיות למילוי': 'הזינו כותרת משימה, תאריך יעד רצוי ושיוך משתמש.'
         }
       ];
 
@@ -402,11 +435,11 @@ export default function DataExport({
         { wch: 20 },
         { wch: 35 },
         { wch: 45 },
-        { wch: 45 }
+        { wch: 50 }
       ];
       XLSX.utils.book_append_sheet(wb, wsGuide, "מדריך והנחיות");
 
-      // Set Right-to-Left on workbook views for Hebrew Excel
+      // Right-to-Left orientation for Hebrew Excel
       wb.Workbook = {
         Views: [{ RTL: true }]
       };
@@ -419,7 +452,7 @@ export default function DataExport({
 
       XLSX.writeFile(wb, fileName);
       setStatusType('success');
-      setStatusMsg(isTemplate ? 'תבנית ריקה (כותרות בלבד) הורדה בהצלחה!' : 'קובץ הגיבוי המלא ב-Excel יוצא בהצלחה!');
+      setStatusMsg(isTemplate ? 'תבנית נקייה למילוי (לחודש הנוכחי בלבד) הורדה בהצלחה!' : 'קובץ הגיבוי המלא ב-Excel יוצא בהצלחה!');
     } catch (err) {
       console.error('Error exporting Excel:', err);
       setStatusType('error');
@@ -428,54 +461,7 @@ export default function DataExport({
   };
 
   /**
-   * Generates and downloads 100% comprehensive JSON backup file (v2.0).
-   * Backs up EVERY single parameter and state stored in cloud & local.
-   */
-  const handleExportJSON = () => {
-    try {
-      const exportObject = {
-        version: "2.0",
-        system: "Financial Tracker",
-        exportedAt: new Date().toISOString(),
-        room: {
-          id: currentRoom?.id || "",
-          name: roomName || currentRoom?.name || "מרחב פיננסי",
-          members: users || []
-        },
-        viewState: {
-          selectedMonth: selectedMonth || (monthsList[monthsList.length - 1] || '08/2026'),
-          selectedPersonalUserId: authUser?.uid || (users[0]?.uid || ''),
-          isPrivacyMode: Boolean(isPrivacyMode),
-          isDarkMode: Boolean(isDarkMode)
-        },
-        monthsList: (monthsList && monthsList.length > 0) ? monthsList : ['08/2026'],
-        accounts: accounts || [],
-        budget: budget || { incomes: [], fixedExpenses: [], variableExpenses: [], savings: [] },
-        calculators: calculatorsData || DEFAULT_CALCULATORS_DATA,
-        tasks: tasks || []
-      };
-
-      const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const dateStr = new Date().toISOString().slice(0, 10);
-      const safeRoomName = (roomName || currentRoom?.name) ? `${(roomName || currentRoom?.name).replace(/[^\w\u0590-\u05FF]/g, '_')}_` : '';
-      a.download = `Financial_Backup_${safeRoomName}${dateStr}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      setStatusType('success');
-      setStatusMsg('קובץ גיבוי מלא ב-JSON (גרסה 2.0) יוצא בהצלחה!');
-    } catch (err) {
-      console.error('Error exporting JSON:', err);
-      setStatusType('error');
-      setStatusMsg('שגיאה ביצירת קובץ ה-JSON.');
-    }
-  };
-
-  /**
-   * Handles incoming file selection (JSON or XLSX/CSV).
+   * Handles incoming file selection (Excel / CSV or legacy JSON).
    */
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -589,7 +575,7 @@ export default function DataExport({
       const val = row['ערך'];
       const notes = String(row['הערות'] || '');
 
-      // Resolve user key (extract UID from "Name (UID)" or direct UID)
+      // Resolve user key
       let uKey = 'default';
       const uidMatch = userKeyRaw.match(/\(([^)]+)\)$/);
       if (uidMatch) {
@@ -604,18 +590,31 @@ export default function DataExport({
         else if (field.includes('אינפלציה') || field.includes('צרכן')) result.mortgage.expectedInflation = String(val || '');
         else if (field.includes('מדד תשומות') || field.includes('בנייה')) result.mortgage.constructionInflation = String(val || '');
         else if (mod.includes('מסלול')) {
+          // If notes contain JSON, try parsing (backward compatibility)
+          let parsedTrack = null;
           try {
-            const parsedTrack = JSON.parse(notes);
-            result.mortgage.tracks.push(parsedTrack);
+            parsedTrack = JSON.parse(notes);
           } catch {
+            // Not JSON, parse clean columns
+          }
+
+          if (parsedTrack && typeof parsedTrack === 'object') {
+            result.mortgage.tracks.push(parsedTrack);
+          } else {
+            const interest = parseFloat(row['ריבית (%)']) || 5.0;
+            const years = parseInt(row['תקופה (שנים)']) || 25;
+            const scheduleRaw = String(row['לוח סילוקין'] || '').trim();
+            const scheduleType = scheduleRaw.includes('קרן שווה') ? 'equal_principal' : 'spitzer';
+            const isLinked = notes.includes('צמוד מדד') || notes.includes('צמוד') || notes === 'true';
+
             result.mortgage.tracks.push({
               id: 'track_' + Date.now() + Math.random().toString(36).substr(2, 6),
               name: field,
               amount: parseFloat(val) || 0,
-              interest: 5.0,
-              years: 25,
-              scheduleType: 'spitzer',
-              isLinked: false
+              interest,
+              years,
+              scheduleType,
+              isLinked
             });
           }
         }
@@ -650,7 +649,8 @@ export default function DataExport({
           if (field.includes('צבירה נוכחית')) p.balance = String(val || '');
           else if (field.includes('הפקדה חודשית')) p.monthlyDeposit = String(val || '');
           else if (field.includes('גיל נוכחי')) p.currentAge = String(val || '');
-          else if (field.includes('גיל פרישה')) p.retireAge = String(val || '');
+          else if (field.includes('גיל פרישה')) { p.retireAge = String(val || ''); p.retirementAge = String(val || ''); }
+          else if (field.includes('משכורת')) p.salary = String(val || '');
           else if (field.includes('מסלול')) p.trackId = String(val || '');
           else if (field.includes('תשואה')) p.customReturnRate = String(val || '');
           else if (field.includes('דמי ניהול מהפקדה')) p.managementFeeDeposit = String(val || '');
@@ -683,7 +683,7 @@ export default function DataExport({
         priority,
         completed: isCompleted,
         targetDate: r['תאריך יעד'] || '',
-        assignedTo: r['שויך אל'] || r['שיוך'] || '',
+        assignedTo: r['שויך אל'] || r['שיוך למשתמש'] || r['שיוך'] || '',
         createdAt: r['נוצר בתאריך'] || new Date().toISOString(),
         completedAt: r['הושלם בתאריך'] || (isCompleted ? new Date().toISOString() : undefined)
       };
@@ -780,12 +780,10 @@ export default function DataExport({
     });
     setUserMapping(initialMapping);
 
-    // If there are distinct owners, show mapping modal for confirmation
     if (distinctOwners.length > 0) {
       setShowMappingModal(true);
       setStatusMsg('');
     } else {
-      // If no accounts but budget/calcs/tasks exist, process directly
       executeImport({
         rawAccounts,
         rawBudget,
@@ -859,7 +857,7 @@ export default function DataExport({
             if (m) flaggedMonths[m] = true;
           });
         } else if (row['מסומן בדגל'] === 'כן' || row['מסומן בדגל'] === 'true' || row.isFlagged === true) {
-          const targetM = (newMonths && newMonths.length > 0) ? newMonths[newMonths.length - 1] : '08/2026';
+          const targetM = (newMonths && newMonths.length > 0) ? newMonths[newMonths.length - 1] : (selectedMonth || '08/2026');
           flaggedMonths[targetM] = true;
         }
 
@@ -912,7 +910,7 @@ export default function DataExport({
           priority: t.priority || 'medium',
           completed: Boolean(t.completed),
           completedAt: t.completedAt || (t.completed ? new Date().toISOString() : undefined),
-          assignedTo: t.assignedTo || t['שויך אל'] || '',
+          assignedTo: t.assignedTo || t['שויך אל'] || t['שיוך למשתמש'] || '',
           targetDate: t.targetDate || t['תאריך יעד'] || '',
           createdAt: t.createdAt || t['נוצר בתאריך'] || new Date().toISOString()
         }));
@@ -973,11 +971,11 @@ export default function DataExport({
       const parts = [];
       if (newAccounts.length > 0) parts.push(`${newAccounts.length} חשבונות`);
       if (budgetItemsCount > 0) parts.push(`${budgetItemsCount} סעיפי תקציב`);
-      if (finalCalculators) parts.push('מחשבונים פיננסיים (משכנתא, FIRE, פנסיה)');
+      if (finalCalculators) parts.push('מחשבונים פיננסיים');
       if (finalTasks && finalTasks.length > 0) parts.push(`${finalTasks.length} משימות`);
 
       setStatusType('success');
-      setStatusMsg(`השחזור הושלם בהצלחה מלאה! הנתונים סונכרנו ישירות לענן: ${parts.join(', ')}.`);
+      setStatusMsg(`השחזור הושלם בהצלחה מלאה! כל הנתונים סונכרנו ישירות לענן: ${parts.join(', ')}.`);
     } catch (err) {
       console.error('Error during import execution:', err);
       setStatusType('error');
@@ -990,12 +988,12 @@ export default function DataExport({
       <div>
         <h2 className="text-xl font-black text-stone-900 dark:text-stone-100">ייצוא, גיבוי וייבוא נתונים</h2>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-          הנתונים שלכם מוצפנים ומסונכרנים בענן בזמן אמת. מומלץ להוריד קובץ גיבוי תקופתי, או להוריד תבנית ריקה (כותרות בלבד) למילוי עצמי.
+          הנתונים שלכם מוצפנים ומסונכרנים בענן בזמן אמת. תוכלו להוריד קובץ גיבוי מלא של המערכת ב-Excel, להוריד תבנית ריקה למילוי עצמי, או לייבא קובץ נתונים לשחזור מלא.
         </p>
       </div>
 
       {statusMsg && (
-        <div className={`p-3 rounded-xl text-xs font-bold text-center border ${
+        <div className={`p-3.5 rounded-xl text-xs font-bold text-center border transition-all ${
           statusType === 'success' 
             ? 'bg-[#E8F5E9] dark:bg-emerald-950/40 text-[#2E7D32] dark:text-emerald-300 border-[#C8E6C9] dark:border-emerald-800' 
             : statusType === 'error'
@@ -1009,46 +1007,36 @@ export default function DataExport({
       {/* Export Section */}
       <div className="bg-[#FAF7F2] dark:bg-[#252525] p-6 rounded-2xl border border-[#E8E2D8] dark:border-stone-800 space-y-4 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#E8F5E9] dark:bg-emerald-950/60 text-[#2E7D32] dark:text-emerald-300 border border-[#C8E6C9] dark:border-emerald-800 rounded-xl flex items-center justify-center text-xl font-black">
+          <div className="w-10 h-10 bg-[#E8F5E9] dark:bg-emerald-950/60 text-[#2E7D32] dark:text-emerald-300 border border-[#C8E6C9] dark:border-emerald-800 rounded-xl flex items-center justify-center text-xl font-black shrink-0">
             📊
           </div>
           <div>
             <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">ייצוא נתונים מלא</h3>
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              הורדת גיבוי מלא של כל פרמטרי המערכת: חשבונות, יתרות, דגלונים, תקציב, מחשבונים ומשימות
+              הורדת קבצי Excel ברורים ומובנים: גיבוי מלא או תבנית נקייה ללא נתונים
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           {/* 1. Full Excel Export */}
           <button
             onClick={() => handleExportXLSX(false)}
-            className="py-3 px-3 bg-[#E8F5E9] hover:bg-[#C8E6C9] dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 text-[#2E7D32] dark:text-emerald-300 border border-[#A5D6A7] dark:border-emerald-700 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center"
+            className="p-4 bg-[#E8F5E9] hover:bg-[#C8E6C9] dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 text-[#2E7D32] dark:text-emerald-300 border border-[#A5D6A7] dark:border-emerald-700 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex flex-col items-center justify-center gap-2 text-center"
           >
-            <span className="text-base">📗</span>
-            <span>הורד קובץ Excel (.xlsx)</span>
-            <span className="text-[10px] font-normal opacity-80">גיבוי נתונים מלא</span>
+            <span className="text-2xl">📗</span>
+            <span className="text-sm font-black">הורד קובץ Excel (.xlsx)</span>
+            <span className="text-[11px] font-normal opacity-85">גיבוי נתונים מלא של כל המערכת</span>
           </button>
 
-          {/* 2. Blank Template (Headers Only) */}
+          {/* 2. Blank Template (Headers Only - Single Current Month) */}
           <button
             onClick={() => handleExportXLSX(true)}
-            className="py-3 px-3 bg-[#FFF8E1] hover:bg-[#FFECB3] dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-[#F57F17] dark:text-amber-300 border border-[#FFE082] dark:border-amber-700/60 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center"
+            className="p-4 bg-[#FFF8E1] hover:bg-[#FFECB3] dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-[#F57F17] dark:text-amber-300 border border-[#FFE082] dark:border-amber-700/60 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex flex-col items-center justify-center gap-2 text-center"
           >
-            <span className="text-base">📋</span>
-            <span>הורד תבנית ריקה (Excel)</span>
-            <span className="text-[10px] font-normal opacity-80">כותרות בלבד ללא נתונים</span>
-          </button>
-
-          {/* 3. Full JSON Export */}
-          <button
-            onClick={handleExportJSON}
-            className="py-3 px-3 bg-[#FFFFFF] hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-750 text-stone-700 dark:text-stone-200 border border-[#DDD6CA] dark:border-stone-700 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center"
-          >
-            <span className="text-base">📦</span>
-            <span>הורד קובץ JSON</span>
-            <span className="text-[10px] font-normal opacity-80">גיבוי מלא גרסה 2.0</span>
+            <span className="text-2xl">📋</span>
+            <span className="text-sm font-black">הורד תבנית ריקה (Excel)</span>
+            <span className="text-[11px] font-normal opacity-85">כותרות בלבד לחודש הנוכחי ללא נתונים אישיים</span>
           </button>
         </div>
       </div>
@@ -1056,13 +1044,13 @@ export default function DataExport({
       {/* Import Section */}
       <div className="bg-[#FAF7F2] dark:bg-[#252525] p-6 rounded-2xl border border-[#E8E2D8] dark:border-stone-800 space-y-4 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#E3F2FD] dark:bg-sky-950/60 text-[#1976D2] dark:text-sky-300 border border-[#BBDEFB] dark:border-sky-800 rounded-xl flex items-center justify-center text-xl font-black">
+          <div className="w-10 h-10 bg-[#E3F2FD] dark:bg-sky-950/60 text-[#1976D2] dark:text-sky-300 border border-[#BBDEFB] dark:border-sky-800 rounded-xl flex items-center justify-center text-xl font-black shrink-0">
             📥
           </div>
           <div>
-            <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">ייבוא נתונים מקובץ (Excel / CSV / JSON)</h3>
+            <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">ייבוא נתונים מקובץ Excel</h3>
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              העלה קובץ גיבוי או תבנית מלאה. המערכת תשחזר את כל החשבונות, התקציב, המחשבונים והמשימות בדיוק מאיפה שעצרתם.
+              העלו קובץ גיבוי או תבנית שמילאתם. המערכת תשחזר את כל החשבונות, היתרות, התקציב, המחשבונים והמשימות.
             </p>
           </div>
         </div>
@@ -1076,11 +1064,11 @@ export default function DataExport({
         />
         <label 
           htmlFor="data-file-upload" 
-          className="block w-full py-5 text-center bg-[#FFFFFF] hover:bg-[#F2ECE1] dark:bg-[#1E1E1E] dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 border-2 border-dashed border-[#DDD6CA] dark:border-stone-700 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer space-y-1"
+          className="block w-full py-6 px-4 text-center bg-[#FFFFFF] hover:bg-[#F2ECE1] dark:bg-[#1E1E1E] dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 border-2 border-dashed border-[#DDD6CA] dark:border-stone-700 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer space-y-1.5"
         >
-          <div className="text-2xl">📁</div>
-          <div className="text-stone-900 dark:text-stone-100 font-black">לחצו כאן לבחירת קובץ Excel (.xlsx) או JSON לייבוא</div>
-          <div className="text-[11px] text-stone-400 dark:text-stone-500 font-normal">תמיכה מלאה בכל גרסאות הגיבוי והתבניות</div>
+          <div className="text-3xl">📁</div>
+          <div className="text-stone-900 dark:text-stone-100 font-black text-sm">לחצו כאן לבחירת קובץ Excel (.xlsx) לייבוא</div>
+          <div className="text-[11px] text-stone-400 dark:text-stone-500 font-normal">תמיכה מלאה בכל קבצי הגיבוי והתבניות</div>
         </label>
       </div>
 

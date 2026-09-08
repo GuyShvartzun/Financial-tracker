@@ -594,7 +594,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       step="any"
                       value={track.amount ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'amount', e.target.value)} 
-                      placeholder="לדוג' 500,000"
+                      placeholder=""
                       className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
@@ -603,10 +603,10 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (שנים):</label>
                     <input 
                       type={isPrivacyMode ? "password" : "number"} 
-                      step="any"
+                      step="any" 
                       value={displayYears} 
                       onChange={(e) => handleUpdateTrack(track.id, 'years', e.target.value)} 
-                      placeholder="לדוג' 25"
+                      placeholder=""
                       className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
@@ -615,10 +615,10 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (חודשים):</label>
                     <input 
                       type={isPrivacyMode ? "password" : "number"} 
-                      step="1"
+                      step="1" 
                       value={displayMonths} 
                       onChange={(e) => handleUpdateTrack(track.id, 'months', e.target.value)} 
-                      placeholder="לדוג' 300"
+                      placeholder=""
                       className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
@@ -647,7 +647,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       step="any" 
                       value={track.interest ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'interest', e.target.value)} 
-                      placeholder="לדוג' 4.8"
+                      placeholder=""
                       className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
                   </div>
@@ -668,10 +668,10 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       <label className="text-xs text-stone-700 font-bold block mb-1">חודשי גרייס (ריבית בלבד):</label>
                       <input 
                         type={isPrivacyMode ? "password" : "number"} 
-                        step="1"
+                        step="1" 
                         value={track.graceMonths ?? ''} 
                         onChange={(e) => handleUpdateTrack(track.id, 'graceMonths', e.target.value)} 
-                        placeholder="לדוג' 12"
+                        placeholder=""
                         className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                       />
                     </div>

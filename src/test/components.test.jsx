@@ -587,7 +587,7 @@ describe('DataEntryModule Component', () => {
 });
 
 describe('DataExport Component', () => {
-  it('renders export buttons and triggers XLSX/JSON download', () => {
+  it('renders export buttons and triggers XLSX download', () => {
     render(
       <DataExport
         accounts={[]}
@@ -608,7 +608,8 @@ describe('DataExport Component', () => {
 
     expect(screen.getByText('ייצוא נתונים מלא')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /הורד קובץ Excel/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /הורד קובץ JSON/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /הורד תבנית ריקה/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /הורד קובץ JSON/i })).not.toBeInTheDocument();
   });
 });
 
@@ -806,7 +807,7 @@ describe('QuickLogModal Component', () => {
     const budgetTabBtn = screen.getByRole('button', { name: /הוספה לתקציב/i });
     fireEvent.click(budgetTabBtn);
 
-    const nameInput = screen.getByPlaceholderText(/קניות סופר/i);
+    const nameInput = screen.getByLabelText('שם הסעיף');
     fireEvent.change(nameInput, { target: { value: 'מכולת שכונתית' } });
 
     const amountInput = screen.getByPlaceholderText('0');
@@ -1528,7 +1529,7 @@ describe('WorkHoursCostCalculator Component', () => {
     const priceInput = screen.getByLabelText(/מחיר המוצר/i);
     fireEvent.change(priceInput, { target: { value: '1000' } });
 
-    const hoursInput = screen.getByPlaceholderText('182');
+    const hoursInput = screen.getByLabelText(/שעות עבודה חודשיות/i);
     fireEvent.change(hoursInput, { target: { value: '160' } });
 
     // 2 users * 160 hours = 320 hours

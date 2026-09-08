@@ -223,7 +223,7 @@ describe('Interactive Form Stress Testing & Edge Cases', () => {
         />
       );
 
-      const nameInput = screen.getByPlaceholderText('למשל: דניאל');
+      const nameInput = screen.getByLabelText('שם תצוגה בחדר');
       const emailInput = screen.getByPlaceholderText('name@gmail.com');
       const submitBtn = screen.getByRole('button', { name: /הוסף חבר לחדר/i });
 

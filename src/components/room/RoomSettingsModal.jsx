@@ -452,9 +452,10 @@ export default function RoomSettingsModal({
                 <label className="text-[10px] font-bold text-stone-600 block mb-1">שם תצוגה בחדר:</label>
                 <input
                   type="text"
+                  aria-label="שם תצוגה בחדר"
                   value={newMemberName}
                   onChange={(e) => setNewMemberName(e.target.value)}
-                  placeholder="למשל: דניאל"
+                  placeholder=""
                   className="w-full bg-white border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2 outline-none focus:border-[#4A90E2]"
                 />
               </div>

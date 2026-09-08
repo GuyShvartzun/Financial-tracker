@@ -274,15 +274,17 @@ export default function QuickLogModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                <label htmlFor="quick-log-budget-item-name" className="block text-xs font-bold text-stone-700 mb-1.5">
                   שם הסעיף:
                 </label>
                 <input
+                  id="quick-log-budget-item-name"
+                  aria-label="שם הסעיף"
                   ref={inputRef}
                   type="text"
                   value={budgetItemName}
                   onChange={(e) => setBudgetItemName(e.target.value)}
-                  placeholder="לדוגמה: קניות סופר שופרסל..."
+                  placeholder=""
                   className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32]"
                   required
                 />

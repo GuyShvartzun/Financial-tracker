@@ -111,7 +111,8 @@ export default function WorkHoursCostCalculator({
             max="400"
             value={monthlyHours}
             onChange={(e) => setMonthlyHours(e.target.value)}
-            placeholder="182"
+            aria-label="שעות עבודה חודשיות למשתמש"
+            placeholder=""
             className="w-full bg-white border border-[#DDD6CA] text-sm font-bold text-stone-900 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
           />
         </div>
