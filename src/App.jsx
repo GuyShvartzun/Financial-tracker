@@ -856,7 +856,7 @@ export default function App() {
         {/* Main Content Area offset by right sidebar on desktop */}
         <div className="md:mr-64 transition-all duration-300">
           <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 pb-24 md:pb-12">
-            {activeTab !== 'export' && activeTab !== 'calculators' && activeTab !== 'ai_advisor' && (
+            {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
               <MonthSelector
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}

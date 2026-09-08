@@ -361,12 +361,13 @@ describe('App End-to-End User Journey Simulation', () => {
       expect(screen.queryByText('חודש מוצג בדשבורד:')).not.toBeInTheDocument();
     });
 
-    // 5. Navigate to Data Entry Tab (MonthSelector is present)
+    // 5. Navigate to Data Entry Tab (MonthSelector is NOT present, internal selector is used)
     const dataEntryTab = screen.getByRole('button', { name: 'הזנת נתונים' });
     fireEvent.click(dataEntryTab);
     await waitFor(() => {
       expect(screen.getByText('הזנת נתונים חודשית וניהול חשבונות')).toBeInTheDocument();
-      expect(screen.getByText('חודש מוצג בדשבורד:')).toBeInTheDocument();
+      expect(screen.getByText('חודש נבחר לעריכה:')).toBeInTheDocument();
+      expect(screen.queryByText('חודש מוצג בדשבורד:')).not.toBeInTheDocument();
     });
 
     // 6. Navigate to Export Tab (MonthSelector must NOT be present)

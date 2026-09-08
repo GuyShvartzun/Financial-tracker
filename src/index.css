@@ -213,6 +213,7 @@ html.dark, body.dark {
 
 /* Blue */
 .dark [class*="bg-[#E3F2FD]"],
+.dark [class*="bg-[#BBDEFB]"],
 .dark .bg-blue-50,
 .dark .bg-indigo-50 {
   background-color: rgba(25, 118, 210, 0.22) !important;
@@ -227,6 +228,7 @@ html.dark, body.dark {
 
 /* Purple */
 .dark [class*="bg-[#F3E5F5]"],
+.dark [class*="bg-[#E1BEE7]"],
 .dark .bg-purple-50 {
   background-color: rgba(123, 31, 162, 0.22) !important;
 }
@@ -240,6 +242,7 @@ html.dark, body.dark {
 
 /* Red */
 .dark [class*="bg-[#FFEBEE]"],
+.dark [class*="bg-[#FFCDD2]"],
 .dark [class*="bg-[#FFF5F5]"],
 .dark .bg-red-50 {
   background-color: rgba(198, 40, 40, 0.22) !important;
@@ -255,25 +258,69 @@ html.dark, body.dark {
   border-color: rgba(198, 40, 40, 0.35) !important;
 }
 
-/* Orange / Amber / Yellow */
+/* Orange / Amber / Yellow & Flagged Accounts in Dark Mode */
 .dark [class*="bg-[#FFE0B2]"],
 .dark [class*="bg-[#FFF3E0]"],
 .dark [class*="bg-[#FFFDE7]"],
-.dark .bg-amber-50,
-.dark .bg-amber-100 {
+.dark [class*="bg-amber-50"],
+.dark [class*="bg-amber-100"] {
   background-color: rgba(230, 81, 0, 0.22) !important;
 }
+
+/* Flagged Account Card container with specific opacities */
+.dark [class*="bg-amber-50/30"] {
+  background-color: rgba(217, 119, 6, 0.12) !important;
+}
+.dark [class*="hover:bg-amber-50/50"]:hover {
+  background-color: rgba(217, 119, 6, 0.18) !important;
+}
+.dark [class*="bg-amber-50/90"],
+.dark [class*="bg-amber-50/70"] {
+  background-color: rgba(217, 119, 6, 0.22) !important;
+}
+
 .dark [class*="text-[#E65100]"],
+.dark [class*="text-amber-950"],
+.dark [class*="text-amber-900"],
+.dark [class*="text-amber-800"],
+.dark [class*="text-amber-700"],
+.dark .text-amber-950,
+.dark .text-amber-900,
 .dark .text-amber-800,
 .dark .text-amber-700 {
-  color: #FFB74D !important;
+  color: #FCD34D !important;
 }
+
 .dark [class*="border-[#FFCC80]"],
 .dark [class*="border-[#FFE0B2]"],
 .dark [class*="border-[#FFF9C4]"],
-.dark .border-amber-200,
-.dark .border-amber-300 {
-  border-color: rgba(255, 183, 77, 0.35) !important;
+.dark [class*="border-amber-200"],
+.dark [class*="border-amber-300"],
+.dark [class*="border-amber-400"] {
+  border-color: rgba(251, 191, 36, 0.35) !important;
+}
+
+.dark [class*="ring-amber-300"] {
+  --tw-ring-color: rgba(251, 191, 36, 0.35) !important;
+}
+
+/* Flagged inputs and banner button */
+.dark input[class*="bg-amber-50"],
+.dark select[class*="bg-amber-50"] {
+  background-color: #1A1813 !important;
+  color: #FCD34D !important;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+}
+
+.dark [class*="bg-amber-50/90"] button.bg-white,
+.dark [class*="bg-amber-50/90"] button[class*="bg-white"] {
+  background-color: #24211A !important;
+  color: #FCD34D !important;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+}
+.dark [class*="bg-amber-50/90"] button.bg-white:hover,
+.dark [class*="bg-amber-50/90"] button[class*="bg-white"]:hover {
+  background-color: #332C1F !important;
 }
 
 /* Modals & Dialogs Backdrop */
