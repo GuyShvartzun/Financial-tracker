@@ -119,8 +119,19 @@ html.dark, body.dark {
 .dark .bg-gray-50,
 .dark .bg-gray-100,
 .dark [class*="bg-[#F2ECE1]"],
-.dark [class*="bg-[#ECEFF1]"] {
+.dark [class*="bg-[#ECEFF1]"],
+.dark [class*="bg-[#E8E2D8]"] {
   background-color: #212532 !important;
+}
+
+/* Progress bar track & neutral light badges in Dark Mode */
+.dark [class*="bg-[#E8E2D8]"] {
+  background-color: #252A38 !important;
+  color: #CBD5E1 !important;
+}
+
+.dark [class*="bg-[#2E7D32]"] {
+  background-color: #38A169 !important;
 }
 
 /* Borders across the app */

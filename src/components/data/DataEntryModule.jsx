@@ -33,6 +33,7 @@ export default function DataEntryModule({
   const [showAddMonthModal, setShowAddMonthModal] = useState(false);
   const [showDeleteMonthConfirm, setShowDeleteMonthConfirm] = useState(false);
   const [filterOnlyFlagged, setFilterOnlyFlagged] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState(null);
 
   // Toggle account flag for a specific month
   const toggleFlag = (accId, month) => {
@@ -267,7 +268,7 @@ export default function DataEntryModule({
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                     isSelected 
                       ? 'bg-[#2E7D32] text-white' 
-                      : 'bg-[#E8E2D8] text-stone-700'
+                      : 'bg-[#E8E2D8] dark:bg-[#252A38] text-stone-700 dark:text-stone-300'
                   }`}>
                     <span className="privacy-blur">{isPrivacyMode ? '••' : userAccountsCount}</span> חשבונות
                   </span>
@@ -540,7 +541,7 @@ export default function DataEntryModule({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteAccountCompletely(acc.id)}
+                            onClick={() => setAccountToDelete(acc)}
                             className="px-2.5 py-1.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] rounded-lg transition text-xs font-bold border border-[#EF9A9A] cursor-pointer whitespace-nowrap"
                             title="מחק חשבון כליל"
                           >
@@ -693,8 +694,9 @@ export default function DataEntryModule({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteAccountCompletely(acc.id)}
+                            onClick={() => setAccountToDelete(acc)}
                             className="flex-1 py-1.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] rounded-lg transition text-xs font-bold border border-[#EF9A9A] cursor-pointer text-center"
+                            title="מחק חשבון כליל"
                           >
                             מחק כליל
                           </button>
@@ -783,6 +785,44 @@ export default function DataEntryModule({
               <button
                 type="button"
                 onClick={() => setShowDeleteMonthConfirm(false)}
+                className="py-2.5 px-4 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 font-bold text-xs rounded-xl transition border border-[#DDD6CA] cursor-pointer"
+              >
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {accountToDelete && (
+        <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFFFF] border border-[#FFCDD2] rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl text-center max-h-[90vh] overflow-y-auto">
+            <div className="w-12 h-12 rounded-full bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2] flex items-center justify-center mx-auto text-xl select-none">
+              ⚠️
+            </div>
+            <h3 className="text-lg font-bold text-[#C62828]">מחיקת חשבון מוחלטת</h3>
+            <div className="text-xs text-stone-600 leading-relaxed space-y-2">
+              <p>
+                האם אתה בטוח שברצונך למחוק כליל את החשבון <strong>"{accountToDelete.name}"</strong>?
+              </p>
+              <div className="bg-[#FFF5F5] border border-[#FFCDD2] p-2.5 rounded-xl text-[11px] text-[#C62828] font-medium text-right leading-normal">
+                ⚠️ <strong>אזהרה:</strong> פעולה זו בלתי הפיכה. כל היתרות וההיסטוריה של חשבון זה בכל החודשים יימחקו לחלוטין מהמערכת ומהענן.
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  handleDeleteAccountCompletely(accountToDelete.id);
+                  setAccountToDelete(null);
+                }}
+                className="flex-1 py-2.5 bg-[#EF5350] hover:bg-[#D32F2F] text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs"
+              >
+                אישור מחיקה כליל
+              </button>
+              <button
+                type="button"
+                onClick={() => setAccountToDelete(null)}
                 className="py-2.5 px-4 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 font-bold text-xs rounded-xl transition border border-[#DDD6CA] cursor-pointer"
               >
                 ביטול

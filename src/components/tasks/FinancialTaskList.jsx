@@ -206,9 +206,9 @@ export default function FinancialTaskList({
               <span>התקדמות כוללת</span>
               <span>{completionPercentage}% ({completedTasks}/{totalTasks})</span>
             </div>
-            <div className="w-full bg-[#E8E2D8] h-2.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#E8E2D8] dark:bg-[#252A38] h-2.5 rounded-full overflow-hidden">
               <div 
-                className="bg-[#2E7D32] h-full rounded-full transition-all duration-500 ease-out"
+                className="bg-[#2E7D32] dark:bg-[#4CAF50] h-full rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${completionPercentage}%` }}
               ></div>
             </div>

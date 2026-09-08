@@ -481,6 +481,53 @@ describe('DataEntryModule Component', () => {
     expect(screen.getAllByDisplayValue('עו"ש')[0]).toBeInTheDocument();
   });
 
+  it('prompts with warning confirmation modal before deleting an account completely', () => {
+    const handleDeleteAccountCompletely = vi.fn();
+    render(
+      <DataEntryModule
+        selectedMonth="08/2026"
+        setSelectedMonth={vi.fn()}
+        monthsList={['08/2026']}
+        onAddNewMonth={vi.fn()}
+        onDeleteMonth={vi.fn()}
+        activeRoomAccounts={mockAccounts}
+        users={mockUsers}
+        handleAccountNameChange={vi.fn()}
+        handleAccountCategoryChange={vi.fn()}
+        handleReorderAccount={vi.fn()}
+        handleMoveAccountToPosition={vi.fn()}
+        handleBalanceChange={vi.fn()}
+        handleRemoveAccountFromMonth={vi.fn()}
+        handleDeleteAccountCompletely={handleDeleteAccountCompletely}
+        handleAddAccount={vi.fn()}
+        setAccounts={vi.fn()}
+        syncAccountToCloud={vi.fn()}
+      />
+    );
+
+    // Find and click delete completely button for first account
+    const deleteBtns = screen.getAllByTitle('מחק חשבון כליל');
+    fireEvent.click(deleteBtns[0]);
+
+    // Warning confirmation modal should be visible
+    expect(screen.getByText('מחיקת חשבון מוחלטת')).toBeInTheDocument();
+    expect(screen.getByText(/פעולה זו בלתי הפיכה/i)).toBeInTheDocument();
+    expect(screen.getByText(/האם אתה בטוח שברצונך למחוק כליל את החשבון/i)).toBeInTheDocument();
+
+    // Cancel deletion
+    const cancelBtn = screen.getByRole('button', { name: 'ביטול' });
+    fireEvent.click(cancelBtn);
+    expect(handleDeleteAccountCompletely).not.toHaveBeenCalled();
+    expect(screen.queryByText('מחיקת חשבון מוחלטת')).not.toBeInTheDocument();
+
+    // Click delete again and confirm
+    fireEvent.click(deleteBtns[0]);
+    const confirmBtn = screen.getByRole('button', { name: 'אישור מחיקה כליל' });
+    fireEvent.click(confirmBtn);
+    expect(handleDeleteAccountCompletely).toHaveBeenCalledWith('a1');
+    expect(screen.queryByText('מחיקת חשבון מוחלטת')).not.toBeInTheDocument();
+  });
+
   it('PersonalDashboard displays flag next to account name when flagged for selected month', () => {
     const accountsWithFlag = [
       { id: 'a1', name: 'עו"ש בנק', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } }
