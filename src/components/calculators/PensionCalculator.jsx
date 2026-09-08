@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Landmark } from 'lucide-react';
 import { PENSION_TRACKS } from '../../constants/pensionTracks';
-import { getDynamicHistoricalReturn, getAccountTotalsForMonth } from '../../utils/calculations';
+import { getDynamicHistoricalReturn, getAccountTotalsForMonth, getLatestExistingMonth } from '../../utils/calculations';
 import { fmtILS } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
@@ -24,6 +24,7 @@ export default function PensionCalculator({
   onUpdateData,
   accounts,
   selectedMonth,
+  monthsList = [],
   users = [],
   isSingleMember = false,
   activeUserId = '',
@@ -31,6 +32,7 @@ export default function PensionCalculator({
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
+  const effectiveMonth = getLatestExistingMonth(monthsList, accounts, selectedMonth);
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || '';
   const preferredUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
@@ -122,7 +124,7 @@ export default function PensionCalculator({
           {users.map(member => {
             const memberUid = member.uid || member.id;
             const memberAccs = isSingleUser ? accounts : accounts.filter(a => a.ownerId === memberUid);
-            const totals = getAccountTotalsForMonth(memberAccs, selectedMonth);
+            const totals = getAccountTotalsForMonth(memberAccs, effectiveMonth);
             const isActive = isSingleUser || activePensionUser === memberUid;
             return (
               <button
@@ -141,7 +143,7 @@ export default function PensionCalculator({
                     ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' 
                     : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                 }`}
-                title="לחץ למשיכת צבירה פנסיונית עדכנית"
+                title={`לחץ למשיכת צבירה פנסיונית עדכנית (${effectiveMonth})`}
               >
                 {isSingleUser ? (
                   <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.long, isPrivacyMode)}</span>)</span>

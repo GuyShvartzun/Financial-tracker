@@ -80,3 +80,35 @@ export const getNextMonth = (monthStr) => {
   return `${String(m).padStart(2, '0')}/${y}`;
 };
 
+export const getLatestExistingMonth = (monthsList = [], accounts = [], fallbackMonth = '') => {
+  const allMonths = new Set();
+  if (Array.isArray(monthsList)) {
+    monthsList.forEach(m => {
+      if (m && typeof m === 'string' && m.includes('/')) {
+        allMonths.add(m.trim());
+      }
+    });
+  }
+  if (Array.isArray(accounts)) {
+    accounts.forEach(acc => {
+      if (acc && acc.balances && typeof acc.balances === 'object') {
+        Object.keys(acc.balances).forEach(m => {
+          if (m && typeof m === 'string' && m.includes('/')) {
+            allMonths.add(m.trim());
+          }
+        });
+      }
+    });
+  }
+  if (fallbackMonth && typeof fallbackMonth === 'string' && fallbackMonth.includes('/')) {
+    allMonths.add(fallbackMonth.trim());
+  }
+
+  if (allMonths.size === 0) {
+    return fallbackMonth || '08/2026';
+  }
+
+  const sorted = sortMonths(Array.from(allMonths));
+  return sorted[sorted.length - 1];
+};
+

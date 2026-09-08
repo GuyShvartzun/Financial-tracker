@@ -5,12 +5,14 @@ import ComprehensiveMortgageAndLoanCalculator from './ComprehensiveMortgageAndLo
 import AdvancedFIRECalculator from './AdvancedFIRECalculator';
 import { DEFAULT_CALCULATORS_DATA } from '../../constants/initialData';
 import { usePrivacy } from '../../context/PrivacyContext';
+import { getLatestExistingMonth } from '../../utils/calculations';
 
 export default function CalculatorsModule({
   calculatorsData,
   onUpdateData,
   accounts,
   selectedMonth,
+  monthsList = [],
   users,
   roomStats,
   budgetTotals,
@@ -21,6 +23,8 @@ export default function CalculatorsModule({
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const [calcMode, setCalcMode] = useState('pension');
+
+  const latestMonth = getLatestExistingMonth(monthsList, accounts, selectedMonth);
 
   return (
     <div className="space-y-6 font-sans">
@@ -68,7 +72,8 @@ export default function CalculatorsModule({
           calculatorsData={calculatorsData}
           onUpdateData={onUpdateData}
           accounts={accounts}
-          selectedMonth={selectedMonth}
+          selectedMonth={latestMonth}
+          monthsList={monthsList}
           users={users}
           isSingleMember={isSingleMember}
           activeUserId={activeUserId}
@@ -89,7 +94,8 @@ export default function CalculatorsModule({
           calculatorsData={calculatorsData}
           onUpdateData={onUpdateData}
           accounts={accounts}
-          selectedMonth={selectedMonth}
+          selectedMonth={latestMonth}
+          monthsList={monthsList}
           users={users}
           roomStats={roomStats}
           budgetTotals={budgetTotals}

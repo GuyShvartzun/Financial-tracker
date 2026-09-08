@@ -5,7 +5,8 @@ import {
   sortAccountsByDataEntryOrder,
   getAccountTotalsForMonth,
   sortMonths,
-  getNextMonth
+  getNextMonth,
+  getLatestExistingMonth
 } from '../utils/calculations';
 import { fmtILS, fmtNum, fmtPct } from '../utils/formatters';
 
@@ -150,6 +151,34 @@ describe('Calculations Utility', () => {
       const fallback = getNextMonth(null);
       expect(fallback).toMatch(/^\d{2}\/\d{4}$/);
       expect(getNextMonth('invalid')).toBe('invalid');
+    });
+  });
+
+  describe('getLatestExistingMonth', () => {
+    it('returns the latest month from monthsList', () => {
+      const list = ['06/2026', '07/2026', '08/2026'];
+      expect(getLatestExistingMonth(list, [], '06/2026')).toBe('08/2026');
+    });
+
+    it('returns the latest month when an account has a later balance than monthsList', () => {
+      const list = ['07/2026', '08/2026'];
+      const accs = [
+        { id: '1', balances: { '07/2026': 100, '08/2026': 200, '09/2026': 300 } }
+      ];
+      expect(getLatestExistingMonth(list, accs, '07/2026')).toBe('09/2026');
+    });
+
+    it('correctly orders year boundaries e.g. 12/2026 vs 01/2027', () => {
+      const list = ['11/2026', '12/2026'];
+      const accs = [
+        { id: '1', balances: { '01/2027': 500 } }
+      ];
+      expect(getLatestExistingMonth(list, accs, '11/2026')).toBe('01/2027');
+    });
+
+    it('falls back to fallbackMonth or default when lists are empty', () => {
+      expect(getLatestExistingMonth([], [], '05/2026')).toBe('05/2026');
+      expect(getLatestExistingMonth(null, null, '')).toBe('08/2026');
     });
   });
 });

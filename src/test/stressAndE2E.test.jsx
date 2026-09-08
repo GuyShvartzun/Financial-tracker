@@ -337,38 +337,44 @@ describe('App End-to-End User Journey Simulation', () => {
     });
 
     // 2. Navigate to Budget sub-tab
+    // 2. Navigate to Budget sub-tab (MonthSelector is present on dashboard)
     const budgetSubTab = screen.getByRole('button', { name: /תקציב/i });
     fireEvent.click(budgetSubTab);
     await waitFor(() => {
       expect(screen.getByText('סה"כ הכנסות חודשיות')).toBeInTheDocument();
+      expect(screen.getByText('חודש מוצג בדשבורד:')).toBeInTheDocument();
     });
 
-    // 3. Navigate to Calculators Tab
+    // 3. Navigate to Calculators Tab (MonthSelector must NOT be present)
     const calcsTab = screen.getByRole('button', { name: 'מחשבונים פיננסיים' });
     fireEvent.click(calcsTab);
     await waitFor(() => {
       expect(screen.getAllByText('סימולטור פנסיוני')[0]).toBeInTheDocument();
+      expect(screen.queryByText('חודש מוצג בדשבורד:')).not.toBeInTheDocument();
     });
 
-    // 4. Navigate to AI Advisor Tab
+    // 4. Navigate to AI Advisor Tab (MonthSelector must NOT be present)
     const aiTab = screen.getByRole('button', { name: 'יועץ פיננסי' });
     fireEvent.click(aiTab);
     await waitFor(() => {
       expect(screen.getByText('Gemini 3.8 Flash')).toBeInTheDocument();
+      expect(screen.queryByText('חודש מוצג בדשבורד:')).not.toBeInTheDocument();
     });
 
-    // 5. Navigate to Data Entry Tab
+    // 5. Navigate to Data Entry Tab (MonthSelector is present)
     const dataEntryTab = screen.getByRole('button', { name: 'הזנת נתונים' });
     fireEvent.click(dataEntryTab);
     await waitFor(() => {
       expect(screen.getByText('הזנת נתונים חודשית וניהול חשבונות')).toBeInTheDocument();
+      expect(screen.getByText('חודש מוצג בדשבורד:')).toBeInTheDocument();
     });
 
-    // 6. Navigate to Export Tab
+    // 6. Navigate to Export Tab (MonthSelector must NOT be present)
     const exportTab = screen.getByRole('button', { name: 'ייצוא וייבוא נתונים' });
     fireEvent.click(exportTab);
     await waitFor(() => {
       expect(screen.getByText('ייצוא, גיבוי וייבוא נתונים')).toBeInTheDocument();
+      expect(screen.queryByText('חודש מוצג בדשבורד:')).not.toBeInTheDocument();
     });
 
     // Verify ZERO uncaught React errors or crashes occurred

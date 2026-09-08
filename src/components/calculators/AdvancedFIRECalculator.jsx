@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Flame } from 'lucide-react';
 import { fmtILS } from '../../utils/formatters';
-import { getAccountTotalsForMonth } from '../../utils/calculations';
+import { getAccountTotalsForMonth, getLatestExistingMonth } from '../../utils/calculations';
 import { DEFAULT_FIRE_DATA } from '../../constants/initialData';
 import { usePrivacy } from '../../context/PrivacyContext';
 
@@ -10,6 +10,7 @@ export default function AdvancedFIRECalculator({
   onUpdateData,
   accounts = [],
   selectedMonth = '',
+  monthsList = [],
   users = [],
   isSingleMember = false,
   activeUserId = '',
@@ -17,6 +18,7 @@ export default function AdvancedFIRECalculator({
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
+  const effectiveMonth = getLatestExistingMonth(monthsList, accounts, selectedMonth);
   const isSingleUser = isSingleMember || users.length <= 1;
   const singleUserUid = users[0]?.uid || users[0]?.id || 'single';
   const preferredFireUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
@@ -59,25 +61,25 @@ export default function AdvancedFIRECalculator({
     return DEFAULT_FIRE_DATA;
   }, [rawFire, activeFireUser, isSingleUser]);
 
-  // Active user's current liquid capital (short + medium) for selected month
+  // Active user's current liquid capital (short + medium) for latest existing month
   const activeUserLiquid = useMemo(() => {
     if (isSingleUser) {
-      const totals = getAccountTotalsForMonth(accounts, selectedMonth);
+      const totals = getAccountTotalsForMonth(accounts, effectiveMonth);
       return totals.liquid;
     }
     if (activeFireUser === 'shared') {
-      const totals = getAccountTotalsForMonth(accounts, selectedMonth);
+      const totals = getAccountTotalsForMonth(accounts, effectiveMonth);
       return totals.liquid;
     }
     const memberAccs = accounts.filter(a => a.ownerId === activeFireUser);
-    const totals = getAccountTotalsForMonth(memberAccs, selectedMonth);
+    const totals = getAccountTotalsForMonth(memberAccs, effectiveMonth);
     return totals.liquid;
-  }, [accounts, activeFireUser, selectedMonth, isSingleUser]);
+  }, [accounts, activeFireUser, effectiveMonth, isSingleUser]);
 
   const sharedLiquid = useMemo(() => {
-    const totals = getAccountTotalsForMonth(accounts, selectedMonth);
+    const totals = getAccountTotalsForMonth(accounts, effectiveMonth);
     return totals.liquid;
-  }, [accounts, selectedMonth]);
+  }, [accounts, effectiveMonth]);
 
   const handleFireChange = (field, value) => {
     const current = userFireData;
@@ -92,10 +94,10 @@ export default function AdvancedFIRECalculator({
     setActiveFireUser(memberId);
     let targetLiquid = 0;
     if (memberId === 'shared') {
-      targetLiquid = getAccountTotalsForMonth(accounts, selectedMonth).liquid;
+      targetLiquid = getAccountTotalsForMonth(accounts, effectiveMonth).liquid;
     } else {
       const memberAccs = isSingleUser ? accounts : accounts.filter(a => a.ownerId === memberId);
-      targetLiquid = getAccountTotalsForMonth(memberAccs, selectedMonth).liquid;
+      targetLiquid = getAccountTotalsForMonth(memberAccs, effectiveMonth).liquid;
     }
     const memberData = rawFire[memberId] || (rawFire.initialCapital !== undefined && activeFireUser === memberId ? rawFire : (isSingleUser && rawFire['shared'] ? rawFire['shared'] : DEFAULT_FIRE_DATA));
 
@@ -319,7 +321,7 @@ export default function AdvancedFIRECalculator({
                     ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]'
                     : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                 }`}
-                title="לחץ למשיכת סך ההון הנזיל המשותף"
+                title={`לחץ למשיכת סך ההון הנזיל המשותף (${effectiveMonth})`}
               >
                 הון משותף (<span className="privacy-blur">{fmtILS(sharedLiquid, isPrivacyMode)}</span>)
               </button>
@@ -327,7 +329,7 @@ export default function AdvancedFIRECalculator({
             {users.map(member => {
               const memberUid = member.uid || member.id;
               const memberAccs = isSingleUser ? accounts : accounts.filter(a => a.ownerId === memberUid);
-              const totals = getAccountTotalsForMonth(memberAccs, selectedMonth);
+              const totals = getAccountTotalsForMonth(memberAccs, effectiveMonth);
               const isActive = isSingleUser || activeFireUser === memberUid;
               return (
                 <button
@@ -339,7 +341,7 @@ export default function AdvancedFIRECalculator({
                     ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]' 
                     : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border-[#DDD6CA]'
                   }`}
-                  title="לחץ למשיכת יתרת ההון הנזיל העדכנית"
+                  title={`לחץ למשיכת יתרת ההון הנזיל העדכנית (${effectiveMonth})`}
                 >
                   {isSingleUser 
                     ? <span>משוך נתוני {member.displayName || member.name} (<span className="privacy-blur">{fmtILS(totals.liquid, isPrivacyMode)}</span>)</span>

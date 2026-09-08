@@ -941,6 +941,88 @@ describe('Privacy Mode Enforcement Tests', () => {
     expect(blurred.length).toBeGreaterThan(0);
   });
 
+  it('PensionCalculator always pulls data from the latest existing month regardless of older selectedMonth', () => {
+    const onUpdateData = vi.fn();
+    const accounts = [
+      {
+        id: 'acc1',
+        ownerId: 'u1',
+        category: 'long',
+        balances: {
+          '06/2026': 100000,
+          '07/2026': 150000,
+          '08/2026': 300000 // latest existing month
+        }
+      }
+    ];
+
+    const { getByRole } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
+        <PensionCalculator
+          calculatorsData={DEFAULT_CALCULATORS_DATA}
+          onUpdateData={onUpdateData}
+          accounts={accounts}
+          selectedMonth="06/2026" // older selected month passed
+          monthsList={['06/2026', '07/2026', '08/2026']}
+          users={[{ uid: 'u1', displayName: 'ישראל' }]}
+          isSingleMember={true}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    // The button should display the latest month balance (300,000) rather than 100,000
+    const pullBtn = getByRole('button', { name: /משוך נתוני ישראל/i });
+    expect(pullBtn.textContent).toContain('300,000');
+    expect(pullBtn.textContent).not.toContain('100,000');
+
+    // Clicking it should update data with the latest month balance 300000
+    fireEvent.click(pullBtn);
+    expect(onUpdateData).toHaveBeenCalledWith('pension', expect.objectContaining({
+      u1: expect.objectContaining({ balance: 300000 })
+    }));
+  });
+
+  it('AdvancedFIRECalculator always pulls data from the latest existing month regardless of older selectedMonth', () => {
+    const onUpdateData = vi.fn();
+    const accounts = [
+      {
+        id: 'acc2',
+        ownerId: 'u1',
+        category: 'short',
+        balances: {
+          '06/2026': 20000,
+          '07/2026': 40000,
+          '08/2026': 85000 // latest existing month
+        }
+      }
+    ];
+
+    const { getByRole } = render(
+      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
+        <AdvancedFIRECalculator
+          calculatorsData={DEFAULT_CALCULATORS_DATA}
+          onUpdateData={onUpdateData}
+          accounts={accounts}
+          selectedMonth="06/2026" // older selected month
+          monthsList={['06/2026', '07/2026', '08/2026']}
+          users={[{ uid: 'u1', displayName: 'ישראל' }]}
+          isSingleMember={true}
+        />
+      </PrivacyContext.Provider>
+    );
+
+    // Button should display 85,000 rather than 20,000
+    const pullBtn = getByRole('button', { name: /משוך נתוני ישראל/i });
+    expect(pullBtn.textContent).toContain('85,000');
+    expect(pullBtn.textContent).not.toContain('20,000');
+
+    // Clicking it should sync the latest month's liquid capital
+    fireEvent.click(pullBtn);
+    expect(onUpdateData).toHaveBeenCalledWith('fire', expect.objectContaining({
+      u1: expect.objectContaining({ initialCapital: 85000 })
+    }));
+  });
+
   it('DemographicBox wraps comparison grid and age selector with privacy-blur class', () => {
     const { container } = render(
       <DemographicBox
