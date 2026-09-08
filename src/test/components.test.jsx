@@ -527,6 +527,44 @@ describe('DataEntryModule Component', () => {
     expect(screen.queryByText('מחיקת חשבון מוחלטת')).not.toBeInTheDocument();
   });
 
+  it('allows changing account currency to USD or EUR and calls handleAccountCurrencyChange', () => {
+    const handleAccountCurrencyChange = vi.fn();
+    render(
+      <DataEntryModule
+        selectedMonth="08/2026"
+        setSelectedMonth={vi.fn()}
+        monthsList={['08/2026']}
+        onAddNewMonth={vi.fn()}
+        onDeleteMonth={vi.fn()}
+        activeRoomAccounts={mockAccounts}
+        users={mockUsers}
+        handleAccountNameChange={vi.fn()}
+        handleAccountCurrencyChange={handleAccountCurrencyChange}
+        handleAccountCategoryChange={vi.fn()}
+        handleReorderAccount={vi.fn()}
+        handleMoveAccountToPosition={vi.fn()}
+        handleBalanceChange={vi.fn()}
+        handleRemoveAccountFromMonth={vi.fn()}
+        handleDeleteAccountCompletely={vi.fn()}
+        handleAddAccount={vi.fn()}
+        setAccounts={vi.fn()}
+        syncAccountToCloud={vi.fn()}
+      />
+    );
+
+    // Find currency select dropdowns
+    const currencySelects = screen.getAllByRole('combobox').filter(el => {
+      return Array.from(el.querySelectorAll('option')).some(opt => opt.value === 'USD');
+    });
+    expect(currencySelects.length).toBeGreaterThan(0);
+
+    fireEvent.change(currencySelects[0], { target: { value: 'USD' } });
+    expect(handleAccountCurrencyChange).toHaveBeenCalledWith(mockAccounts[0].id, 'USD');
+
+    fireEvent.change(currencySelects[0], { target: { value: 'EUR' } });
+    expect(handleAccountCurrencyChange).toHaveBeenCalledWith(mockAccounts[0].id, 'EUR');
+  });
+
   it('PersonalDashboard displays flag next to account name when flagged for selected month', () => {
     const accountsWithFlag = [
       { id: 'a1', name: 'עו"ש בנק', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } }

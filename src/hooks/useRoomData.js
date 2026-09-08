@@ -390,6 +390,7 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
         ownerId: owner,
         category,
         name: 'חשבון חדש',
+        currency: 'ILS',
         balances: { [activeMonth]: 0 },
         order: maxOrder + 1
       };

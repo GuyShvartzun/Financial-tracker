@@ -63,6 +63,23 @@ export default function DataEntryModule({
     }
   };
 
+  // Resilient currency change handler
+  const onCurrencyChange = (accId, newCurrency) => {
+    const normalized = normalizeCurrencyCode(newCurrency);
+    if (handleAccountCurrencyChange) {
+      handleAccountCurrencyChange(accId, normalized);
+    } else if (setAccounts) {
+      setAccounts(prev => prev.map(a => {
+        if (a.id === accId) {
+          const updated = { ...a, currency: normalized };
+          if (syncAccountToCloud) syncAccountToCloud(updated);
+          return updated;
+        }
+        return a;
+      }));
+    }
+  };
+
   // Multi-user Data Entry selector state
   const isMultiUser = !isSingleMember && users.length > 1;
   const preferredUserUid = (activeUserId && users.some(u => (u.uid || u.id) === activeUserId))
@@ -522,7 +539,7 @@ export default function DataEntryModule({
                           <label className="text-[10px] text-stone-500 font-bold block mb-1">מטבע</label>
                           <select
                             value={normalizeCurrencyCode(acc.currency)}
-                            onChange={(e) => handleAccountCurrencyChange && handleAccountCurrencyChange(acc.id, e.target.value)}
+                            onChange={(e) => onCurrencyChange(acc.id, e.target.value)}
                             className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs font-bold rounded-lg px-2 py-2 outline-none cursor-pointer focus:border-[#4A90E2]"
                           >
                             {CURRENCY_LIST.map((cur) => (
@@ -700,7 +717,7 @@ export default function DataEntryModule({
                             <label className="text-[10px] text-stone-500 font-bold block mb-1">מטבע</label>
                             <select
                               value={normalizeCurrencyCode(acc.currency)}
-                              onChange={(e) => handleAccountCurrencyChange && handleAccountCurrencyChange(acc.id, e.target.value)}
+                              onChange={(e) => onCurrencyChange(acc.id, e.target.value)}
                               className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs font-bold rounded-lg p-2 outline-none cursor-pointer focus:border-[#4A90E2]"
                             >
                               {CURRENCY_LIST.map((cur) => (

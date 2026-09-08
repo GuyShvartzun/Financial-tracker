@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { sortMonths } from '../../utils/calculations';
+import { normalizeCurrencyCode } from '../../utils/formatters';
 import { DEFAULT_CALCULATORS_DATA, DEFAULT_TASKS } from '../../constants/initialData';
 
 export default function DataExport({
@@ -167,6 +168,7 @@ export default function DataExport({
             'סדר': a.order !== undefined ? a.order : idx,
             'שם החשבון': a.name,
             'סוג החשבון': catToHeb[a.category] || a.category,
+            'מטבע': normalizeCurrencyCode(a.currency),
             'שיוך למשתמש': a.ownerId || defaultOwnerUid,
             'שם בעל החשבון': ownerName,
             'חודשים מסומנים בדגל': flaggedList || 'ללא'
@@ -179,8 +181,8 @@ export default function DataExport({
       }
 
       const accountHeaders = isTemplate
-        ? ['סדר', 'שם החשבון', 'סוג החשבון', 'בעל החשבון', 'מסומן בדגל', ...exportMonths]
-        : ['מזהה חשבון', 'סדר', 'שם החשבון', 'סוג החשבון', 'שיוך למשתמש', 'שם בעל החשבון', 'חודשים מסומנים בדגל', ...exportMonths];
+        ? ['סדר', 'שם החשבון', 'סוג החשבון', 'מטבע', 'בעל החשבון', 'מסומן בדגל', ...exportMonths]
+        : ['מזהה חשבון', 'סדר', 'שם החשבון', 'סוג החשבון', 'מטבע', 'שיוך למשתמש', 'שם בעל החשבון', 'חודשים מסומנים בדגל', ...exportMonths];
 
       let wsAccounts;
       if (accountsExport.length > 0) {
@@ -194,6 +196,7 @@ export default function DataExport({
             { wch: 8 },  // סדר
             { wch: 30 }, // שם החשבון
             { wch: 18 }, // סוג החשבון
+            { wch: 10 }, // מטבע
             { wch: 20 }, // בעל החשבון
             { wch: 16 }, // מסומן בדגל
             ...exportMonths.map(() => ({ wch: 14 })) // חודש נוכחי
@@ -203,6 +206,7 @@ export default function DataExport({
             { wch: 8 },  // סדר
             { wch: 30 }, // שם החשבון
             { wch: 16 }, // סוג החשבון
+            { wch: 10 }, // מטבע
             { wch: 22 }, // שיוך למשתמש
             { wch: 20 }, // שם בעל החשבון
             { wch: 22 }, // חודשים מסומנים בדגל
@@ -867,6 +871,7 @@ export default function DataExport({
           id: originalId || ('acc_' + Date.now() + Math.random().toString(36).substr(2, 9)),
           name: row['שם החשבון'] || row['Name'] || row.name || 'חשבון מיובא',
           category: hebToCat[row['סוג החשבון']] || row['סוג החשבון'] || row.category || 'short',
+          currency: normalizeCurrencyCode(row['מטבע'] || row['Currency'] || row.currency),
           ownerId: resolvedUid,
           order: isNaN(explicitOrder) ? idx : explicitOrder,
           balances,

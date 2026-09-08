@@ -67,6 +67,34 @@ describe('End-to-End Client-Side Cryptography Module', () => {
     expect(restored).toEqual(account);
   });
 
+  it('encrypts and restores account currency (USD, EUR, ILS) losslessly through cloud encryption', async () => {
+    const key = await deriveKeyFromSecret('room_secret', 'room_curr');
+    const accountUSD = {
+      id: 'acc_usd',
+      name: 'חשבון השקעות דולרי',
+      category: 'long',
+      currency: 'USD',
+      order: 1,
+      ownerId: 'u1',
+      balances: { '08/2026': 50000 },
+      flaggedMonths: {}
+    };
+
+    const cloudDoc = await encryptAccountForCloud(accountUSD, key);
+    expect(cloudDoc.currency).toBeUndefined(); // Currency is encrypted, not plain on root
+    expect(cloudDoc._enc).toBe(true);
+
+    const decrypted = await decryptAccountFromCloud(cloudDoc, key);
+    expect(decrypted.currency).toBe('USD');
+    expect(decrypted.name).toBe('חשבון השקעות דולרי');
+
+    // Test with EUR
+    const accountEUR = { ...accountUSD, id: 'acc_eur', currency: 'EUR' };
+    const cloudDocEUR = await encryptAccountForCloud(accountEUR, key);
+    const decryptedEUR = await decryptAccountFromCloud(cloudDocEUR, key);
+    expect(decryptedEUR.currency).toBe('EUR');
+  });
+
   it('handles legacy unencrypted accounts gracefully (backward compatibility)', async () => {
     const key = await deriveKeyFromSecret('room_secret', 'room_789');
     const legacyAccount = {

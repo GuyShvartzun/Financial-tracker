@@ -4,6 +4,8 @@
  * to ensure that all financial data stored in Firestore is encrypted at the client level.
  */
 
+import { normalizeCurrencyCode } from './formatters';
+
 // In-memory key cache to prevent expensive repeated PBKDF2 derivations
 const keyCache = new Map();
 
@@ -166,6 +168,10 @@ export async function encryptAccountForCloud(account, cryptoKey) {
     flaggedMonths: account.flaggedMonths || {}
   };
 
+  if (account.currency !== undefined) {
+    sensitiveFields.currency = normalizeCurrencyCode(account.currency);
+  }
+
   const encryptedPart = await encryptObject(sensitiveFields, cryptoKey);
 
   return {
@@ -182,7 +188,10 @@ export async function encryptAccountForCloud(account, cryptoKey) {
 export async function decryptAccountFromCloud(accountDoc, cryptoKey) {
   if (!accountDoc) return accountDoc;
   if (!accountDoc._enc || !accountDoc.payload) {
-    return accountDoc; // Legacy unencrypted account
+    return {
+      ...accountDoc,
+      ...(accountDoc.currency !== undefined ? { currency: normalizeCurrencyCode(accountDoc.currency) } : {})
+    };
   }
 
   const decryptedSensitive = await decryptObject(accountDoc, cryptoKey);
@@ -191,7 +200,7 @@ export async function decryptAccountFromCloud(accountDoc, cryptoKey) {
     return accountDoc;
   }
 
-  return {
+  const restored = {
     id: accountDoc.id,
     ownerId: accountDoc.ownerId,
     order: accountDoc.order !== undefined ? accountDoc.order : 0,
@@ -200,6 +209,14 @@ export async function decryptAccountFromCloud(accountDoc, cryptoKey) {
     balances: decryptedSensitive.balances || {},
     flaggedMonths: decryptedSensitive.flaggedMonths || {}
   };
+
+  if (decryptedSensitive.currency !== undefined) {
+    restored.currency = normalizeCurrencyCode(decryptedSensitive.currency);
+  } else if (accountDoc.currency !== undefined) {
+    restored.currency = normalizeCurrencyCode(accountDoc.currency);
+  }
+
+  return restored;
 }
 
 /**
