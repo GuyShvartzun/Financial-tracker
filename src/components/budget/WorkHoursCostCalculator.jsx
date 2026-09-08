@@ -49,7 +49,7 @@ export default function WorkHoursCostCalculator({
   };
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#E8E2D8] rounded-2xl p-4 sm:p-6 shadow-xs space-y-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card font-sans">
+    <div className="bg-[#FFFFFF] border border-[#E8E2D8] rounded-2xl p-4 sm:p-6 shadow-xs space-y-5 font-sans">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-[#E8E2D8] pb-3">
         <div className="flex items-center gap-3">
@@ -80,7 +80,7 @@ export default function WorkHoursCostCalculator({
       {/* Input Controls Grid (3 Clean Columns) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 1. Product Price */}
-        <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xs">
+        <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8]">
           <label className="block text-xs font-bold text-stone-700 flex items-center gap-1.5">
             <ShoppingBag className="w-3.5 h-3.5 text-indigo-600" />
             מחיר המוצר ({SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'})
@@ -99,7 +99,7 @@ export default function WorkHoursCostCalculator({
         </div>
 
         {/* 2. Monthly Work Hours per user */}
-        <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xs">
+        <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8]">
           <label className="block text-xs font-bold text-stone-700 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-indigo-600" />
@@ -119,7 +119,7 @@ export default function WorkHoursCostCalculator({
         </div>
 
         {/* 3. Monthly Income */}
-        <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xs">
+        <div className="space-y-1.5 bg-[#FAF7F2] p-3.5 rounded-xl border border-[#E8E2D8]">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
               <Coins className="w-3.5 h-3.5 text-indigo-600" />
@@ -162,7 +162,7 @@ export default function WorkHoursCostCalculator({
       </div>
 
       {/* Result Display: Only work hours */}
-      <div className="bg-indigo-900 text-white rounded-xl p-4 sm:p-5 shadow-xs flex items-center justify-center text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
+      <div className="bg-indigo-900 text-white rounded-xl p-4 sm:p-5 shadow-xs flex items-center justify-center text-center">
         {effectiveIncome > 0 && parsedPrice > 0 ? (
           <div className="text-base sm:text-xl font-bold tracking-tight">
             <span>עלות המוצר בשעות עבודה: </span>

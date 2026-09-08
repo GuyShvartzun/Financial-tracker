@@ -544,7 +544,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
             const displayMonths = track.months !== undefined && track.months !== null ? track.months : '';
 
             return (
-              <div key={track.id} className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4 relative shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
+              <div key={track.id} className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4 relative shadow-2xs">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-1 min-w-[200px]">
