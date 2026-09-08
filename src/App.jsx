@@ -1024,6 +1024,13 @@ export default function App() {
               setMonthsList={setMonthsList}
               setSelectedPersonalUserId={setSelectedPersonalUserId}
               authUser={authUser}
+              calculatorsData={calculatorsData}
+              setCalculatorsData={setCalculatorsData}
+              syncCalculatorsToCloud={syncCalculatorsToCloud}
+              tasks={tasks}
+              setTasks={setTasks}
+              syncTasksToCloud={syncTasksToCloud}
+              roomName={currentRoom?.name}
             />
           )}
         </main>
