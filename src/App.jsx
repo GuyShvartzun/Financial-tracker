@@ -24,6 +24,13 @@ import {
   DEFAULT_TASKS 
 } from './constants/initialData';
 import { getAccountTotalsForMonth, sortMonths, sortAccountsByDataEntryOrder } from './utils/calculations';
+import { 
+  getRoomCryptoKey, 
+  encryptAccountForCloud, 
+  decryptAccountFromCloud, 
+  encryptSettingsForCloud, 
+  decryptSettingsFromCloud 
+} from './utils/crypto';
 
 import LoginView from './components/auth/LoginView';
 import RoomLobby from './components/room/RoomLobby';
@@ -257,7 +264,31 @@ export default function App() {
     }
   }, [currentRoom?.id, authUser?.uid]);
 
-  // 5. Sync active room data (accounts, budget, months, calculators)
+  // 5. Room Cryptographic Key Management (AES-GCM 256-bit with PBKDF2)
+  const roomCryptoKeyRef = useRef(null);
+  const [roomCryptoKey, setRoomCryptoKey] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!currentRoom?.id) {
+      roomCryptoKeyRef.current = null;
+      setRoomCryptoKey(null);
+      return;
+    }
+
+    getRoomCryptoKey(currentRoom.id).then((key) => {
+      if (isMounted) {
+        roomCryptoKeyRef.current = key;
+        setRoomCryptoKey(key);
+      }
+    }).catch((err) => {
+      console.error("Could not derive room crypto key:", err);
+    });
+
+    return () => { isMounted = false; };
+  }, [currentRoom?.id]);
+
+  // 6. Sync active room data (accounts, budget, months, calculators) with transparent client-side decryption
   useEffect(() => {
     if (!currentRoom || !authUser || !db) {
       setAccounts(INITIAL_ACCOUNTS);
@@ -272,9 +303,12 @@ export default function App() {
 
     // Accounts
     const accountsRef = collection(db, 'rooms', roomId, 'accounts');
-    const unsubAccounts = onSnapshot(accountsRef, (snapshot) => {
+    const unsubAccounts = onSnapshot(accountsRef, async (snapshot) => {
       if (!snapshot.empty) {
-        const cloudAccs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
+        const cloudAccs = await Promise.all(
+          snapshot.docs.map(d => decryptAccountFromCloud({ id: d.id, ...d.data() }, key))
+        );
         const sortedAccs = sortAccountsByDataEntryOrder(cloudAccs);
         setAccounts(sortedAccs);
         setIsCloudSynced(true);
@@ -285,9 +319,11 @@ export default function App() {
 
     // Budget
     const budgetDocRef = doc(db, 'rooms', roomId, 'settings', 'budget');
-    const unsubBudget = onSnapshot(budgetDocRef, (docSnap) => {
+    const unsubBudget = onSnapshot(budgetDocRef, async (docSnap) => {
       if (docSnap.exists()) {
-        setBudget(docSnap.data());
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
+        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
+        setBudget(decrypted || DEFAULT_BUDGET);
       } else {
         setBudget(DEFAULT_BUDGET);
       }
@@ -295,12 +331,16 @@ export default function App() {
 
     // Months
     const monthsDocRef = doc(db, 'rooms', roomId, 'settings', 'months');
-    const unsubMonths = onSnapshot(monthsDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().monthsList) {
-        const sorted = sortMonths(docSnap.data().monthsList);
-        setMonthsList(sorted);
-        if (!sorted.includes(selectedMonth)) {
-          setSelectedMonth(sorted[sorted.length - 1]);
+    const unsubMonths = onSnapshot(monthsDocRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
+        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
+        if (decrypted && decrypted.monthsList) {
+          const sorted = sortMonths(decrypted.monthsList);
+          setMonthsList(sorted);
+          if (!sorted.includes(selectedMonth)) {
+            setSelectedMonth(sorted[sorted.length - 1]);
+          }
         }
       } else {
         setMonthsList(DEFAULT_MONTHS);
@@ -310,9 +350,13 @@ export default function App() {
 
     // Calculators
     const calcsDocRef = doc(db, 'rooms', roomId, 'settings', 'calculators');
-    const unsubCalcs = onSnapshot(calcsDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().data) {
-        setCalculatorsData(docSnap.data().data);
+    const unsubCalcs = onSnapshot(calcsDocRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
+        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
+        if (decrypted && decrypted.data) {
+          setCalculatorsData(decrypted.data);
+        }
       } else {
         setCalculatorsData(DEFAULT_CALCULATORS_DATA);
       }
@@ -320,9 +364,13 @@ export default function App() {
 
     // Tasks
     const tasksDocRef = doc(db, 'rooms', roomId, 'settings', 'tasks');
-    const unsubTasks = onSnapshot(tasksDocRef, (docSnap) => {
-      if (docSnap.exists() && Array.isArray(docSnap.data().tasks)) {
-        setTasks(docSnap.data().tasks);
+    const unsubTasks = onSnapshot(tasksDocRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
+        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
+        if (decrypted && Array.isArray(decrypted.tasks)) {
+          setTasks(decrypted.tasks);
+        }
       } else {
         try {
           const roomSaved = localStorage.getItem(`fin_tracker_tasks_${roomId}`);
@@ -338,11 +386,13 @@ export default function App() {
     };
   }, [currentRoom?.id, authUser]);
 
-  // Cloud Write Functions Scoped to Active Room
+  // Cloud Write Functions Scoped to Active Room with Client-Side Encryption
   const syncAccountToCloud = async (account) => {
     if (db && authUser && currentRoom) {
       try { 
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'accounts', account.id), account); 
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
+        const cloudDoc = await encryptAccountForCloud(account, key);
+        await setDoc(doc(db, 'rooms', currentRoom.id, 'accounts', account.id), cloudDoc); 
       } catch (e) {
         console.error("Error syncing account to cloud:", e);
       }
@@ -362,7 +412,9 @@ export default function App() {
   const syncBudgetToCloud = async (newBudget) => {
     if (db && authUser && currentRoom) {
       try { 
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'budget'), newBudget); 
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
+        const cloudDoc = await encryptSettingsForCloud(newBudget, key);
+        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'budget'), cloudDoc); 
       } catch (e) {
         console.error("Error syncing budget to cloud:", e);
       }
@@ -372,7 +424,9 @@ export default function App() {
   const syncMonthsToCloud = async (newMonthsList) => {
     if (db && authUser && currentRoom) {
       try { 
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'months'), { monthsList: newMonthsList }); 
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
+        const cloudDoc = await encryptSettingsForCloud({ monthsList: newMonthsList }, key);
+        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'months'), cloudDoc); 
       } catch (e) {
         console.error("Error syncing months to cloud:", e);
       }
@@ -382,7 +436,9 @@ export default function App() {
   const syncCalculatorsToCloud = async (newData) => {
     if (db && authUser && currentRoom) {
       try { 
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'calculators'), { data: newData }); 
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
+        const cloudDoc = await encryptSettingsForCloud({ data: newData }, key);
+        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'calculators'), cloudDoc); 
       } catch (e) {
         console.error("Error syncing calculators to cloud:", e);
       }
@@ -392,7 +448,9 @@ export default function App() {
   const syncTasksToCloud = async (newTasks) => {
     if (db && authUser && currentRoom) {
       try { 
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'tasks'), { tasks: newTasks }); 
+        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
+        const cloudDoc = await encryptSettingsForCloud({ tasks: newTasks }, key);
+        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'tasks'), cloudDoc); 
       } catch (e) {
         console.error("Error syncing tasks to cloud:", e);
       }

@@ -259,6 +259,23 @@ export default function RoomSettingsModal({
             ✕
           </button>
         </div>
+        {/* End-to-End Encryption Security Status Card */}
+        <div className="bg-[#E8F5E9] border border-[#C8E6C9] p-3.5 sm:p-4 rounded-2xl shadow-xs space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-base select-none">🔒</span>
+              <span className="text-xs font-black text-[#2E7D32]">
+                הצפנת קצה-לקצה פעילה בענן (AES-GCM 256-bit)
+              </span>
+            </div>
+            <span className="text-[10px] bg-white text-[#2E7D32] border border-[#A5D6A7] font-bold px-2 py-0.5 rounded-full shrink-0">
+              מאובטח
+            </span>
+          </div>
+          <p className="text-[11px] text-stone-600 leading-relaxed">
+            כל המידע הפיננסי בחדר זה (חשבונות, יתרות, תקציב, מחשבונים ומשימות) מוצפן ישירות במכשיר שלך לפני שליחתו לענן. הנתונים מאוחסנים מוצפנים לחלוטין במסד הנתונים ואף גורם חיצוני אינו יכול לקרוא את המספרים והשמות.
+          </p>
+        </div>
 
         {/* Room Name Update (Owner Only) */}
         {isOwner && (
