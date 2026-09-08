@@ -816,11 +816,13 @@ export default function App() {
         />
 
         <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6">
-          <MonthSelector
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            monthsList={monthsList}
-          />
+          {activeTab !== 'export' && (
+            <MonthSelector
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              monthsList={monthsList}
+            />
+          )}
 
           {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
             <DashboardModule
