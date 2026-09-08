@@ -20,7 +20,8 @@ import {
   DEFAULT_MONTHS, 
   INITIAL_ACCOUNTS, 
   DEFAULT_BUDGET, 
-  DEFAULT_CALCULATORS_DATA 
+  DEFAULT_CALCULATORS_DATA,
+  DEFAULT_TASKS 
 } from './constants/initialData';
 import { getAccountTotalsForMonth, sortMonths, sortAccountsByDataEntryOrder } from './utils/calculations';
 
@@ -55,6 +56,14 @@ export default function App() {
   const [accounts, setAccounts] = useState(INITIAL_ACCOUNTS);
   const [budget, setBudget] = useState(DEFAULT_BUDGET);
   const [calculatorsData, setCalculatorsData] = useState(DEFAULT_CALCULATORS_DATA);
+  const [tasks, setTasks] = useState(() => {
+    try {
+      const saved = localStorage.getItem('fin_tracker_tasks_local');
+      return saved ? JSON.parse(saved) : DEFAULT_TASKS;
+    } catch {
+      return DEFAULT_TASKS;
+    }
+  });
   const [isCloudSynced, setIsCloudSynced] = useState(false);
 
   // Privacy Mode State (persisted in localStorage)
@@ -275,8 +284,23 @@ export default function App() {
       }
     }, (err) => console.warn("Firestore calcs sync notice:", err));
 
+    // Tasks
+    const tasksDocRef = doc(db, 'rooms', roomId, 'settings', 'tasks');
+    const unsubTasks = onSnapshot(tasksDocRef, (docSnap) => {
+      if (docSnap.exists() && Array.isArray(docSnap.data().tasks)) {
+        setTasks(docSnap.data().tasks);
+      } else {
+        try {
+          const roomSaved = localStorage.getItem(`fin_tracker_tasks_${roomId}`);
+          setTasks(roomSaved ? JSON.parse(roomSaved) : DEFAULT_TASKS);
+        } catch {
+          setTasks(DEFAULT_TASKS);
+        }
+      }
+    }, (err) => console.warn("Firestore tasks sync notice:", err));
+
     return () => {
-      unsubAccounts(); unsubBudget(); unsubMonths(); unsubCalcs();
+      unsubAccounts(); unsubBudget(); unsubMonths(); unsubCalcs(); unsubTasks();
     };
   }, [currentRoom?.id, authUser]);
 
@@ -329,6 +353,30 @@ export default function App() {
         console.error("Error syncing calculators to cloud:", e);
       }
     }
+  };
+
+  const syncTasksToCloud = async (newTasks) => {
+    if (db && authUser && currentRoom) {
+      try { 
+        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'tasks'), { tasks: newTasks }); 
+      } catch (e) {
+        console.error("Error syncing tasks to cloud:", e);
+      }
+    }
+  };
+
+  const handleUpdateTasks = (newTasksOrUpdater) => {
+    setTasks(prev => {
+      const updated = typeof newTasksOrUpdater === 'function' ? newTasksOrUpdater(prev) : newTasksOrUpdater;
+      try {
+        const key = currentRoom?.id ? `fin_tracker_tasks_${currentRoom.id}` : 'fin_tracker_tasks_local';
+        localStorage.setItem(key, JSON.stringify(updated));
+      } catch (e) {
+        console.warn("Could not persist tasks to localStorage:", e);
+      }
+      syncTasksToCloud(updated);
+      return updated;
+    });
   };
 
   const loginWithGoogle = async () => {
@@ -835,6 +883,8 @@ export default function App() {
               selectedMonth={selectedMonth}
               users={roomMembers}
               isPrivacyMode={isPrivacyMode}
+              tasks={tasks}
+              onUpdateTasks={handleUpdateTasks}
             />
           )}
 
