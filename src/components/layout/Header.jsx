@@ -10,7 +10,9 @@ import {
   LayoutDashboard,
   Calculator,
   Sparkles,
-  FileEdit
+  FileEdit,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 export default function Header({ 
@@ -23,7 +25,9 @@ export default function Header({
   onSwitchRoom,
   onOpenManageRoom,
   isPrivacyMode,
-  onTogglePrivacyMode
+  onTogglePrivacyMode,
+  isDarkMode = false,
+  onToggleDarkMode
 }) {
   const isSingleMember = (currentRoom?.members?.length || 1) <= 1;
 
@@ -151,30 +155,55 @@ export default function Header({
           </div>
         </div>
 
-        {/* Bottom Section: Privacy Mode & Profile */}
+        {/* Bottom Section: Privacy Mode, Dark Mode & Profile */}
         <div className="space-y-3 pt-3 border-t border-[#E8E2D8]">
-          {/* Privacy Mode Button */}
-          <button
-            type="button"
-            onClick={onTogglePrivacyMode}
-            title={isPrivacyMode ? "הצג סכומים (P)" : "טשטש והסתר סכומים (P)"}
-            aria-label={isPrivacyMode ? "הצג סכומים" : "טשטש והסתר סכומים"}
-            className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-between ${
-              isPrivacyMode
-                ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-xs'
-                : 'bg-[#FAF7F2] text-stone-600 hover:text-stone-900 hover:bg-[#F2ECE1] border-[#DDD6CA]'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {isPrivacyMode ? (
-                <EyeOff className="w-3.5 h-3.5 text-amber-700" />
-              ) : (
-                <Eye className="w-3.5 h-3.5 text-stone-500" />
-              )}
-              <span>{isPrivacyMode ? 'פרטיות פעילה' : 'מצב פרטיות'}</span>
-            </div>
-            <span className="text-[10px] text-stone-500 bg-white/80 px-1.5 py-0.5 rounded border border-[#E8E2D8]">P</span>
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            {/* Privacy Mode Button */}
+            <button
+              type="button"
+              onClick={onTogglePrivacyMode}
+              title={isPrivacyMode ? "הצג סכומים (P)" : "טשטש והסתר סכומים (P)"}
+              aria-label={isPrivacyMode ? "הצג סכומים" : "טשטש והסתר סכומים"}
+              className={`py-2 px-2.5 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-between ${
+                isPrivacyMode
+                  ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-xs'
+                  : 'bg-[#FAF7F2] text-stone-600 hover:text-stone-900 hover:bg-[#F2ECE1] border-[#DDD6CA]'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                {isPrivacyMode ? (
+                  <EyeOff className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                ) : (
+                  <Eye className="w-3.5 h-3.5 text-stone-500 shrink-0" />
+                )}
+                <span className="truncate">{isPrivacyMode ? 'פרטיות' : 'פרטיות'}</span>
+              </div>
+              <span className="text-[9px] text-stone-500 bg-white/80 px-1 py-0.2 rounded border border-[#E8E2D8] shrink-0">P</span>
+            </button>
+
+            {/* Dark Mode Button */}
+            <button
+              type="button"
+              onClick={onToggleDarkMode}
+              title={isDarkMode ? "עבור למצב בהיר (D)" : "עבור למצב כהה (D)"}
+              aria-label={isDarkMode ? "עבור למצב בהיר" : "עבור למצב כהה"}
+              className={`py-2 px-2.5 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-between ${
+                isDarkMode
+                  ? 'bg-indigo-950/60 text-indigo-300 border-indigo-700/60 shadow-xs'
+                  : 'bg-[#FAF7F2] text-stone-600 hover:text-stone-900 hover:bg-[#F2ECE1] border-[#DDD6CA]'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                {isDarkMode ? (
+                  <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 text-stone-500 shrink-0" />
+                )}
+                <span className="truncate">{isDarkMode ? 'בהיר' : 'כהה'}</span>
+              </div>
+              <span className="text-[9px] text-stone-500 bg-white/80 px-1 py-0.2 rounded border border-[#E8E2D8] shrink-0">D</span>
+            </button>
+          </div>
 
           {/* Profile & Logout Card */}
           <div className="bg-[#FAF7F2] p-2 rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-2">
@@ -257,6 +286,20 @@ export default function Header({
             aria-label="ייצוא וייבוא נתונים (נייד)"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onToggleDarkMode}
+            title={isDarkMode ? "עבור למצב בהיר" : "עבור למצב כהה"}
+            aria-label={isDarkMode ? "מצב בהיר (נייד)" : "מצב כהה (נייד)"}
+            className={`p-1.5 rounded-lg border transition cursor-pointer ${
+              isDarkMode
+                ? 'bg-indigo-950/60 text-indigo-300 border-indigo-700/60'
+                : 'bg-[#FAF7F2] text-stone-600 border-[#DDD6CA]'
+            }`}
+          >
+            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-stone-500" />}
           </button>
 
           <button

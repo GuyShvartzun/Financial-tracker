@@ -36,6 +36,7 @@ import AIAdvisorTab from './components/ai/AIAdvisorTab';
 import DataEntryModule from './components/data/DataEntryModule';
 import DataExport from './components/data/DataExport';
 import { PrivacyContext } from './context/PrivacyContext';
+import { ThemeContext } from './context/ThemeContext';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -74,6 +75,35 @@ export default function App() {
     }
   });
 
+  // Dark Mode State (persisted in localStorage, with system preference fallback)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('fin_tracker_dark_mode');
+      if (saved !== null) return saved === 'true';
+      return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  });
+
+  // Persist dark mode changes and sync global html and body classes
+  useEffect(() => {
+    try {
+      localStorage.setItem('fin_tracker_dark_mode', String(isDarkMode));
+    } catch (e) {
+      console.warn("Could not persist dark mode to localStorage:", e);
+    }
+    if (typeof document !== 'undefined') {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
+      }
+    }
+  }, [isDarkMode]);
+
   // Persist privacy mode changes and sync global body class
   useEffect(() => {
     try {
@@ -92,7 +122,7 @@ export default function App() {
     }
   }, [isPrivacyMode]);
 
-  // Global Keyboard Shortcuts (P: Privacy Mode, Esc: Close Modals)
+  // Global Keyboard Shortcuts (P: Privacy Mode, D: Dark Mode, Esc: Close Modals)
   useEffect(() => {
     const handleKeyDown = (e) => {
       const tag = e.target?.tagName?.toLowerCase();
@@ -108,6 +138,11 @@ export default function App() {
       if (e.key === 'p' || e.key === 'P' || e.key === 'פ') {
         e.preventDefault();
         setIsPrivacyMode(prev => !prev);
+      }
+
+      if (e.key === 'd' || e.key === 'D' || e.key === 'ג') {
+        e.preventDefault();
+        setIsDarkMode(prev => !prev);
       }
     };
 
@@ -800,20 +835,23 @@ export default function App() {
 
   // Active Room Screen
   return (
-    <PrivacyContext.Provider value={{ isPrivacyMode, setIsPrivacyMode }}>
-      <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
-        <Header
-          authUser={authUser}
-          isCloudSynced={isCloudSynced}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onLogout={logoutGoogle}
-          currentRoom={currentRoom}
-          onSwitchRoom={() => setCurrentRoom(null)}
-          onOpenManageRoom={() => setShowManageRoomModal(true)}
-          isPrivacyMode={isPrivacyMode}
-          onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
-        />
+    <ThemeContext.Provider value={{ isDarkMode, setIsDarkMode, toggleDarkMode: () => setIsDarkMode(prev => !prev) }}>
+      <PrivacyContext.Provider value={{ isPrivacyMode, setIsPrivacyMode }}>
+        <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
+          <Header
+            authUser={authUser}
+            isCloudSynced={isCloudSynced}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onLogout={logoutGoogle}
+            currentRoom={currentRoom}
+            onSwitchRoom={() => setCurrentRoom(null)}
+            onOpenManageRoom={() => setShowManageRoomModal(true)}
+            isPrivacyMode={isPrivacyMode}
+            onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+          />
 
         {/* Main Content Area offset by right sidebar on desktop */}
         <div className="md:mr-64 transition-all duration-300">
@@ -951,5 +989,6 @@ export default function App() {
         )}
       </div>
     </PrivacyContext.Provider>
+    </ThemeContext.Provider>
   );
 }

@@ -671,6 +671,31 @@ describe('Privacy Mode & Floating Action Button', () => {
     expect(handleToggle).toHaveBeenCalled();
   });
 
+  it('renders dark mode toggle button and triggers onToggleDarkMode', () => {
+    const handleToggleDark = vi.fn();
+    render(
+      <Header
+        authUser={{ uid: 'u1', email: 'test@gmail.com', displayName: 'משתמש' }}
+        isCloudSynced={true}
+        activeTab="shared_dash"
+        setActiveTab={vi.fn()}
+        onLogout={vi.fn()}
+        currentRoom={{ id: 'r1', name: 'חדר', members: [] }}
+        onSwitchRoom={vi.fn()}
+        onOpenManageRoom={vi.fn()}
+        isPrivacyMode={false}
+        onTogglePrivacyMode={vi.fn()}
+        isDarkMode={false}
+        onToggleDarkMode={handleToggleDark}
+      />
+    );
+
+    const darkBtn = screen.getByRole('button', { name: 'עבור למצב כהה' });
+    expect(darkBtn).toBeInTheDocument();
+    fireEvent.click(darkBtn);
+    expect(handleToggleDark).toHaveBeenCalled();
+  });
+
   it('renders FloatingActionButton and triggers onClick', () => {
     const handleClick = vi.fn();
     render(<FloatingActionButton onClick={handleClick} />);

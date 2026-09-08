@@ -85,3 +85,132 @@ button, input, select, textarea {
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
 }
+
+/* =========================================================================
+   Dark Mode Theme System
+   ========================================================================= */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark, body.dark {
+  background-color: #121316 !important;
+  color: #E2E8F0 !important;
+}
+
+/* Surfaces */
+.dark .bg-\[\#FAF7F2\] {
+  background-color: #121316 !important;
+}
+
+.dark .bg-\[\#FFFFFF\] {
+  background-color: #1A1C23 !important;
+}
+
+.dark .bg-white {
+  background-color: #1A1C23 !important;
+}
+
+.dark .bg-white\/60,
+.dark .bg-white\/80,
+.dark .bg-white\/95 {
+  background-color: rgba(26, 28, 35, 0.9) !important;
+}
+
+/* Borders */
+.dark .border-\[\#E8E2D8\],
+.dark .border-\[\#DDD6CA\] {
+  border-color: #2D313C !important;
+}
+
+.dark .divide-\[\#E8E2D8\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #2D313C !important;
+}
+
+/* Hover states */
+.dark .hover\:bg-\[\#FAF7F2\]:hover,
+.dark .hover\:bg-\[\#F2ECE1\]:hover {
+  background-color: #252833 !important;
+}
+
+/* Text Colors */
+.dark .text-stone-900 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-stone-800 {
+  color: #E2E8F0 !important;
+}
+
+.dark .text-stone-700 {
+  color: #CBD5E1 !important;
+}
+
+.dark .text-stone-600 {
+  color: #94A3B8 !important;
+}
+
+.dark .text-stone-500 {
+  color: #94A3B8 !important;
+}
+
+.dark .text-stone-400 {
+  color: #64748B !important;
+}
+
+/* Form Inputs, Selects, Textareas */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="file"]),
+.dark textarea,
+.dark select {
+  background-color: #15171E !important;
+  color: #F8FAFC !important;
+  border-color: #333846 !important;
+}
+
+.dark select option {
+  background-color: #1A1C23 !important;
+  color: #F8FAFC !important;
+}
+
+/* Green Accents & Indicators in Dark Mode */
+.dark .bg-\[\#E8F5E9\] {
+  background-color: rgba(46, 125, 50, 0.18) !important;
+}
+
+.dark .text-\[\#2E7D32\] {
+  color: #4CAF50 !important;
+}
+
+.dark .border-\[\#C8E6C9\] {
+  border-color: rgba(76, 175, 80, 0.35) !important;
+}
+
+/* Blue, Purple, Orange, Red accents */
+.dark .bg-\[\#E3F2FD\] {
+  background-color: rgba(25, 118, 210, 0.18) !important;
+}
+.dark .border-\[\#BBDEFB\] {
+  border-color: rgba(25, 118, 210, 0.35) !important;
+}
+
+.dark .bg-\[\#F3E5F5\] {
+  background-color: rgba(123, 31, 162, 0.18) !important;
+}
+.dark .border-\[\#E1BEE7\] {
+  border-color: rgba(123, 31, 162, 0.35) !important;
+}
+
+.dark .bg-\[\#FFEBEE\] {
+  background-color: rgba(198, 40, 40, 0.18) !important;
+}
+.dark .border-\[\#FFCDD2\],
+.dark .border-\[\#EF9A9A\] {
+  border-color: rgba(198, 40, 40, 0.35) !important;
+}
+
+/* Modals & Dialogs */
+.dark .bg-black\/40,
+.dark .bg-black\/50,
+.dark .bg-stone-900\/40 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
