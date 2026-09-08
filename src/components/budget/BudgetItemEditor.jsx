@@ -110,7 +110,7 @@ export default function BudgetItemEditor({
       onDrop={handleCardDrop}
       className={`bg-[#FFFFFF] border ${color} ${
         isDragOverCard ? 'ring-2 ring-[#4A90E2] bg-blue-50/20' : ''
-      } p-4 sm:p-5 rounded-2xl shadow-xs space-y-3 transition flex flex-col justify-between`}
+      } p-4 sm:p-5 rounded-2xl shadow-xs space-y-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card flex flex-col justify-between`}
     >
       <div className="space-y-3">
         <div className="flex justify-between items-center border-b border-[#E8E2D8] pb-2">

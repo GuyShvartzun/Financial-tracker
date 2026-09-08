@@ -306,6 +306,21 @@ describe('Formatters Utility', () => {
       expect(CURRENCY_LIST.length).toBe(3);
       expect(CURRENCY_LIST.map(c => c.code)).toEqual(['ILS', 'USD', 'EUR']);
     });
+
+    it('fmtCurrency formats EUR with comma thousand separators like USD and ILS', () => {
+      const formattedEUR = fmtCurrency(1234567, 'EUR');
+      expect(formattedEUR).toContain('1,234,567');
+      expect(formattedEUR).toContain('€');
+      expect(formattedEUR).not.toContain('1.234.567');
+
+      const formattedUSD = fmtCurrency(1234567, 'USD');
+      expect(formattedUSD).toContain('1,234,567');
+      expect(formattedUSD).toContain('$');
+
+      const formattedILS = fmtCurrency(1234567, 'ILS');
+      expect(formattedILS).toContain('1,234,567');
+      expect(formattedILS).toContain('₪');
+    });
   });
 
   describe('Exchange Rates Utility (Bank of Israel End-of-Month)', () => {

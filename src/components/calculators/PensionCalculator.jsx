@@ -315,7 +315,7 @@ export default function PensionCalculator({
 
         <div className="bg-[#FAF7F2] p-5 sm:p-6 rounded-2xl border border-[#E8E2D8] flex flex-col justify-between space-y-6 shadow-xs">
           <div className="space-y-4">
-            <div>
+            <div className="p-4 bg-[#FFFFFF] rounded-2xl border border-[#E1BEE7] space-y-1 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
               <span className="text-xs text-stone-500 font-bold block">
                 צבירה משוערת בגיל פרישה (<span className="privacy-blur">{isPrivacyMode ? '••' : (pensionData.retireAge || 67)}</span>) בכוח קנייה של היום:
               </span>
@@ -327,7 +327,7 @@ export default function PensionCalculator({
               </div>
             </div>
 
-            <div className="p-4 bg-[#FFFFFF] rounded-2xl border border-[#C8E6C9] space-y-1 shadow-xs hover:shadow-card transition">
+            <div className="p-4 bg-[#FFFFFF] rounded-2xl border border-[#C8E6C9] space-y-1 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
               <span className="text-xs text-stone-500 font-bold block">קצבה חודשית צפויה בפרישה (בכוח קנייה של היום):</span>
               <div className="text-2xl font-black text-[#2E7D32] privacy-blur">
                 {fmtILS(pensionSimulationResult.realMonthlyAnnuity, isPrivacyMode)}

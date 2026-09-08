@@ -178,22 +178,22 @@ export default function FinancialTaskList({
 
         {/* Progress Metrics Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl">
+          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div className="text-[11px] text-stone-500 font-medium">סה"כ משימות</div>
             <div className="text-lg sm:text-xl font-bold text-stone-900 mt-0.5">{totalTasks}</div>
           </div>
 
-          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl">
+          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div className="text-[11px] text-stone-500 font-medium">לביצוע</div>
             <div className="text-lg sm:text-xl font-bold text-amber-600 mt-0.5">{pendingTasks}</div>
           </div>
 
-          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl">
+          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div className="text-[11px] text-stone-500 font-medium">הושלמו</div>
             <div className="text-lg sm:text-xl font-bold text-[#2E7D32] mt-0.5">{completedTasks}</div>
           </div>
 
-          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl">
+          <div className="bg-[#FAF7F2] border border-[#E8E2D8] p-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div className="text-[11px] text-stone-500 font-medium">עדיפות גבוהה</div>
             <div className="text-lg sm:text-xl font-bold text-red-600 mt-0.5">{highPriorityPending}</div>
           </div>
@@ -473,10 +473,10 @@ export default function FinancialTaskList({
             return (
               <div
                 key={task.id}
-                className={`bg-[#FFFFFF] border rounded-2xl p-4 transition-all duration-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                className={`bg-[#FFFFFF] border rounded-2xl p-4 transition-all duration-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:-translate-y-0.5 hover:shadow-card ${
                   task.completed 
                     ? 'border-[#E8E2D8] bg-[#FAF7F2]/60 opacity-80' 
-                    : 'border-[#E8E2D8] hover:border-[#2E7D32]/40 hover:shadow-sm'
+                    : 'border-[#E8E2D8] hover:border-[#2E7D32]/40'
                 }`}
               >
                 {/* Checkbox and Task Content */}

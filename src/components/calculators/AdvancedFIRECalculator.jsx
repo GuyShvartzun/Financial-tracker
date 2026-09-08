@@ -503,7 +503,7 @@ export default function AdvancedFIRECalculator({
         {/* Row 1: 2 Cards (Equal width on md+, stacked on mobile) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card 1: Time to FIRE */}
-          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <span className="text-xs text-stone-500 font-bold block mb-1">זמן להגעה ליעד</span>
             <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] privacy-blur">
               {isPrivacyMode ? '•• שנים ו-•• ח׳' : `${calcResults.yearsToFIRE} שנים ו-${calcResults.remainingMonthsToFIRE} ח'`}
@@ -512,7 +512,7 @@ export default function AdvancedFIRECalculator({
           </div>
 
           {/* Card 2: Estimated Age */}
-          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <span className="text-xs text-stone-500 font-bold block mb-1">גיל מוערך בפרישה</span>
             <div className="text-2xl sm:text-3xl font-black text-[#1976D2] privacy-blur">
               {isPrivacyMode ? '••' : calcResults.estimatedRetireAge}
@@ -526,7 +526,7 @@ export default function AdvancedFIRECalculator({
         {/* Row 2: 3 Cards (Equal width on md+, stacked on mobile) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Card 1: Required Capital (Real + Nominal) */}
-          <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#E8E2D8] p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <span className="text-xs text-stone-500 font-bold block mb-1">קרן נדרשת נטו (בערכי היום)</span>
             <div className="text-2xl sm:text-3xl font-black text-stone-900 privacy-blur">
               {fmtILS(calcResults.requiredCapitalReal, isPrivacyMode)}
@@ -537,7 +537,7 @@ export default function AdvancedFIRECalculator({
           </div>
 
           {/* Card 2: Total Contributed (Real + Nominal) */}
-          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <span className="text-xs text-stone-500 font-bold block mb-1">סה"כ יופקד מכיסך לאורך השנים</span>
             <div className="text-2xl sm:text-3xl font-black text-[#E65100] privacy-blur">
               {fmtILS(calcResults.totalContributedReal, isPrivacyMode)}
@@ -548,7 +548,7 @@ export default function AdvancedFIRECalculator({
           </div>
 
           {/* Card 3: Profit Generated (Real + Nominal) */}
-          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-5 rounded-2xl shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-5 rounded-2xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <span className="text-xs text-stone-500 font-bold block mb-1">סה"כ רווח נקי מריבית דריבית</span>
             <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2] privacy-blur">
               {fmtILS(calcResults.profitGeneratedReal, isPrivacyMode)}

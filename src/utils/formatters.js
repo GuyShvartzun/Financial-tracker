@@ -38,7 +38,7 @@ export const fmtCurrency = (val, currency = 'ILS', isPrivacy = false) => {
     const symbol = SUPPORTED_CURRENCIES[normCur]?.symbol || '₪';
     return `${symbol} ••••••`;
   }
-  const locale = normCur === 'USD' ? 'en-US' : normCur === 'EUR' ? 'de-DE' : 'he-IL';
+  const locale = normCur === 'ILS' ? 'he-IL' : 'en-US';
   return new Intl.NumberFormat(locale, { style: 'currency', currency: normCur, maximumFractionDigits: 0 }).format(val || 0);
 };
 

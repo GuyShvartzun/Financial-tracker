@@ -435,7 +435,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         {/* 5 Executive Aggregate Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* 1. Initial Monthly Payment */}
-          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#C8E6C9] p-4 rounded-2xl flex flex-col justify-between shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">החזר חודשי התחלתי</span>
               <div className="text-xl font-black text-[#2E7D32] privacy-blur">{fmtILS(aggregateResults.totalInitialMonthly, isPrivacyMode)}</div>
@@ -460,7 +460,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
           
           {/* 2. Peak Monthly Payment */}
-          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#FFE0B2] p-4 rounded-2xl flex flex-col justify-between shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">החזר חודשי שיא (צפוי)</span>
               <div className="text-xl font-black text-[#E65100] privacy-blur">{fmtILS(aggregateResults.totalPeakMonthly, isPrivacyMode)}</div>
@@ -471,7 +471,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
           
           {/* 3. Total Principal Obligations */}
-          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#BBDEFB] p-4 rounded-2xl flex flex-col justify-between shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">סך התחייבויות (קרן)</span>
               <div className="text-xl font-black text-[#1976D2] privacy-blur">{fmtILS(aggregateResults.totalMortgage, isPrivacyMode)}</div>
@@ -496,7 +496,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
 
           {/* 4. Weighted Average Interest Rate */}
-          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#E1BEE7] p-4 rounded-2xl flex flex-col justify-between shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">ריבית משוקללת נטו</span>
               <div className="text-xl font-black text-[#7B1FA2] privacy-blur">{isPrivacyMode ? '•••%' : `${aggregateResults.weightedAvgInterest.toFixed(2)}%`}</div>
@@ -507,7 +507,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
           </div>
           
           {/* 5. Total Cost of Financing */}
-          <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-card transition">
+          <div className="bg-[#FFFFFF] border border-[#FFCDD2] p-4 rounded-2xl flex flex-col justify-between shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
             <div>
               <span className="text-[11px] text-stone-500 font-bold block mb-1">עלות מימון (ריבית והצמדה)</span>
               <div className="text-xl font-black text-[#C62828] privacy-blur">{fmtILS(aggregateResults.totalInterestAndLinkage, isPrivacyMode)}</div>
@@ -544,7 +544,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
             const displayMonths = track.months !== undefined && track.months !== null ? track.months : '';
 
             return (
-              <div key={track.id} className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4 relative shadow-2xs">
+              <div key={track.id} className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4 relative shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-1 min-w-[200px]">
