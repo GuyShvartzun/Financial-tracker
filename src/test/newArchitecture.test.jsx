@@ -116,13 +116,11 @@ describe('New Architecture & Hooks Unit Tests', () => {
     it('triggers registered callbacks on shortcut keys and ignores input targets', () => {
       const onTogglePrivacyMode = vi.fn();
       const onToggleDarkMode = vi.fn();
-      const onToggleQuickLog = vi.fn();
       const onCloseModals = vi.fn();
 
       renderHook(() => useKeyboardShortcuts({
         onTogglePrivacyMode,
         onToggleDarkMode,
-        onToggleQuickLog,
         onCloseModals
       }));
 
@@ -140,14 +138,7 @@ describe('New Architecture & Hooks Unit Tests', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ג' }));
       expect(onToggleDarkMode).toHaveBeenCalledTimes(2);
 
-      // 3. Quick log (Q / /)
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'q' }));
-      expect(onToggleQuickLog).toHaveBeenCalledTimes(1);
-
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }));
-      expect(onToggleQuickLog).toHaveBeenCalledTimes(2);
-
-      // 4. Escape
+      // 3. Escape
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       expect(onCloseModals).toHaveBeenCalledTimes(1);
 

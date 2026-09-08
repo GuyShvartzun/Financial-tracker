@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, PlusCircle } from 'lucide-react';
-import { fmtILS, fmtCurrency, SUPPORTED_CURRENCIES } from '../../utils/formatters';
-import { getNextMonth, DEFAULT_EXCHANGE_RATES } from '../../utils/calculations';
+import { fmtILS, fmtCurrency, SUPPORTED_CURRENCIES, CURRENCY_LIST, normalizeCurrencyCode } from '../../utils/formatters';
+import { getNextMonth, DEFAULT_EXCHANGE_RATES, convertCurrency } from '../../utils/calculations';
 import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function DataEntryModule({
@@ -27,7 +27,9 @@ export default function DataEntryModule({
   setAccounts,
   syncAccountToCloud,
   handleToggleFlagAccount,
-  isPrivacyMode: propPrivacy
+  isPrivacyMode: propPrivacy,
+  roomCurrency = 'ILS',
+  rates = DEFAULT_EXCHANGE_RATES
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
@@ -322,8 +324,8 @@ export default function DataEntryModule({
           : allCategoryAccounts;
 
         const groupTotal = groupAccounts.reduce((s, a) => {
-          const rate = a.currency && DEFAULT_EXCHANGE_RATES[a.currency] ? DEFAULT_EXCHANGE_RATES[a.currency] : 1;
-          return s + (parseFloat(a.balances?.[selectedMonth]) || 0) * rate;
+          const converted = convertCurrency(a.balances?.[selectedMonth] || 0, a.currency || 'ILS', roomCurrency, rates);
+          return s + converted;
         }, 0);
         const groupTotalFlagged = allCategoryAccounts.filter(a => Boolean(a.flaggedMonths?.[selectedMonth])).length;
         const isDragOverThisGroup = dragOverGroupId === group.key;
@@ -353,7 +355,7 @@ export default function DataEntryModule({
                 )}
               </div>
               <span className="text-xs text-stone-500">
-                סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black privacy-blur">{fmtILS(groupTotal, isPrivacyMode)}</strong>
+                סה"כ לקבוצה: <strong className="text-[#2E7D32] font-black privacy-blur">{fmtCurrency(groupTotal, roomCurrency, isPrivacyMode)}</strong>
               </span>
             </div>
 
@@ -519,12 +521,12 @@ export default function DataEntryModule({
                         <div className="w-24">
                           <label className="text-[10px] text-stone-500 font-bold block mb-1">מטבע</label>
                           <select
-                            value={acc.currency || 'ILS'}
+                            value={normalizeCurrencyCode(acc.currency)}
                             onChange={(e) => handleAccountCurrencyChange && handleAccountCurrencyChange(acc.id, e.target.value)}
                             className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs font-bold rounded-lg px-2 py-2 outline-none cursor-pointer focus:border-[#4A90E2]"
                           >
-                            {Object.entries(SUPPORTED_CURRENCIES).map(([code, cur]) => (
-                              <option key={code} value={code}>
+                            {CURRENCY_LIST.map((cur) => (
+                              <option key={cur.code} value={cur.code}>
                                 {cur.symbol} {cur.label}
                               </option>
                             ))}
@@ -535,7 +537,7 @@ export default function DataEntryModule({
                         <div className="w-44">
                           <div className="flex items-center justify-between mb-1">
                             <label className="text-[10px] text-stone-500 font-bold block">
-                              סכום ב-{SUPPORTED_CURRENCIES[acc.currency || 'ILS']?.symbol || '₪'} ({selectedMonth})
+                              סכום ב-{SUPPORTED_CURRENCIES[normalizeCurrencyCode(acc.currency)]?.symbol || '₪'} ({selectedMonth})
                             </label>
                             {isFlagged && (
                               <span className="text-[9px] font-black text-amber-800 bg-amber-100/90 border border-amber-300 px-1.5 py-0.2 rounded-md">
@@ -572,11 +574,11 @@ export default function DataEntryModule({
                               )}
                             </button>
                           </div>
-                          {acc.currency && acc.currency !== 'ILS' && (
+                          {normalizeCurrencyCode(acc.currency) !== roomCurrency && (
                             <div className="mt-1 text-[10px] text-stone-500 font-medium flex items-center justify-between">
-                              <span>שווה ערך:</span>
+                              <span>שווה ערך ב-{SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'}:</span>
                               <span className="font-bold text-stone-700 privacy-blur">
-                                ≈ {fmtILS((parseFloat(acc.balances?.[selectedMonth]) || 0) * (DEFAULT_EXCHANGE_RATES[acc.currency] || 1), isPrivacyMode)}
+                                ≈ {fmtCurrency(convertCurrency(acc.balances?.[selectedMonth] || 0, acc.currency || 'ILS', roomCurrency, rates), roomCurrency, isPrivacyMode)}
                               </span>
                             </div>
                           )}
@@ -697,12 +699,12 @@ export default function DataEntryModule({
                           <div>
                             <label className="text-[10px] text-stone-500 font-bold block mb-1">מטבע</label>
                             <select
-                              value={acc.currency || 'ILS'}
+                              value={normalizeCurrencyCode(acc.currency)}
                               onChange={(e) => handleAccountCurrencyChange && handleAccountCurrencyChange(acc.id, e.target.value)}
                               className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs font-bold rounded-lg p-2 outline-none cursor-pointer focus:border-[#4A90E2]"
                             >
-                              {Object.entries(SUPPORTED_CURRENCIES).map(([code, cur]) => (
-                                <option key={code} value={code}>
+                              {CURRENCY_LIST.map((cur) => (
+                                <option key={cur.code} value={cur.code}>
                                   {cur.symbol} {cur.label}
                                 </option>
                               ))}
@@ -712,7 +714,7 @@ export default function DataEntryModule({
                           <div className="col-span-2 sm:col-span-1">
                             <div className="flex items-center justify-between mb-1">
                               <label className="text-[10px] text-stone-500 font-bold block">
-                                סכום ב-{SUPPORTED_CURRENCIES[acc.currency || 'ILS']?.symbol || '₪'} ({selectedMonth})
+                                סכום ב-{SUPPORTED_CURRENCIES[normalizeCurrencyCode(acc.currency)]?.symbol || '₪'} ({selectedMonth})
                               </label>
                               {isFlagged && (
                                 <span className="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
@@ -750,11 +752,11 @@ export default function DataEntryModule({
                                 )}
                               </button>
                             </div>
-                            {acc.currency && acc.currency !== 'ILS' && (
+                            {normalizeCurrencyCode(acc.currency) !== roomCurrency && (
                               <div className="mt-1 text-[10px] text-stone-500 font-medium flex items-center justify-between">
-                                <span>שווה ערך:</span>
+                                <span>שווה ערך ב-{SUPPORTED_CURRENCIES[roomCurrency]?.symbol || '₪'}:</span>
                                 <span className="font-bold text-stone-700 privacy-blur">
-                                  ≈ {fmtILS((parseFloat(acc.balances?.[selectedMonth]) || 0) * (DEFAULT_EXCHANGE_RATES[acc.currency] || 1), isPrivacyMode)}
+                                  ≈ {fmtCurrency(convertCurrency(acc.balances?.[selectedMonth] || 0, acc.currency || 'ILS', roomCurrency, rates), roomCurrency, isPrivacyMode)}
                                 </span>
                               </div>
                             )}

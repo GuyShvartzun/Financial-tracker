@@ -7,8 +7,8 @@ import DemographicBox from './DemographicBox';
 import DonutDistributionChart from '../charts/DonutDistributionChart';
 import PersonalGrowthLineChart from '../charts/PersonalGrowthLineChart';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
-import { fmtILS, fmtCurrency } from '../../utils/formatters';
-import { sortAccountsByDataEntryOrder, DEFAULT_EXCHANGE_RATES } from '../../utils/calculations';
+import { fmtCurrency, normalizeCurrencyCode } from '../../utils/formatters';
+import { sortAccountsByDataEntryOrder, DEFAULT_EXCHANGE_RATES, convertCurrency } from '../../utils/calculations';
 import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function PersonalDashboard({
@@ -23,7 +23,9 @@ export default function PersonalDashboard({
   roomStats,
   budgetTotals,
   activeUserId = '',
-  isPrivacyMode: propPrivacy
+  isPrivacyMode: propPrivacy,
+  roomCurrency = 'ILS',
+  rates = DEFAULT_EXCHANGE_RATES
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
@@ -71,6 +73,7 @@ export default function PersonalDashboard({
         liabilities={personalStats?.liability || 0}
         growthPct={personalStats?.growthPct || 0}
         isPrivacyMode={isPrivacyMode}
+        currency={roomCurrency}
       />
 
       <GrowthSummaryCards
@@ -79,6 +82,7 @@ export default function PersonalDashboard({
         avgMonthlyLiquidGrowth={personalStats.avgMonthlyLiquidGrowth}
         liquidGrowthAmount={personalStats.liquidGrowthAmount}
         isPrivacyMode={isPrivacyMode}
+        currency={roomCurrency}
       />
 
       <PersonalGrowthLineChart 
@@ -146,15 +150,15 @@ export default function PersonalDashboard({
                           </span>
                         </td>
                         <td className="py-2.5 px-2 text-left font-black text-[#2E7D32] dark:text-emerald-400 privacy-blur">
-                          {acc.currency && acc.currency !== 'ILS' ? (
+                          {normalizeCurrencyCode(acc.currency) !== roomCurrency ? (
                             <div>
                               <span>{fmtCurrency(acc.balances?.[selectedMonth] || 0, acc.currency, isPrivacyMode)}</span>
                               <div className="text-[10px] text-stone-400 dark:text-stone-500 font-normal">
-                                ≈ {fmtILS((parseFloat(acc.balances?.[selectedMonth]) || 0) * (DEFAULT_EXCHANGE_RATES[acc.currency] || 1), isPrivacyMode)}
+                                ≈ {fmtCurrency(convertCurrency(acc.balances?.[selectedMonth] || 0, acc.currency || 'ILS', roomCurrency, rates), roomCurrency, isPrivacyMode)}
                               </div>
                             </div>
                           ) : (
-                            fmtILS(acc.balances?.[selectedMonth] || 0, isPrivacyMode)
+                            fmtCurrency(acc.balances?.[selectedMonth] || 0, roomCurrency, isPrivacyMode)
                           )}
                         </td>
                       </tr>
@@ -174,6 +178,7 @@ export default function PersonalDashboard({
             shortTermAssets={roomStats.shortTermAssets}
             monthlyExp={roomStats.monthlyExp}
             isPrivacyMode={isPrivacyMode}
+            currency={roomCurrency}
           />
 
           <div className="lg:col-span-2">

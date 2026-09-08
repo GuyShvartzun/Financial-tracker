@@ -20,7 +20,9 @@ export default function DashboardModule({
   users,
   activeUserId,
   budget,
-  onUpdateBudget
+  onUpdateBudget,
+  roomCurrency = 'ILS',
+  rates
 }) {
   const [internalSubTab, setInternalSubTab] = useState(isSingleMember ? 'personal' : 'shared');
   const activeSub = subTab || internalSubTab;
@@ -79,6 +81,7 @@ export default function DashboardModule({
             roomStats={roomStats}
             budgetTotals={budgetTotals}
             isPrivacyMode={isPrivacyMode}
+            roomCurrency={roomCurrency}
           />
         )}
 
@@ -96,6 +99,8 @@ export default function DashboardModule({
             budgetTotals={budgetTotals}
             activeUserId={activeUserId}
             isPrivacyMode={isPrivacyMode}
+            roomCurrency={roomCurrency}
+            rates={rates}
           />
         )}
 

@@ -1,13 +1,23 @@
 import React from 'react';
 import { TrendingUp, Wallet, Coins, Scale, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { fmtILS, fmtNum, fmtPct } from '../../utils/formatters';
+import { fmtCurrency, fmtPct, SUPPORTED_CURRENCIES } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 import AnimatedCounter from '../common/AnimatedCounter';
 
-export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, growthPct, isPrivacyMode: propPrivacy }) {
+export default function MetricCards({ 
+  netWorth, 
+  liquid, 
+  nonLiquid, 
+  liabilities, 
+  growthPct, 
+  isPrivacyMode: propPrivacy,
+  currency = 'ILS'
+}) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const liquidityRatio = netWorth ? (liquid / netWorth) * 100 : 0;
+  const curSymbol = SUPPORTED_CURRENCIES[currency]?.symbol || '₪';
+  const currFormatter = (val) => fmtCurrency(val, currency, isPrivacyMode);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 font-sans">
@@ -21,7 +31,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
           </div>
         </div>
         <div className="text-2xl sm:text-3xl font-black text-[#2E7D32] dark:text-emerald-400 tracking-tight privacy-blur">
-          <AnimatedCounter value={netWorth} isPrivacyMode={isPrivacyMode} formatter={fmtILS} />
+          <AnimatedCounter value={netWorth} isPrivacyMode={isPrivacyMode} formatter={currFormatter} />
         </div>
         <div className="mt-2.5 text-xs text-stone-600 dark:text-stone-300 flex items-center gap-1.5 flex-wrap">
           <span className="text-stone-500 dark:text-stone-400 text-[11px]">צמיחה מתחילת מעקב:</span>
@@ -45,7 +55,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
           </div>
         </div>
         <div className="text-2xl sm:text-3xl font-black text-[#1976D2] dark:text-blue-400 tracking-tight privacy-blur">
-          <AnimatedCounter value={liquid} isPrivacyMode={isPrivacyMode} formatter={fmtILS} />
+          <AnimatedCounter value={liquid} isPrivacyMode={isPrivacyMode} formatter={currFormatter} />
         </div>
         <div className="mt-2.5 text-xs text-stone-600 dark:text-stone-300 flex items-center gap-1.5 flex-wrap">
           <span className="text-stone-500 dark:text-stone-400 text-[11px]">שיעור נזילות:</span>
@@ -64,7 +74,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
           </div>
         </div>
         <div className="text-2xl sm:text-3xl font-black text-[#7B1FA2] dark:text-purple-300 tracking-tight privacy-blur">
-          <AnimatedCounter value={nonLiquid} isPrivacyMode={isPrivacyMode} formatter={fmtILS} />
+          <AnimatedCounter value={nonLiquid} isPrivacyMode={isPrivacyMode} formatter={currFormatter} />
         </div>
         <div className="mt-2.5 text-[11px] text-stone-500 dark:text-stone-400 font-medium">חיסכון פנסיוני וקופות גמל</div>
       </div>
@@ -81,7 +91,7 @@ export default function MetricCards({ netWorth, liquid, nonLiquid, liabilities, 
           <AnimatedCounter 
             value={liabilities} 
             isPrivacyMode={isPrivacyMode} 
-            formatter={(v, priv) => priv ? '₪ ••••••' : `₪${fmtNum(v)}`} 
+            formatter={currFormatter} 
           />
         </div>
         <div className="mt-2.5 text-[11px] text-stone-500 dark:text-stone-400 font-medium">הלוואות ואשראי</div>

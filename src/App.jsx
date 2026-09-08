@@ -13,6 +13,7 @@ import { useAuth } from './hooks/useAuth';
 import { useRoomData } from './hooks/useRoomData';
 import { useFinancialStats } from './hooks/useFinancialStats';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useExchangeRates } from './utils/exchangeRates';
 
 import LoginView from './components/auth/LoginView';
 import RoomLobby from './components/room/RoomLobby';
@@ -24,8 +25,6 @@ import CalculatorsModule from './components/calculators/CalculatorsModule';
 import AIAdvisorTab from './components/ai/AIAdvisorTab';
 import DataEntryModule from './components/data/DataEntryModule';
 import DataExport from './components/data/DataExport';
-import FloatingActionButton from './components/common/FloatingActionButton';
-import QuickLogModal from './components/common/QuickLogModal';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
 import { PrivacyContext } from './context/PrivacyContext';
@@ -49,7 +48,6 @@ export default function App() {
   const [userRooms, setUserRooms] = useState([]);
   const [currentRoom, setCurrentRoom] = useState(null);
   const [showManageRoomModal, setShowManageRoomModal] = useState(false);
-  const [showQuickLogModal, setShowQuickLogModal] = useState(false);
   const [selectedPersonalUserId, setSelectedPersonalUserId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('08/2026');
 
@@ -144,14 +142,12 @@ export default function App() {
     }
   }, [isPrivacyMode]);
 
-  // 3. Global Keyboard Shortcuts (P: Privacy Mode, D: Dark Mode, Q: Quick Log, Esc: Close Modals)
+  // 3. Global Keyboard Shortcuts (P: Privacy Mode, D: Dark Mode, Esc: Close Modals)
   useKeyboardShortcuts({
     onTogglePrivacyMode: () => setIsPrivacyMode(prev => !prev),
     onToggleDarkMode: () => setIsDarkMode(prev => !prev),
-    onToggleQuickLog: () => currentRoom && setShowQuickLogModal(prev => !prev),
     onCloseModals: () => {
       setShowManageRoomModal(false);
-      setShowQuickLogModal(false);
     }
   });
 
@@ -292,6 +288,9 @@ export default function App() {
     }
   }, [roomMembers, accounts, syncAccountToCloud, setAccounts]);
 
+  const roomCurrency = currentRoom?.currency || 'ILS';
+  const { rates: exchangeRates } = useExchangeRates(selectedMonth);
+
   // 4. Financial Statistics Hook (Macro Room stats, Personal stats, Budget totals)
   const { 
     roomStats, 
@@ -305,7 +304,9 @@ export default function App() {
     selectedPersonalUserId,
     authUser,
     roomMembers,
-    isSingleMember
+    isSingleMember,
+    rates: exchangeRates,
+    roomCurrency
   });
 
   const onAddAccount = (category, targetOwnerId) => {
@@ -332,7 +333,9 @@ export default function App() {
     users: roomMembers,
     isSingleMember,
     isCloudSynced,
-    authUser
+    authUser,
+    roomCurrency,
+    exchangeRates
   };
 
   // Loading Screen with Shimmer Skeleton
@@ -463,6 +466,8 @@ export default function App() {
                           setBudget(updated);
                           syncBudgetToCloud(updated);
                         }}
+                        roomCurrency={roomCurrency}
+                        rates={exchangeRates}
                       />
                     )}
 
@@ -479,6 +484,8 @@ export default function App() {
                         isSingleMember={isSingleMember}
                         activeUserId={authUser?.uid}
                         isPrivacyMode={isPrivacyMode}
+                        roomCurrency={roomCurrency}
+                        rates={exchangeRates}
                       />
                     )}
 
@@ -519,6 +526,8 @@ export default function App() {
                         syncAccountToCloud={syncAccountToCloud}
                         handleToggleFlagAccount={handleToggleFlagAccount}
                         isPrivacyMode={isPrivacyMode}
+                        roomCurrency={roomCurrency}
+                        rates={exchangeRates}
                       />
                     )}
 
@@ -555,29 +564,6 @@ export default function App() {
                 </main>
               </div>
 
-              {/* Floating Action Button for Quick Log (Active Room) */}
-              <FloatingActionButton
-                onClick={() => setShowQuickLogModal(true)}
-                label="הזנה מהירה"
-              />
-
-              {/* Quick Log Modal */}
-              <QuickLogModal
-                isOpen={showQuickLogModal}
-                onClose={() => setShowQuickLogModal(false)}
-                accounts={accounts}
-                selectedMonth={selectedMonth}
-                onUpdateAccountBalance={handleBalanceChange}
-                onToggleFlagAccount={handleToggleFlagAccount}
-                budget={budget}
-                onUpdateBudget={(updated) => {
-                  setBudget(updated);
-                  syncBudgetToCloud(updated);
-                }}
-                users={roomMembers}
-                activeUserId={authUser?.uid}
-                isSingleMember={isSingleMember}
-              />
 
               {/* Room Settings Modal */}
               {showManageRoomModal && (

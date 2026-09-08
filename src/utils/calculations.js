@@ -35,15 +35,25 @@ export const sortAccountsByDataEntryOrder = (accs) => {
 
 export const DEFAULT_EXCHANGE_RATES = { USD: 3.70, EUR: 4.05, ILS: 1 };
 
-export const getAccountTotalsForMonth = (accs, month, rates = DEFAULT_EXCHANGE_RATES) => {
+export const convertCurrency = (amount, fromCurrency = 'ILS', toCurrency = 'ILS', rates = DEFAULT_EXCHANGE_RATES) => {
+  const safeRates = { ...DEFAULT_EXCHANGE_RATES, ...(rates || {}) };
+  const fromNorm = fromCurrency === '1' ? 'USD' : fromCurrency === '2' ? 'EUR' : (fromCurrency || 'ILS');
+  const toNorm = toCurrency === '1' ? 'USD' : toCurrency === '2' ? 'EUR' : (toCurrency || 'ILS');
+
+  const fromRate = safeRates[fromNorm] ?? 1;
+  const toRate = safeRates[toNorm] ?? 1;
+
+  const valInILS = (parseFloat(amount) || 0) * fromRate;
+  return valInILS / (toRate || 1);
+};
+
+export const getAccountTotalsForMonth = (accs, month, rates = DEFAULT_EXCHANGE_RATES, targetCurrency = 'ILS') => {
   let liquid = 0, nonLiquid = 0, liabilities = 0, short = 0, medium = 0, long = 0;
   const safeRates = { ...DEFAULT_EXCHANGE_RATES, ...(rates || {}) };
 
   accs.forEach(acc => {
     const rawBal = parseFloat(acc.balances?.[month]) || 0;
-    const currency = acc.currency || 'ILS';
-    const rate = safeRates[currency] ?? 1;
-    const bal = rawBal * rate;
+    const bal = convertCurrency(rawBal, acc.currency || 'ILS', targetCurrency, safeRates);
 
     if (acc.category === 'short') { liquid += bal; short += bal; }
     else if (acc.category === 'medium') { liquid += bal; medium += bal; }

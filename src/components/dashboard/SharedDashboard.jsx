@@ -6,7 +6,7 @@ import DemographicBox from './DemographicBox';
 import WaterfallChartModule from '../charts/WaterfallChartModule';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function SharedDashboard({ roomStats, budgetTotals, isPrivacyMode: propPrivacy }) {
+export default function SharedDashboard({ roomStats, budgetTotals, isPrivacyMode: propPrivacy, roomCurrency = 'ILS' }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
 
@@ -19,6 +19,7 @@ export default function SharedDashboard({ roomStats, budgetTotals, isPrivacyMode
         liabilities={roomStats.liabilities}
         growthPct={roomStats.growthPct}
         isPrivacyMode={isPrivacyMode}
+        currency={roomCurrency}
       />
 
       <GrowthSummaryCards
@@ -27,6 +28,7 @@ export default function SharedDashboard({ roomStats, budgetTotals, isPrivacyMode
         avgMonthlyLiquidGrowth={roomStats.avgMonthlyLiquidGrowth}
         liquidGrowthAmount={roomStats.liquidGrowthAmount}
         isPrivacyMode={isPrivacyMode}
+        currency={roomCurrency}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -35,6 +37,7 @@ export default function SharedDashboard({ roomStats, budgetTotals, isPrivacyMode
           shortTermAssets={roomStats.shortTermAssets}
           monthlyExp={roomStats.monthlyExp}
           isPrivacyMode={isPrivacyMode}
+          currency={roomCurrency}
         />
 
         <div className="lg:col-span-2">

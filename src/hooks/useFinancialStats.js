@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { getAccountTotalsForMonth, sortAccountsByDataEntryOrder } from '../utils/calculations';
+import { getAccountTotalsForMonth, sortAccountsByDataEntryOrder, DEFAULT_EXCHANGE_RATES } from '../utils/calculations';
+import { getCachedRatesForMonth } from '../utils/exchangeRates';
 
 export function useFinancialStats({
   accounts = [],
@@ -9,13 +10,16 @@ export function useFinancialStats({
   selectedPersonalUserId = '',
   authUser = null,
   roomMembers = [],
-  isSingleMember = false
+  isSingleMember = false,
+  rates = DEFAULT_EXCHANGE_RATES,
+  roomCurrency = 'ILS'
 }) {
   // Macro Statistics for Active Room
   const roomStats = useMemo(() => {
     const baseMonth = monthsList[0] || selectedMonth;
-    const currentTotals = getAccountTotalsForMonth(accounts, selectedMonth);
-    const baseTotals = getAccountTotalsForMonth(accounts, baseMonth);
+    const baseRates = getCachedRatesForMonth(baseMonth) || rates;
+    const currentTotals = getAccountTotalsForMonth(accounts, selectedMonth, rates, roomCurrency);
+    const baseTotals = getAccountTotalsForMonth(accounts, baseMonth, baseRates, roomCurrency);
 
     const netWorth = currentTotals.netWorth;
     const liquid = currentTotals.liquid;
@@ -44,7 +48,7 @@ export function useFinancialStats({
       avgMonthlyTotalGrowth, avgMonthlyLiquidGrowth, 
       emergencyMonths, shortTermAssets, monthlyExp 
     };
-  }, [accounts, selectedMonth, monthsList, budget]);
+  }, [accounts, selectedMonth, monthsList, budget, rates, roomCurrency]);
 
   // Personal Statistics for Selected Member
   const personalStats = useMemo(() => {
@@ -52,8 +56,9 @@ export function useFinancialStats({
     const rawUserAccs = isSingleMember ? accounts : accounts.filter(a => a.ownerId === targetUserId);
     const userAccs = sortAccountsByDataEntryOrder(rawUserAccs);
     const baseMonth = monthsList[0] || selectedMonth;
-    const currentTotals = getAccountTotalsForMonth(userAccs, selectedMonth);
-    const baseTotals = getAccountTotalsForMonth(userAccs, baseMonth);
+    const baseRates = getCachedRatesForMonth(baseMonth) || rates;
+    const currentTotals = getAccountTotalsForMonth(userAccs, selectedMonth, rates, roomCurrency);
+    const baseTotals = getAccountTotalsForMonth(userAccs, baseMonth, baseRates, roomCurrency);
 
     const monthIndex = monthsList.indexOf(selectedMonth);
     const monthsElapsed = Math.max(1, monthIndex > 0 ? monthIndex : monthsList.length - 1);
@@ -80,7 +85,7 @@ export function useFinancialStats({
       avgMonthlyTotalGrowth, 
       avgMonthlyLiquidGrowth 
     };
-  }, [accounts, selectedPersonalUserId, selectedMonth, monthsList, roomMembers, isSingleMember, authUser?.uid]);
+  }, [accounts, selectedPersonalUserId, selectedMonth, monthsList, roomMembers, isSingleMember, authUser?.uid, rates, roomCurrency]);
 
   // Budget Aggregates
   const budgetTotals = useMemo(() => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { fmtILS } from '../../utils/formatters';
+import { fmtCurrency } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function GrowthSummaryCards({
@@ -7,7 +7,8 @@ export default function GrowthSummaryCards({
   totalGrowthAmount,
   avgMonthlyLiquidGrowth,
   liquidGrowthAmount,
-  isPrivacyMode: propPrivacy
+  isPrivacyMode: propPrivacy,
+  currency = 'ILS'
 }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
@@ -18,7 +19,7 @@ export default function GrowthSummaryCards({
         <div>
           <div className="text-xs text-stone-500 dark:text-stone-400 font-bold mb-1">צמיחה חודשית ממוצעת - סך הון כולל</div>
           <div className={`text-xl sm:text-2xl font-black privacy-blur ${avgMonthlyTotalGrowth < 0 ? 'text-[#C62828] dark:text-red-400' : 'text-[#2E7D32] dark:text-emerald-400'}`}>
-            {fmtILS(avgMonthlyTotalGrowth, isPrivacyMode)}
+            {fmtCurrency(avgMonthlyTotalGrowth, currency, isPrivacyMode)}
           </div>
           <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">ממוצע לאורך תקופת המעקב המוזנת</div>
         </div>
@@ -27,7 +28,7 @@ export default function GrowthSummaryCards({
             ? 'text-[#C62828] bg-[#FFEBEE] border-[#FFCDD2] dark:bg-red-950/40 dark:border-red-900/40 dark:text-red-300' 
             : 'text-[#2E7D32] bg-[#E8F5E9] border-[#C8E6C9] dark:bg-emerald-950/40 dark:border-emerald-900/40 dark:text-emerald-300'
         }`}>
-          {fmtILS(totalGrowthAmount, isPrivacyMode)}
+          {fmtCurrency(totalGrowthAmount, currency, isPrivacyMode)}
         </div>
       </div>
 
@@ -35,7 +36,7 @@ export default function GrowthSummaryCards({
         <div>
           <div className="text-xs text-stone-500 dark:text-stone-400 font-bold mb-1">צמיחה חודשית ממוצעת - סך הון נזיל</div>
           <div className={`text-xl sm:text-2xl font-black privacy-blur ${avgMonthlyLiquidGrowth < 0 ? 'text-[#C62828] dark:text-red-400' : 'text-[#1976D2] dark:text-blue-400'}`}>
-            {fmtILS(avgMonthlyLiquidGrowth, isPrivacyMode)}
+            {fmtCurrency(avgMonthlyLiquidGrowth, currency, isPrivacyMode)}
           </div>
           <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">ממוצע לאורך תקופת המעקב המוזנת</div>
         </div>
@@ -44,7 +45,7 @@ export default function GrowthSummaryCards({
             ? 'text-[#C62828] bg-[#FFEBEE] border-[#FFCDD2] dark:bg-red-950/40 dark:border-red-900/40 dark:text-red-300' 
             : 'text-[#1976D2] bg-[#E3F2FD] border-[#BBDEFB] dark:bg-blue-950/40 dark:border-blue-900/40 dark:text-blue-300'
         }`}>
-          {fmtILS(liquidGrowthAmount, isPrivacyMode)}
+          {fmtCurrency(liquidGrowthAmount, currency, isPrivacyMode)}
         </div>
       </div>
     </div>

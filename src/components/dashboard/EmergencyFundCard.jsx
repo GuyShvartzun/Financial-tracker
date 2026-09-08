@@ -1,9 +1,9 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { fmtILS } from '../../utils/formatters';
+import { fmtCurrency } from '../../utils/formatters';
 import { usePrivacy } from '../../context/PrivacyContext';
 
-export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, monthlyExp, isPrivacyMode: propPrivacy }) {
+export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, monthlyExp, isPrivacyMode: propPrivacy, currency = 'ILS' }) {
   const { isPrivacyMode: contextPrivacy } = usePrivacy();
   const isPrivacyMode = propPrivacy ?? contextPrivacy;
   const progressPct = Math.min(((emergencyMonths || 0) / 6) * 100, 100);
@@ -24,7 +24,7 @@ export default function EmergencyFundCard({ emergencyMonths, shortTermAssets, mo
           <span className="text-stone-600 dark:text-stone-300 font-bold text-sm">חודשים</span>
         </div>
         <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed mb-4">
-          מבוסס על נכסים נזילים לטווח קצר (<span className="privacy-blur font-bold text-stone-700 dark:text-stone-200">{fmtILS(shortTermAssets, isPrivacyMode)}</span>) חלקי סך ההוצאות החודשיות מהתקציב (<span className="privacy-blur font-bold text-stone-700 dark:text-stone-200">{fmtILS(monthlyExp, isPrivacyMode)}</span>).
+          מבוסס על נכסים נזילים לטווח קצר (<span className="privacy-blur font-bold text-stone-700 dark:text-stone-200">{fmtCurrency(shortTermAssets, currency, isPrivacyMode)}</span>) חלקי סך ההוצאות החודשיות מהתקציב (<span className="privacy-blur font-bold text-stone-700 dark:text-stone-200">{fmtCurrency(monthlyExp, currency, isPrivacyMode)}</span>).
         </p>
       </div>
       <div>

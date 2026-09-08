@@ -15,6 +15,33 @@ export default function RoomSettingsModal({
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [nameSuccess, setNameSuccess] = useState(false);
 
+  // Room primary display currency
+  const [roomCurrency, setRoomCurrency] = useState(currentRoom.currency || 'ILS');
+  const [isUpdatingCurrency, setIsUpdatingCurrency] = useState(false);
+  const [currencySuccess, setCurrencySuccess] = useState(false);
+
+  const handleCurrencyChange = async (newCurrency) => {
+    setRoomCurrency(newCurrency);
+    setIsUpdatingCurrency(true);
+    setCurrencySuccess(false);
+    try {
+      if (db && currentRoom?.id) {
+        await updateDoc(doc(db, 'rooms', currentRoom.id), {
+          currency: newCurrency
+        });
+      }
+      if (onUpdateRoom) {
+        onUpdateRoom({ ...currentRoom, currency: newCurrency });
+      }
+      setCurrencySuccess(true);
+      setTimeout(() => setCurrencySuccess(false), 3000);
+    } catch (err) {
+      console.error('Error updating room currency:', err);
+    } finally {
+      setIsUpdatingCurrency(false);
+    }
+  };
+
   // Editing member display names locally
   const [editingMemberUid, setEditingMemberUid] = useState(null);
   const [tempDisplayName, setTempDisplayName] = useState('');
@@ -319,6 +346,44 @@ export default function RoomSettingsModal({
             {memberUpdateSuccess}
           </div>
         )}
+
+        {/* Room Currency Setting */}
+        <div className="bg-[#FAF7F2] p-4 rounded-2xl border border-[#E8E2D8] space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base select-none">💱</span>
+              <label className="text-xs font-bold text-stone-800 block">מטבע תצוגה ראשי לחדר:</label>
+            </div>
+            {currencySuccess && (
+              <span className="text-xs text-[#2E7D32] font-bold">המטבע עודכן בהצלחה!</span>
+            )}
+          </div>
+          <p className="text-[11px] text-stone-500 leading-relaxed">
+            בחר את שער המטבע הראשי לפיו יוצג כל האתר (דשבורדים, סיכומים, כרטיסי מדדים ומחשבונים). יתרות במטבעות אחרים יומרו אוטומטית לפי שער בנק ישראל לסוף החודש המוצג.
+          </p>
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            {[
+              { code: 'ILS', symbol: '₪', label: 'שקל (₪)' },
+              { code: 'USD', symbol: '$', label: 'דולר ($)' },
+              { code: 'EUR', symbol: '€', label: 'אירו (€)' }
+            ].map(cur => (
+              <button
+                key={cur.code}
+                type="button"
+                disabled={isUpdatingCurrency}
+                onClick={() => handleCurrencyChange(cur.code)}
+                className={`py-2 px-3 rounded-xl border font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                  roomCurrency === cur.code
+                    ? 'bg-[#2E7D32] text-white border-[#2E7D32] shadow-xs'
+                    : 'bg-white text-stone-700 border-[#DDD6CA] hover:bg-stone-50'
+                }`}
+              >
+                <span className="text-sm">{cur.symbol}</span>
+                <span>{cur.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Members List with Local Display Name Editing */}
         <div className="space-y-3">

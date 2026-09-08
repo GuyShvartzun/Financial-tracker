@@ -15,6 +15,7 @@ import {
   DEFAULT_TASKS 
 } from '../constants/initialData';
 import { sortMonths, sortAccountsByDataEntryOrder } from '../utils/calculations';
+import { normalizeCurrencyCode } from '../utils/formatters';
 import { 
   getRoomCryptoKey, 
   encryptAccountForCloud, 
@@ -81,7 +82,10 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
       if (!snapshot.empty) {
         const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
         const cloudAccs = await Promise.all(
-          snapshot.docs.map(d => decryptAccountFromCloud({ id: d.id, ...d.data() }, key))
+          snapshot.docs.map(async d => {
+            const acc = await decryptAccountFromCloud({ id: d.id, ...d.data() }, key);
+            return { ...acc, currency: normalizeCurrencyCode(acc.currency) };
+          })
         );
         const sortedAccs = sortAccountsByDataEntryOrder(cloudAccs);
         setAccounts(sortedAccs);
@@ -273,9 +277,10 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
   }, [syncAccountToCloud]);
 
   const handleAccountCurrencyChange = useCallback((accId, newCurrency) => {
+    const normalized = normalizeCurrencyCode(newCurrency);
     setAccounts(prev => prev.map(a => {
       if (a.id === accId) {
-        const updatedAcc = { ...a, currency: newCurrency };
+        const updatedAcc = { ...a, currency: normalized };
         syncAccountToCloud(updatedAcc);
         return updatedAcc;
       }

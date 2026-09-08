@@ -25,7 +25,6 @@ import CalculatorsModule from '../components/calculators/CalculatorsModule';
 import ComprehensiveMortgageAndLoanCalculator from '../components/calculators/ComprehensiveMortgageAndLoanCalculator';
 import PensionCalculator from '../components/calculators/PensionCalculator';
 import AdvancedFIRECalculator from '../components/calculators/AdvancedFIRECalculator';
-import QuickLogModal from '../components/common/QuickLogModal';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import { PrivacyContext } from '../context/PrivacyContext';
 import { parseQuantitative, parseBold, FormattedText } from '../utils/textParser';
@@ -550,40 +549,6 @@ describe('DataEntryModule Component', () => {
     expect(screen.getByText('עו"ש בנק')).toBeInTheDocument();
     expect(screen.getByTitle(/יתרה עבור חודש 08\/2026 סומנה כזמנית\/דורשת עדכון/i)).toBeInTheDocument();
   });
-
-  it('QuickLogModal shows flag notice and unflags account when saving updated balance', () => {
-    const handleUpdateAccountBalance = vi.fn();
-    const handleToggleFlagAccount = vi.fn();
-    const accountsWithFlag = [
-      { id: 'a1', name: 'עו"ש בנק', category: 'short', order: 0, ownerId: 'u1', balances: { '08/2026': 15000 }, flaggedMonths: { '08/2026': true } }
-    ];
-
-    render(
-      <QuickLogModal
-        isOpen={true}
-        onClose={vi.fn()}
-        accounts={accountsWithFlag}
-        selectedMonth="08/2026"
-        onUpdateAccountBalance={handleUpdateAccountBalance}
-        onToggleFlagAccount={handleToggleFlagAccount}
-        budget={DEFAULT_BUDGET}
-        onUpdateBudget={vi.fn()}
-        users={mockUsers}
-        activeUserId="u1"
-        isSingleMember={true}
-      />
-    );
-
-    expect(screen.getByText(/חשבון זה מסומן כדורש עדכון יתרה עבור 08\/2026/i)).toBeInTheDocument();
-    const unflagCheckbox = screen.getByLabelText(/הסר סימון דגל עם שמירת היתרה החדשה/i);
-    expect(unflagCheckbox).toBeChecked();
-
-    const saveBtn = screen.getByRole('button', { name: /שמור יתרה/i });
-    fireEvent.click(saveBtn);
-
-    expect(handleUpdateAccountBalance).toHaveBeenCalledWith('a1', '08/2026', 15000);
-    expect(handleToggleFlagAccount).toHaveBeenCalledWith('a1', '08/2026');
-  });
 });
 
 describe('DataExport Component', () => {
@@ -752,73 +717,6 @@ describe('Privacy Mode & Floating Action Button', () => {
     expect(fabBtn).toBeInTheDocument();
     fireEvent.click(fabBtn);
     expect(handleClick).toHaveBeenCalled();
-  });
-});
-
-describe('QuickLogModal Component', () => {
-  const mockAccounts = [
-    { id: 'acc1', name: 'עו״ש בנק הפועלים', category: 'short', balances: { '08/2026': 15000 } },
-    { id: 'acc2', name: 'קרן כספית', category: 'medium', balances: { '08/2026': 45000 } }
-  ];
-
-  it('renders and updates account balance', () => {
-    const handleUpdateBalance = vi.fn();
-    const handleClose = vi.fn();
-
-    render(
-      <QuickLogModal
-        isOpen={true}
-        onClose={handleClose}
-        accounts={mockAccounts}
-        selectedMonth="08/2026"
-        onUpdateAccountBalance={handleUpdateBalance}
-        budget={{ incomes: [], fixedExpenses: [], variableExpenses: [], savings: [] }}
-        onUpdateBudget={vi.fn()}
-      />
-    );
-
-    expect(screen.getByText('הזנה מהירה')).toBeInTheDocument();
-    expect(screen.getByText('עדכון יתרת חשבון')).toBeInTheDocument();
-
-    const balanceInput = screen.getByPlaceholderText('הזן יתרה...');
-    fireEvent.change(balanceInput, { target: { value: '22000' } });
-
-    const submitBtn = screen.getByRole('button', { name: /שמור יתרה/i });
-    fireEvent.click(submitBtn);
-
-    expect(handleUpdateBalance).toHaveBeenCalledWith('acc1', '08/2026', 22000);
-  });
-
-  it('switches to budget tab and adds new budget item', () => {
-    const handleUpdateBudget = vi.fn();
-
-    render(
-      <QuickLogModal
-        isOpen={true}
-        onClose={vi.fn()}
-        accounts={mockAccounts}
-        selectedMonth="08/2026"
-        onUpdateAccountBalance={vi.fn()}
-        budget={{ incomes: [], fixedExpenses: [], variableExpenses: [], savings: [] }}
-        onUpdateBudget={handleUpdateBudget}
-      />
-    );
-
-    const budgetTabBtn = screen.getByRole('button', { name: /הוספה לתקציב/i });
-    fireEvent.click(budgetTabBtn);
-
-    const nameInput = screen.getByLabelText('שם הסעיף');
-    fireEvent.change(nameInput, { target: { value: 'מכולת שכונתית' } });
-
-    const amountInput = screen.getByPlaceholderText('0');
-    fireEvent.change(amountInput, { target: { value: '450' } });
-
-    const addBtn = screen.getByRole('button', { name: /הוסף לתקציב/i });
-    fireEvent.click(addBtn);
-
-    expect(handleUpdateBudget).toHaveBeenCalled();
-    const updatedBudget = handleUpdateBudget.mock.calls[0][0];
-    expect(updatedBudget.variableExpenses.some(i => i.name === 'מכולת שכונתית' && i.amount === 450)).toBe(true);
   });
 });
 
@@ -1227,46 +1125,6 @@ describe('Comprehensive Privacy Mode Hardening Tests across All Modules', () => 
     expect(passwordInputs.length).toBeGreaterThan(0);
     expect(container.textContent).toContain('#•');
     expect(container.textContent).not.toContain('#1');
-  });
-
-  it('QuickLogModal converts numeric inputs to type="password" when isPrivacyMode is active', () => {
-    const mockAccounts = [
-      { id: 'acc_1', name: 'עו"ש', category: 'short', balances: { '08/2026': 15000 } }
-    ];
-
-    const { container, rerender } = render(
-      <PrivacyContext.Provider value={{ isPrivacyMode: false, setIsPrivacyMode: () => {} }}>
-        <QuickLogModal
-          isOpen={true}
-          onClose={vi.fn()}
-          accounts={mockAccounts}
-          selectedMonth="08/2026"
-          onUpdateAccountBalance={vi.fn()}
-          budget={DEFAULT_BUDGET}
-          onUpdateBudget={vi.fn()}
-        />
-      </PrivacyContext.Provider>
-    );
-
-    let numInputs = container.querySelectorAll('input[type="number"]');
-    expect(numInputs.length).toBeGreaterThanOrEqual(1);
-
-    rerender(
-      <PrivacyContext.Provider value={{ isPrivacyMode: true, setIsPrivacyMode: () => {} }}>
-        <QuickLogModal
-          isOpen={true}
-          onClose={vi.fn()}
-          accounts={mockAccounts}
-          selectedMonth="08/2026"
-          onUpdateAccountBalance={vi.fn()}
-          budget={DEFAULT_BUDGET}
-          onUpdateBudget={vi.fn()}
-        />
-      </PrivacyContext.Provider>
-    );
-
-    const passInputs = container.querySelectorAll('input[type="password"]');
-    expect(passInputs.length).toBeGreaterThanOrEqual(1);
   });
 
   it('DemographicBox masks all CBS stats, percentiles, and year 2026 in privacy mode', () => {

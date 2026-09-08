@@ -7,9 +7,11 @@ import {
   sortMonths,
   getNextMonth,
   getLatestExistingMonth,
-  DEFAULT_EXCHANGE_RATES
+  DEFAULT_EXCHANGE_RATES,
+  convertCurrency
 } from '../utils/calculations';
-import { fmtILS, fmtNum, fmtPct, fmtCurrency, SUPPORTED_CURRENCIES } from '../utils/formatters';
+import { fmtILS, fmtNum, fmtPct, fmtCurrency, SUPPORTED_CURRENCIES, CURRENCY_LIST, normalizeCurrencyCode } from '../utils/formatters';
+import { getEndOfMonthDate, isCurrentOrFutureMonth, getCachedRatesForMonth } from '../utils/exchangeRates';
 
 describe('Calculations Utility', () => {
   describe('getDynamicHistoricalReturn', () => {
@@ -241,6 +243,90 @@ describe('Formatters Utility', () => {
       expect(totals.liabilities).toBeCloseTo(expectedUsdLiability);
       expect(totals.liquid).toBeCloseTo(1000 + expectedUsdShort + expectedEurMedium);
       expect(totals.netWorth).toBeCloseTo((1000 + expectedUsdShort + expectedEurMedium) - expectedUsdLiability);
+    });
+
+    it('correctly calculates totals in room base currency when targetCurrency is USD or EUR', () => {
+      const month = '08/2026';
+      const rates = { USD: 3.00, EUR: 3.60, ILS: 1 };
+      const accounts = [
+        { id: 'acc1', category: 'short', currency: 'ILS', balances: { [month]: 300 } }, // 100 USD
+        { id: 'acc2', category: 'short', currency: 'USD', balances: { [month]: 50 } },  // 50 USD
+        { id: 'acc3', category: 'liability', currency: 'USD', balances: { [month]: 20 } } // 20 USD
+      ];
+
+      // Target: USD
+      const totalsUsd = getAccountTotalsForMonth(accounts, month, rates, 'USD');
+      expect(totalsUsd.short).toBeCloseTo(150); // 100 + 50
+      expect(totalsUsd.liabilities).toBeCloseTo(20);
+      expect(totalsUsd.netWorth).toBeCloseTo(130);
+
+      // Target: EUR (300 ILS = 300/3.60 = 83.33 EUR, 50 USD = 150 ILS = 150/3.60 = 41.67 EUR)
+      const totalsEur = getAccountTotalsForMonth(accounts, month, rates, 'EUR');
+      expect(totalsEur.short).toBeCloseTo((300 + 150) / 3.60);
+      expect(totalsEur.liabilities).toBeCloseTo((20 * 3.00) / 3.60);
+    });
+  });
+
+  describe('Currency Conversion & Formatting Helpers', () => {
+    it('convertCurrency handles all cross-currency conversions accurately', () => {
+      const rates = { USD: 3.00, EUR: 3.60, ILS: 1 };
+
+      // USD -> ILS
+      expect(convertCurrency(100, 'USD', 'ILS', rates)).toBeCloseTo(300);
+      // EUR -> ILS
+      expect(convertCurrency(100, 'EUR', 'ILS', rates)).toBeCloseTo(360);
+      // ILS -> USD
+      expect(convertCurrency(300, 'ILS', 'USD', rates)).toBeCloseTo(100);
+      // USD -> EUR (100 USD = 300 ILS / 3.60 = 83.33 EUR)
+      expect(convertCurrency(100, 'USD', 'EUR', rates)).toBeCloseTo(83.3333, 3);
+      // EUR -> USD (100 EUR = 360 ILS / 3.00 = 120 USD)
+      expect(convertCurrency(100, 'EUR', 'USD', rates)).toBeCloseTo(120);
+      // Same currency
+      expect(convertCurrency(100, 'USD', 'USD', rates)).toBe(100);
+    });
+
+    it('normalizeCurrencyCode handles legacy index values and defaults', () => {
+      expect(normalizeCurrencyCode('0')).toBe('ILS');
+      expect(normalizeCurrencyCode(0)).toBe('ILS');
+      expect(normalizeCurrencyCode('1')).toBe('USD');
+      expect(normalizeCurrencyCode(1)).toBe('USD');
+      expect(normalizeCurrencyCode('2')).toBe('EUR');
+      expect(normalizeCurrencyCode(2)).toBe('EUR');
+      expect(normalizeCurrencyCode('USD')).toBe('USD');
+      expect(normalizeCurrencyCode('EUR')).toBe('EUR');
+      expect(normalizeCurrencyCode('ILS')).toBe('ILS');
+      expect(normalizeCurrencyCode(null)).toBe('ILS');
+      expect(normalizeCurrencyCode(undefined)).toBe('ILS');
+    });
+
+    it('SUPPORTED_CURRENCIES provides dictionary lookup and CURRENCY_LIST contains all 3 currencies', () => {
+      expect(SUPPORTED_CURRENCIES.ILS.symbol).toBe('₪');
+      expect(SUPPORTED_CURRENCIES.USD.symbol).toBe('$');
+      expect(SUPPORTED_CURRENCIES.EUR.symbol).toBe('€');
+      expect(CURRENCY_LIST.length).toBe(3);
+      expect(CURRENCY_LIST.map(c => c.code)).toEqual(['ILS', 'USD', 'EUR']);
+    });
+  });
+
+  describe('Exchange Rates Utility (Bank of Israel End-of-Month)', () => {
+    it('getEndOfMonthDate calculates accurate last day of month including leap years', () => {
+      expect(getEndOfMonthDate('08/2026')).toBe('2026-08-31');
+      expect(getEndOfMonthDate('04/2026')).toBe('2026-04-30');
+      expect(getEndOfMonthDate('02/2024')).toBe('2024-02-29'); // 2024 is leap year
+      expect(getEndOfMonthDate('02/2025')).toBe('2025-02-28'); // 2025 is not leap year
+      expect(getEndOfMonthDate('')).toBeNull();
+      expect(getEndOfMonthDate('invalid')).toBeNull();
+    });
+
+    it('getCachedRatesForMonth retrieves historical BOI rates from fallback table', () => {
+      const ratesAug2026 = getCachedRatesForMonth('08/2026');
+      expect(ratesAug2026.USD).toBe(3.02);
+      expect(ratesAug2026.EUR).toBe(3.51);
+      expect(ratesAug2026.ILS).toBe(1);
+
+      const ratesDec2025 = getCachedRatesForMonth('12/2025');
+      expect(ratesDec2025.USD).toBe(3.60);
+      expect(ratesDec2025.EUR).toBe(3.95);
     });
   });
 });
