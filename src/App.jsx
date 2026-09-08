@@ -801,7 +801,7 @@ export default function App() {
   // Active Room Screen
   return (
     <PrivacyContext.Provider value={{ isPrivacyMode, setIsPrivacyMode }}>
-      <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none pb-12 ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
+      <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
         <Header
           authUser={authUser}
           isCloudSynced={isCloudSynced}
@@ -815,9 +815,11 @@ export default function App() {
           onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
         />
 
-        <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6">
-          {activeTab !== 'export' && (
-            <MonthSelector
+        {/* Main Content Area offset by right sidebar on desktop */}
+        <div className="md:mr-64 transition-all duration-300">
+          <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 pb-24 md:pb-12">
+            {activeTab !== 'export' && (
+              <MonthSelector
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               monthsList={monthsList}
@@ -928,6 +930,7 @@ export default function App() {
             />
           )}
         </main>
+        </div>
 
         {/* Room Settings Modal */}
         {showManageRoomModal && (
