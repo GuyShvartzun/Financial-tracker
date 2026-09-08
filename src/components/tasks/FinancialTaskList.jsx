@@ -157,9 +157,6 @@ export default function FinancialTaskList({
               <h2 className="text-lg sm:text-xl font-bold text-stone-900 flex items-center gap-2">
                 <span>רשימת משימות</span>
               </h2>
-              <p className="text-xs text-stone-500 mt-0.5">
-                רשימת משימות
-              </p>
             </div>
           </div>
 
@@ -307,7 +304,7 @@ export default function FinancialTaskList({
                 </label>
                 <input
                   type="text"
-                  placeholder="DD/MM/YYYY או תאריך מבוקש"
+                  placeholder="תאריך מבוקש"
                   value={formData.targetDate}
                   onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
                   className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 text-xs rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32]"

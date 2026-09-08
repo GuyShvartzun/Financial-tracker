@@ -55,7 +55,7 @@ describe('FinancialTaskList Component', () => {
     );
 
     // Summary stats & headers: "רשימת משימות"
-    expect(screen.getAllByText('רשימת משימות').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole('heading', { name: 'רשימת משימות' })).toBeInTheDocument();
     expect(screen.getAllByText('3').length).toBeGreaterThan(0); // total tasks
     expect(screen.getAllByText('2').length).toBeGreaterThan(0); // pending tasks
     expect(screen.getAllByText('1').length).toBeGreaterThan(0); // completed tasks
@@ -166,7 +166,7 @@ describe('FinancialTaskList Component', () => {
     fireEvent.change(titleInput, { target: { value: 'בדיקת ביטוח בריאות כפול' } });
 
     // Fill target date
-    const dateInput = screen.getByPlaceholderText('DD/MM/YYYY או תאריך מבוקש');
+    const dateInput = screen.getByPlaceholderText('תאריך מבוקש');
     fireEvent.change(dateInput, { target: { value: '30/09/2026' } });
 
     // Submit
