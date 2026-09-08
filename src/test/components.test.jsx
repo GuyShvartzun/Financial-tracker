@@ -1503,7 +1503,7 @@ describe('WorkHoursCostCalculator Component', () => {
     );
 
     // Initial state: product price is empty by default
-    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    const priceInput = screen.getByLabelText(/מחיר המוצר/i);
     expect(priceInput.value).toBe('');
     expect(container.textContent).toContain('הזן מחיר מוצר לחישוב');
 
@@ -1525,7 +1525,7 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
-    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    const priceInput = screen.getByLabelText(/מחיר המוצר/i);
     fireEvent.change(priceInput, { target: { value: '1000' } });
 
     const hoursInput = screen.getByPlaceholderText('182');
@@ -1545,7 +1545,7 @@ describe('WorkHoursCostCalculator Component', () => {
       />
     );
 
-    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    const priceInput = screen.getByLabelText(/מחיר המוצר/i);
     fireEvent.change(priceInput, { target: { value: '500' } });
 
     // 500 / 54.945 = 9.1 hours
@@ -1563,7 +1563,7 @@ describe('WorkHoursCostCalculator Component', () => {
     expect(container.textContent).toContain('נא להזין הכנסה חודשית לביצוע החישוב');
 
     // Fill price
-    const priceInput = screen.getByPlaceholderText('לדוגמה: 1,000');
+    const priceInput = screen.getByLabelText(/מחיר המוצר/i);
     fireEvent.change(priceInput, { target: { value: '1000' } });
 
     // Toggle custom income

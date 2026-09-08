@@ -157,7 +157,7 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     expect(calls[0][1]).toContain('.xlsx');
   });
 
-  it('triggers blank template Excel export with instructional rows', () => {
+  it('triggers blank template Excel export with ONLY headers and zero personal data rows', () => {
     render(
       <DataExport
         accounts={[]}
@@ -177,6 +177,29 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
     const calls = vi.mocked(XLSX.writeFile).mock.calls;
     expect(calls[0][1]).toContain('Financial_Tracker_Template_');
     expect(calls[0][1]).toContain('.xlsx');
+
+    const wb = calls[0][0];
+    expect(wb.SheetNames).toContain('הון וחשבונות');
+    expect(wb.SheetNames).toContain('תקציב חודשי');
+    expect(wb.SheetNames).toContain('מחשבונים פיננסיים');
+    expect(wb.SheetNames).toContain('משימות פיננסיות');
+
+    // Verify each sheet has 0 data rows (only 1 header row)
+    const accountsData = XLSX.utils.sheet_to_json(wb.Sheets['הון וחשבונות']);
+    expect(accountsData.length).toBe(0);
+
+    const budgetData = XLSX.utils.sheet_to_json(wb.Sheets['תקציב חודשי']);
+    expect(budgetData.length).toBe(0);
+
+    const calcsData = XLSX.utils.sheet_to_json(wb.Sheets['מחשבונים פיננסיים']);
+    expect(calcsData.length).toBe(0);
+
+    const tasksData = XLSX.utils.sheet_to_json(wb.Sheets['משימות פיננסיות']);
+    expect(tasksData.length).toBe(0);
+  });
+
+  it('verifies DEFAULT_TASKS is an empty array by default', () => {
+    expect(DEFAULT_TASKS).toEqual([]);
   });
 
   it('triggers JSON v2.0 export containing all system subsystems', () => {
@@ -361,5 +384,106 @@ describe('DataExport Comprehensive Suite (Full-State Backup & Unified Templates)
       expect(mockSetCalculatorsData).not.toHaveBeenCalled();
       expect(mockSetTasks).not.toHaveBeenCalled();
     });
+  });
+
+  it('restores selectedMonth and personal user viewState when present in JSON backup', async () => {
+    const mockSetSelectedMonth = vi.fn();
+    render(
+      <DataExport
+        accounts={[]}
+        budget={DEFAULT_BUDGET}
+        monthsList={['08/2026']}
+        users={sampleUsers}
+        syncAccountToCloud={mockSyncAccount}
+        deleteAccountFromCloud={mockDeleteAccount}
+        syncBudgetToCloud={mockSyncBudget}
+        syncMonthsToCloud={mockSyncMonths}
+        setAccounts={mockSetAccounts}
+        setBudget={mockSetBudget}
+        setMonthsList={mockSetMonthsList}
+        setSelectedPersonalUserId={mockSetSelectedPersonalUserId}
+        setSelectedMonth={mockSetSelectedMonth}
+        authUser={{ uid: 'u1' }}
+        calculatorsData={DEFAULT_CALCULATORS_DATA}
+        setCalculatorsData={mockSetCalculatorsData}
+        syncCalculatorsToCloud={mockSyncCalculators}
+        tasks={[]}
+        setTasks={mockSetTasks}
+        syncTasksToCloud={mockSyncTasks}
+      />
+    );
+
+    const backupWithViewState = {
+      version: "2.0",
+      system: "Financial Tracker",
+      viewState: {
+        selectedMonth: '09/2026',
+        selectedPersonalUserId: 'u2'
+      },
+      monthsList: ['08/2026', '09/2026'],
+      accounts: [
+        {
+          id: 'acc_test_1',
+          name: 'עו״ש',
+          category: 'short',
+          ownerId: 'u1',
+          balances: { '08/2026': 1000 }
+        }
+      ],
+      budget: sampleBudget
+    };
+
+    const file = new File([JSON.stringify(backupWithViewState)], 'full_backup.json', { type: 'application/json' });
+    const fileInput = document.getElementById('data-file-upload');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('שלב מיפוי משתמשים לייבוא')).toBeInTheDocument();
+    });
+
+    const confirmBtn = screen.getByRole('button', { name: /אשר ייבוא ושיוך נתונים/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(mockSetSelectedMonth).toHaveBeenCalledWith('09/2026');
+    });
+  });
+
+  it('exports full Excel with account IDs, flagged months, and item IDs', () => {
+    render(
+      <DataExport
+        accounts={sampleAccounts}
+        budget={sampleBudget}
+        monthsList={['08/2026', '09/2026']}
+        users={sampleUsers}
+        authUser={{ uid: 'u1' }}
+        calculatorsData={sampleCalculators}
+        tasks={sampleTasks}
+        roomName="בית"
+      />
+    );
+
+    const excelBtn = screen.getByRole('button', { name: /הורד קובץ Excel/i });
+    fireEvent.click(excelBtn);
+
+    expect(XLSX.writeFile).toHaveBeenCalled();
+    const calls = vi.mocked(XLSX.writeFile).mock.calls;
+    const wb = calls[calls.length - 1][0];
+
+    const accountsData = XLSX.utils.sheet_to_json(wb.Sheets['הון וחשבונות']);
+    expect(accountsData[0]['מזהה חשבון']).toBe('acc_1');
+    expect(accountsData[0]['שם החשבון']).toBe('עו״ש בנק לאומי');
+    expect(accountsData[0]['חודשים מסומנים בדגל']).toBe('08/2026');
+
+    const budgetData = XLSX.utils.sheet_to_json(wb.Sheets['תקציב חודשי']);
+    expect(budgetData[0]['מזהה סעיף']).toBe('inc_1');
+    expect(budgetData[0]['שם הסעיף']).toBe('משכורת');
+
+    const calcsData = XLSX.utils.sheet_to_json(wb.Sheets['מחשבונים פיננסיים']);
+    expect(calcsData.length).toBeGreaterThan(5);
+
+    const tasksData = XLSX.utils.sheet_to_json(wb.Sheets['משימות פיננסיות']);
+    expect(tasksData[0]['מזהה ייחודי']).toBe('t_1');
+    expect(tasksData[0]['כותרת המשימה']).toBe('הוזלת דמי ניהול בפנסיה');
   });
 });

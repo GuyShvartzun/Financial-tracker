@@ -1031,6 +1031,11 @@ export default function App() {
               setTasks={setTasks}
               syncTasksToCloud={syncTasksToCloud}
               roomName={currentRoom?.name}
+              currentRoom={currentRoom}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              isPrivacyMode={isPrivacyMode}
+              isDarkMode={isDarkMode}
             />
           )}
         </main>

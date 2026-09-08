@@ -88,10 +88,11 @@ export default function WorkHoursCostCalculator({
             type={isPrivacyMode ? "password" : "number"}
             min="0"
             step="any"
+            aria-label="מחיר המוצר (₪)"
             value={isPrivacyMode ? '••••••' : productPrice}
             readOnly={isPrivacyMode}
             onChange={(e) => !isPrivacyMode && setProductPrice(e.target.value)}
-            placeholder={isPrivacyMode ? '••••' : 'לדוגמה: 1,000'}
+            placeholder={isPrivacyMode ? '••••' : ''}
             className="w-full bg-white border border-[#DDD6CA] text-sm font-bold text-stone-900 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 privacy-blur transition"
           />
         </div>

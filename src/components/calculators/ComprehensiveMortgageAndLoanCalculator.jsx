@@ -385,7 +385,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     step="any" 
                     value={safeData.expectedInflation ?? ''} 
                     onChange={(e) => handleChange('expectedInflation', e.target.value)} 
-                    placeholder="למשל 2.5"
+                    placeholder=""
                     className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono privacy-blur" 
                   />
                   <span className="absolute left-2.5 top-2.5 text-stone-400 text-xs font-bold">%</span>
@@ -409,7 +409,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                     step="any" 
                     value={safeData.constructionInflation ?? ''} 
                     onChange={(e) => handleChange('constructionInflation', e.target.value)} 
-                    placeholder="למשל 2.5"
+                    placeholder=""
                     className="w-full bg-[#FAF7F2] border border-[#DDD6CA] text-stone-900 font-bold text-xs rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition font-mono privacy-blur" 
                   />
                   <span className="absolute left-2.5 top-2.5 text-stone-400 text-xs font-bold">%</span>
