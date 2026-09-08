@@ -1135,6 +1135,29 @@ describe('Privacy Mode Enforcement Tests', () => {
     expect(selects.length).toBeGreaterThanOrEqual(2);
   });
 
+  it('ComprehensiveMortgageAndLoanCalculator does not render "תקופה (שנים)" and defaults months to empty on track creation', () => {
+    const mockOnUpdate = vi.fn();
+    render(
+      <ComprehensiveMortgageAndLoanCalculator
+        data={{ tracks: [] }}
+        onUpdate={mockOnUpdate}
+      />
+    );
+
+    expect(screen.queryByText('תקופה (שנים):')).not.toBeInTheDocument();
+
+    const addTrackBtn = screen.getByRole('button', { name: /\+הוסף הלוואה \/ מסלול חדש/i });
+    fireEvent.click(addTrackBtn);
+
+    expect(mockOnUpdate).toHaveBeenCalled();
+    expect(mockOnUpdate.mock.calls[0][0]).toBe('mortgage');
+    const updatedData = mockOnUpdate.mock.calls[0][1];
+    const newTrack = updatedData.tracks[0];
+    expect(newTrack.months).toBe('');
+    expect(newTrack.amount).toBe('');
+    expect(newTrack.interest).toBe('');
+  });
+
   it('EmergencyFundCard renders numeric targets and months with privacy-blur class', () => {
     const { container } = render(
       <EmergencyFundCard

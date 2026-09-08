@@ -30,14 +30,17 @@ export const SCHEDULE_TYPES = [
 
 export function calcTrackSimulation(track, annualInflation) {
   const P = Math.max(0, parseFloat(track.amount) || 0);
-  const n = Math.max(1, parseInt(track.months) || (parseFloat(track.years) ? Math.round(parseFloat(track.years) * 12) : 1));
+  const parsedMonths = parseInt(track.months, 10);
+  const n = !isNaN(parsedMonths) && parsedMonths > 0 
+    ? parsedMonths 
+    : (parseFloat(track.years) ? Math.round(parseFloat(track.years) * 12) : 0);
   const rAnnual = Math.max(0, parseFloat(track.interest) || 0);
   const typeDef = TRACK_TYPES.find(t => t.id === track.trackType) || TRACK_TYPES[0];
   const isLinked = typeDef.isLinked;
   const infAnnual = Math.max(0, parseFloat(annualInflation) || 0);
   const infMonthly = isLinked ? Math.pow(1 + infAnnual / 100, 1 / 12) - 1 : 0;
   const rMonthly = (rAnnual / 100) / 12;
-  const graceM = track.scheduleType === 'grace_partial' ? Math.min(n - 1, Math.max(0, parseInt(track.graceMonths) || 0)) : 0;
+  const graceM = track.scheduleType === 'grace_partial' ? Math.min(Math.max(0, n - 1), Math.max(0, parseInt(track.graceMonths) || 0)) : 0;
 
   if (P === 0 || n <= 0) {
     return {
@@ -220,8 +223,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
         id: 't_' + Date.now(),
         name: `מסלול ${tracks.length + 1}`,
         amount: '',
-        years: '25',
-        months: '300',
+        months: '',
         trackType: 'unlinked',
         interest: '',
         scheduleType: 'spitzer',
@@ -237,12 +239,12 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
       const updated = { ...t, [field]: value };
       
       // Keep years and months synchronized
-      if (field === 'years') {
-        const yNum = parseFloat(value);
-        updated.months = !isNaN(yNum) && yNum > 0 ? String(Math.round(yNum * 12)) : '';
-      } else if (field === 'months') {
+      if (field === 'months') {
         const mNum = parseInt(value, 10);
         updated.years = !isNaN(mNum) && mNum > 0 ? String(Number((mNum / 12).toFixed(1))) : '';
+      } else if (field === 'years') {
+        const yNum = parseFloat(value);
+        updated.months = !isNaN(yNum) && yNum > 0 ? String(Math.round(yNum * 12)) : '';
       }
 
       return updated;
@@ -539,12 +541,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
             const metrics = aggregateResults.trackDetails[idx]?.metrics;
             const isScheduleOpen = !!openSchedules[track.id];
 
-            const displayYears = track.years !== undefined && track.years !== null && track.years !== ''
-              ? track.years
-              : (track.months ? String(Number((parseInt(track.months, 10) / 12).toFixed(1))) : '');
-            const displayMonths = track.months !== undefined && track.months !== null && track.months !== ''
-              ? track.months
-              : (track.years ? String(Math.round(parseFloat(track.years) * 12)) : '');
+            const displayMonths = track.months !== undefined && track.months !== null ? track.months : '';
 
             return (
               <div key={track.id} className="bg-[#FAF7F2] p-4 sm:p-5 rounded-2xl border border-[#E8E2D8] space-y-4 relative shadow-2xs">
@@ -586,7 +583,7 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                 </div>
 
                 {/* Inputs Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
                   <div>
                     <label className="text-xs text-stone-700 font-bold block mb-1">סכום הקרן (₪):</label>
                     <input 
@@ -594,18 +591,6 @@ export default function ComprehensiveMortgageAndLoanCalculator({ data = {}, onUp
                       step="any"
                       value={track.amount ?? ''} 
                       onChange={(e) => handleUpdateTrack(track.id, 'amount', e.target.value)} 
-                      placeholder=""
-                      className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-stone-700 font-bold block mb-1">תקופה (שנים):</label>
-                    <input 
-                      type={isPrivacyMode ? "password" : "number"} 
-                      step="any" 
-                      value={displayYears} 
-                      onChange={(e) => handleUpdateTrack(track.id, 'years', e.target.value)} 
                       placeholder=""
                       className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 font-bold rounded-xl p-2.5 outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] transition privacy-blur" 
                     />
