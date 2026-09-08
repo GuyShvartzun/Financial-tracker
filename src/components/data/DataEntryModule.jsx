@@ -797,18 +797,10 @@ export default function DataEntryModule({
       {accountToDelete && (
         <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[#FFFFFF] border border-[#FFCDD2] rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl text-center max-h-[90vh] overflow-y-auto">
-            <div className="w-12 h-12 rounded-full bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2] flex items-center justify-center mx-auto text-xl select-none">
-              ⚠️
-            </div>
             <h3 className="text-lg font-bold text-[#C62828]">מחיקת חשבון מוחלטת</h3>
-            <div className="text-xs text-stone-600 leading-relaxed space-y-2">
-              <p>
-                האם אתה בטוח שברצונך למחוק כליל את החשבון <strong>"{accountToDelete.name}"</strong>?
-              </p>
-              <div className="bg-[#FFF5F5] border border-[#FFCDD2] p-2.5 rounded-xl text-[11px] text-[#C62828] font-medium text-right leading-normal">
-                ⚠️ <strong>אזהרה:</strong> פעולה זו בלתי הפיכה. כל היתרות וההיסטוריה של חשבון זה בכל החודשים יימחקו לחלוטין מהמערכת ומהענן.
-              </div>
-            </div>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              האם אתה בטוח שברצונך למחוק את החשבון <strong>"{accountToDelete.name}"</strong>? יתרות החשבון יוסרו מכל החודשים, הניתוחים והדשבורדים.
+            </p>
             <div className="flex gap-2 pt-2">
               <button
                 type="button"
@@ -816,9 +808,9 @@ export default function DataEntryModule({
                   handleDeleteAccountCompletely(accountToDelete.id);
                   setAccountToDelete(null);
                 }}
-                className="flex-1 py-2.5 bg-[#EF5350] hover:bg-[#D32F2F] text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs"
+                className="flex-1 py-2.5 bg-[#EF5350] hover:bg-[#D32F2F] text-white font-bold text-xs rounded-xl transition cursor-pointer"
               >
-                אישור מחיקה כליל
+                מחק חשבון זה
               </button>
               <button
                 type="button"

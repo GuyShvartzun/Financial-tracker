@@ -509,10 +509,10 @@ describe('DataEntryModule Component', () => {
     const deleteBtns = screen.getAllByTitle('מחק חשבון כליל');
     fireEvent.click(deleteBtns[0]);
 
-    // Warning confirmation modal should be visible
+    // Confirmation modal should be visible with identical structure to month deletion
     expect(screen.getByText('מחיקת חשבון מוחלטת')).toBeInTheDocument();
-    expect(screen.getByText(/פעולה זו בלתי הפיכה/i)).toBeInTheDocument();
-    expect(screen.getByText(/האם אתה בטוח שברצונך למחוק כליל את החשבון/i)).toBeInTheDocument();
+    expect(screen.getByText(/האם אתה בטוח שברצונך למחוק את החשבון/i)).toBeInTheDocument();
+    expect(screen.getByText(/יתרות החשבון יוסרו מכל החודשים/i)).toBeInTheDocument();
 
     // Cancel deletion
     const cancelBtn = screen.getByRole('button', { name: 'ביטול' });
@@ -522,7 +522,7 @@ describe('DataEntryModule Component', () => {
 
     // Click delete again and confirm
     fireEvent.click(deleteBtns[0]);
-    const confirmBtn = screen.getByRole('button', { name: 'אישור מחיקה כליל' });
+    const confirmBtn = screen.getByRole('button', { name: 'מחק חשבון זה' });
     fireEvent.click(confirmBtn);
     expect(handleDeleteAccountCompletely).toHaveBeenCalledWith('a1');
     expect(screen.queryByText('מחיקת חשבון מוחלטת')).not.toBeInTheDocument();
