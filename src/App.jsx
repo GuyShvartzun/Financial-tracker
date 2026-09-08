@@ -1,36 +1,18 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  signInWithPopup, 
-  signOut, 
-  onAuthStateChanged 
-} from 'firebase/auth';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   doc,
-  setDoc,
   updateDoc,
   collection,
   onSnapshot,
-  deleteDoc,
   query,
   where
 } from 'firebase/firestore';
 
-import { auth, db, googleProvider } from './config/firebase';
-import { 
-  DEFAULT_MONTHS, 
-  INITIAL_ACCOUNTS, 
-  DEFAULT_BUDGET, 
-  DEFAULT_CALCULATORS_DATA,
-  DEFAULT_TASKS 
-} from './constants/initialData';
-import { getAccountTotalsForMonth, sortMonths, sortAccountsByDataEntryOrder } from './utils/calculations';
-import { 
-  getRoomCryptoKey, 
-  encryptAccountForCloud, 
-  decryptAccountFromCloud, 
-  encryptSettingsForCloud, 
-  decryptSettingsFromCloud 
-} from './utils/crypto';
+import { db } from './config/firebase';
+import { useAuth } from './hooks/useAuth';
+import { useRoomData } from './hooks/useRoomData';
+import { useFinancialStats } from './hooks/useFinancialStats';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 import LoginView from './components/auth/LoginView';
 import RoomLobby from './components/room/RoomLobby';
@@ -42,36 +24,69 @@ import CalculatorsModule from './components/calculators/CalculatorsModule';
 import AIAdvisorTab from './components/ai/AIAdvisorTab';
 import DataEntryModule from './components/data/DataEntryModule';
 import DataExport from './components/data/DataExport';
+import FloatingActionButton from './components/common/FloatingActionButton';
+import QuickLogModal from './components/common/QuickLogModal';
+import ErrorBoundary from './components/common/ErrorBoundary';
+
 import { PrivacyContext } from './context/PrivacyContext';
 import { ThemeContext } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
+import { FinancialDataProvider } from './context/FinancialDataContext';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [dashboardSubTab, setDashboardSubTab] = useState('shared');
-  const [authUser, setAuthUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
 
-  // Rooms & Lobby
+  // 1. Authentication Hook
+  const { 
+    authUser, 
+    authLoading, 
+    loginWithGoogle, 
+    logoutGoogle 
+  } = useAuth();
+
+  // Rooms & Active Room
   const [userRooms, setUserRooms] = useState([]);
   const [currentRoom, setCurrentRoom] = useState(null);
   const [showManageRoomModal, setShowManageRoomModal] = useState(false);
-
-  // Active Room Financial Data
+  const [showQuickLogModal, setShowQuickLogModal] = useState(false);
   const [selectedPersonalUserId, setSelectedPersonalUserId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('08/2026');
-  const [monthsList, setMonthsList] = useState(DEFAULT_MONTHS);
-  const [accounts, setAccounts] = useState(INITIAL_ACCOUNTS);
-  const [budget, setBudget] = useState(DEFAULT_BUDGET);
-  const [calculatorsData, setCalculatorsData] = useState(DEFAULT_CALCULATORS_DATA);
-  const [tasks, setTasks] = useState(() => {
-    try {
-      const saved = localStorage.getItem('fin_tracker_tasks_local');
-      return saved ? JSON.parse(saved) : DEFAULT_TASKS;
-    } catch {
-      return DEFAULT_TASKS;
-    }
-  });
-  const [isCloudSynced, setIsCloudSynced] = useState(false);
+
+  // 2. Active Room Financial Data Hook (Firestore listeners & client-side encryption)
+  const {
+    accounts,
+    setAccounts,
+    budget,
+    setBudget,
+    monthsList,
+    setMonthsList,
+    calculatorsData,
+    setCalculatorsData,
+    tasks,
+    setTasks,
+    isCloudSynced,
+    syncAccountToCloud,
+    deleteAccountFromCloud,
+    syncBudgetToCloud,
+    syncMonthsToCloud,
+    syncCalculatorsToCloud,
+    syncTasksToCloud,
+    handleUpdateTasks,
+    handleBalanceChange,
+    handleAccountNameChange,
+    handleAccountCurrencyChange,
+    handleAccountCategoryChange,
+    handleReorderAccount,
+    handleMoveAccountToPosition,
+    handleAddAccount,
+    handleRemoveAccountFromMonth,
+    handleDeleteAccountCompletely,
+    handleDeleteMonth,
+    handleToggleFlagAccount,
+    handleAddNewMonth,
+    updateCalculatorData
+  } = useRoomData(currentRoom, authUser, selectedMonth, setSelectedMonth);
 
   // Privacy Mode State (persisted in localStorage)
   const [isPrivacyMode, setIsPrivacyMode] = useState(() => {
@@ -129,71 +144,18 @@ export default function App() {
     }
   }, [isPrivacyMode]);
 
-  // Global Keyboard Shortcuts (P: Privacy Mode, D: Dark Mode, Esc: Close Modals)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      const tag = e.target?.tagName?.toLowerCase();
-      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable;
-
-      if (e.key === 'Escape') {
-        setShowManageRoomModal(false);
-        return;
-      }
-
-      if (isInput) return;
-
-      if (e.key === 'p' || e.key === 'P' || e.key === 'פ') {
-        e.preventDefault();
-        setIsPrivacyMode(prev => !prev);
-      }
-
-      if (e.key === 'd' || e.key === 'D' || e.key === 'ג') {
-        e.preventDefault();
-        setIsDarkMode(prev => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // 1. Dynamic User Session via Google Auth
-  useEffect(() => {
-    if (!auth) {
-      setAuthLoading(false);
-      return;
+  // 3. Global Keyboard Shortcuts (P: Privacy Mode, D: Dark Mode, Q: Quick Log, Esc: Close Modals)
+  useKeyboardShortcuts({
+    onTogglePrivacyMode: () => setIsPrivacyMode(prev => !prev),
+    onToggleDarkMode: () => setIsDarkMode(prev => !prev),
+    onToggleQuickLog: () => currentRoom && setShowQuickLogModal(prev => !prev),
+    onCloseModals: () => {
+      setShowManageRoomModal(false);
+      setShowQuickLogModal(false);
     }
+  });
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && user.email) {
-        const userData = {
-          uid: user.uid,
-          name: user.displayName || user.email.split('@')[0],
-          email: user.email.toLowerCase(),
-          photoURL: user.photoURL || '',
-          lastLogin: new Date().toISOString()
-        };
-        setAuthUser(userData);
-
-        // Save / update in Firestore users/{user.uid}
-        if (db) {
-          try {
-            await setDoc(doc(db, 'users', user.uid), userData, { merge: true });
-          } catch (err) {
-            console.warn("User profile sync notice:", err);
-          }
-        }
-      } else {
-        setAuthUser(null);
-        setCurrentRoom(null);
-      }
-      setAuthLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // 2. Query Rooms where current user is authorized (memberEmails contains authUser.email)
+  // Query Rooms where current user is authorized
   useEffect(() => {
     if (!authUser || !db) {
       setUserRooms([]);
@@ -221,7 +183,7 @@ export default function App() {
     return () => unsubscribe();
   }, [authUser]);
 
-  // 3. Auto-link UID & photoURL if member was invited by email prior to login
+  // Auto-link UID & photoURL if member was invited by email prior to login
   useEffect(() => {
     if (!currentRoom || !authUser || !db) return;
 
@@ -252,7 +214,17 @@ export default function App() {
     }
   }, [currentRoom?.id, authUser]);
 
-  // 4. Default personal user selection when room loads
+  const roomMembers = (currentRoom?.members || []).map(m => ({
+    ...m,
+    id: m.uid || m.id,
+    uid: m.uid || m.id,
+    displayName: m.displayName || m.name,
+    name: m.displayName || m.name
+  }));
+
+  const isSingleMember = roomMembers.length <= 1;
+
+  // Default personal user selection when room loads
   useEffect(() => {
     if (!currentRoom) return;
     const members = currentRoom.members || [];
@@ -263,242 +235,6 @@ export default function App() {
       setSelectedPersonalUserId(members[0].uid || members[0].id);
     }
   }, [currentRoom?.id, authUser?.uid]);
-
-  // 5. Room Cryptographic Key Management (AES-GCM 256-bit with PBKDF2)
-  const roomCryptoKeyRef = useRef(null);
-  const [roomCryptoKey, setRoomCryptoKey] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    if (!currentRoom?.id) {
-      roomCryptoKeyRef.current = null;
-      setRoomCryptoKey(null);
-      return;
-    }
-
-    getRoomCryptoKey(currentRoom.id).then((key) => {
-      if (isMounted) {
-        roomCryptoKeyRef.current = key;
-        setRoomCryptoKey(key);
-      }
-    }).catch((err) => {
-      console.error("Could not derive room crypto key:", err);
-    });
-
-    return () => { isMounted = false; };
-  }, [currentRoom?.id]);
-
-  // 6. Sync active room data (accounts, budget, months, calculators) with transparent client-side decryption
-  useEffect(() => {
-    if (!currentRoom || !authUser || !db) {
-      setAccounts(INITIAL_ACCOUNTS);
-      setBudget(DEFAULT_BUDGET);
-      setMonthsList(DEFAULT_MONTHS);
-      setCalculatorsData(DEFAULT_CALCULATORS_DATA);
-      setIsCloudSynced(false);
-      return;
-    }
-
-    const roomId = currentRoom.id;
-
-    // Accounts
-    const accountsRef = collection(db, 'rooms', roomId, 'accounts');
-    const unsubAccounts = onSnapshot(accountsRef, async (snapshot) => {
-      if (!snapshot.empty) {
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
-        const cloudAccs = await Promise.all(
-          snapshot.docs.map(d => decryptAccountFromCloud({ id: d.id, ...d.data() }, key))
-        );
-        const sortedAccs = sortAccountsByDataEntryOrder(cloudAccs);
-        setAccounts(sortedAccs);
-        setIsCloudSynced(true);
-      } else {
-        setAccounts([]);
-      }
-    }, (err) => console.warn("Firestore accounts sync notice:", err));
-
-    // Budget
-    const budgetDocRef = doc(db, 'rooms', roomId, 'settings', 'budget');
-    const unsubBudget = onSnapshot(budgetDocRef, async (docSnap) => {
-      if (docSnap.exists()) {
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
-        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
-        setBudget(decrypted || DEFAULT_BUDGET);
-      } else {
-        setBudget(DEFAULT_BUDGET);
-      }
-    }, (err) => console.warn("Firestore budget sync notice:", err));
-
-    // Months
-    const monthsDocRef = doc(db, 'rooms', roomId, 'settings', 'months');
-    const unsubMonths = onSnapshot(monthsDocRef, async (docSnap) => {
-      if (docSnap.exists()) {
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
-        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
-        if (decrypted && decrypted.monthsList) {
-          const sorted = sortMonths(decrypted.monthsList);
-          setMonthsList(sorted);
-          if (!sorted.includes(selectedMonth)) {
-            setSelectedMonth(sorted[sorted.length - 1]);
-          }
-        }
-      } else {
-        setMonthsList(DEFAULT_MONTHS);
-        setSelectedMonth(DEFAULT_MONTHS[0]);
-      }
-    }, (err) => console.warn("Firestore months sync notice:", err));
-
-    // Calculators
-    const calcsDocRef = doc(db, 'rooms', roomId, 'settings', 'calculators');
-    const unsubCalcs = onSnapshot(calcsDocRef, async (docSnap) => {
-      if (docSnap.exists()) {
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
-        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
-        if (decrypted && decrypted.data) {
-          setCalculatorsData(decrypted.data);
-        }
-      } else {
-        setCalculatorsData(DEFAULT_CALCULATORS_DATA);
-      }
-    }, (err) => console.warn("Firestore calcs sync notice:", err));
-
-    // Tasks
-    const tasksDocRef = doc(db, 'rooms', roomId, 'settings', 'tasks');
-    const unsubTasks = onSnapshot(tasksDocRef, async (docSnap) => {
-      if (docSnap.exists()) {
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
-        const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
-        if (decrypted && Array.isArray(decrypted.tasks)) {
-          setTasks(decrypted.tasks);
-        }
-      } else {
-        try {
-          const roomSaved = localStorage.getItem(`fin_tracker_tasks_${roomId}`);
-          setTasks(roomSaved ? JSON.parse(roomSaved) : DEFAULT_TASKS);
-        } catch {
-          setTasks(DEFAULT_TASKS);
-        }
-      }
-    }, (err) => console.warn("Firestore tasks sync notice:", err));
-
-    return () => {
-      unsubAccounts(); unsubBudget(); unsubMonths(); unsubCalcs(); unsubTasks();
-    };
-  }, [currentRoom?.id, authUser]);
-
-  // Cloud Write Functions Scoped to Active Room with Client-Side Encryption
-  const syncAccountToCloud = async (account) => {
-    if (db && authUser && currentRoom) {
-      try { 
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
-        const cloudDoc = await encryptAccountForCloud(account, key);
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'accounts', account.id), cloudDoc); 
-      } catch (e) {
-        console.error("Error syncing account to cloud:", e);
-      }
-    }
-  };
-
-  const deleteAccountFromCloud = async (accId) => {
-    if (db && authUser && currentRoom) {
-      try { 
-        await deleteDoc(doc(db, 'rooms', currentRoom.id, 'accounts', accId)); 
-      } catch (e) {
-        console.error("Error deleting account from cloud:", e);
-      }
-    }
-  };
-
-  const syncBudgetToCloud = async (newBudget) => {
-    if (db && authUser && currentRoom) {
-      try { 
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
-        const cloudDoc = await encryptSettingsForCloud(newBudget, key);
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'budget'), cloudDoc); 
-      } catch (e) {
-        console.error("Error syncing budget to cloud:", e);
-      }
-    }
-  };
-
-  const syncMonthsToCloud = async (newMonthsList) => {
-    if (db && authUser && currentRoom) {
-      try { 
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
-        const cloudDoc = await encryptSettingsForCloud({ monthsList: newMonthsList }, key);
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'months'), cloudDoc); 
-      } catch (e) {
-        console.error("Error syncing months to cloud:", e);
-      }
-    }
-  };
-
-  const syncCalculatorsToCloud = async (newData) => {
-    if (db && authUser && currentRoom) {
-      try { 
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
-        const cloudDoc = await encryptSettingsForCloud({ data: newData }, key);
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'calculators'), cloudDoc); 
-      } catch (e) {
-        console.error("Error syncing calculators to cloud:", e);
-      }
-    }
-  };
-
-  const syncTasksToCloud = async (newTasks) => {
-    if (db && authUser && currentRoom) {
-      try { 
-        const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(currentRoom.id));
-        const cloudDoc = await encryptSettingsForCloud({ tasks: newTasks }, key);
-        await setDoc(doc(db, 'rooms', currentRoom.id, 'settings', 'tasks'), cloudDoc); 
-      } catch (e) {
-        console.error("Error syncing tasks to cloud:", e);
-      }
-    }
-  };
-
-  const handleUpdateTasks = (newTasksOrUpdater) => {
-    setTasks(prev => {
-      const updated = typeof newTasksOrUpdater === 'function' ? newTasksOrUpdater(prev) : newTasksOrUpdater;
-      try {
-        const key = currentRoom?.id ? `fin_tracker_tasks_${currentRoom.id}` : 'fin_tracker_tasks_local';
-        localStorage.setItem(key, JSON.stringify(updated));
-      } catch (e) {
-        console.warn("Could not persist tasks to localStorage:", e);
-      }
-      syncTasksToCloud(updated);
-      return updated;
-    });
-  };
-
-  const loginWithGoogle = async () => {
-    if (!auth) return;
-    try { 
-      await signInWithPopup(auth, googleProvider); 
-    } catch (error) {
-      console.error("Login error:", error);
-    }
-  };
-
-  const logoutGoogle = async () => {
-    if (!auth) return;
-    try { 
-      await signOut(auth); 
-      setCurrentRoom(null);
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
-
-  const roomMembers = (currentRoom?.members || []).map(m => ({
-    ...m,
-    id: m.uid || m.id,
-    uid: m.uid || m.id,
-    displayName: m.displayName || m.name,
-    name: m.displayName || m.name
-  }));
-
-  const isSingleMember = roomMembers.length <= 1;
 
   // Set default dashboard when entering a room:
   // Shared dashboard if multiple members exist, or Personal dashboard if single member.
@@ -554,315 +290,88 @@ export default function App() {
     if (needsSanitize) {
       setAccounts(sanitizedAccounts);
     }
-  }, [roomMembers, accounts]);
+  }, [roomMembers, accounts, syncAccountToCloud, setAccounts]);
 
-  // Macro Statistics for Active Room
-  const roomStats = useMemo(() => {
-    const baseMonth = monthsList[0] || selectedMonth;
-    const currentTotals = getAccountTotalsForMonth(accounts, selectedMonth);
-    const baseTotals = getAccountTotalsForMonth(accounts, baseMonth);
+  // 4. Financial Statistics Hook (Macro Room stats, Personal stats, Budget totals)
+  const { 
+    roomStats, 
+    personalStats, 
+    budgetTotals 
+  } = useFinancialStats({
+    accounts,
+    monthsList,
+    selectedMonth,
+    budget,
+    selectedPersonalUserId,
+    authUser,
+    roomMembers,
+    isSingleMember
+  });
 
-    const netWorth = currentTotals.netWorth;
-    const liquid = currentTotals.liquid;
-    const nonLiquid = currentTotals.nonLiquid;
-    const liabilities = currentTotals.liabilities;
-
-    const totalGrowthAmount = netWorth - baseTotals.netWorth;
-    const liquidGrowthAmount = liquid - baseTotals.liquid;
-
-    const growthPct = baseTotals.netWorth ? (totalGrowthAmount / baseTotals.netWorth) * 100 : 0;
-    
-    const monthIndex = monthsList.indexOf(selectedMonth);
-    const monthsElapsed = Math.max(1, monthIndex > 0 ? monthIndex : monthsList.length - 1);
-
-    const avgMonthlyTotalGrowth = totalGrowthAmount / monthsElapsed;
-    const avgMonthlyLiquidGrowth = liquidGrowthAmount / monthsElapsed;
-
-    const monthlyExp = (budget.fixedExpenses || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0) + 
-                       (budget.variableExpenses || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
-    const shortTermAssets = currentTotals.short;
-    const emergencyMonths = monthlyExp > 0 ? (shortTermAssets / monthlyExp) : 0;
-
-    return { 
-      netWorth, liquid, nonLiquid, liabilities, 
-      totalGrowthAmount, liquidGrowthAmount, growthPct, 
-      avgMonthlyTotalGrowth, avgMonthlyLiquidGrowth, 
-      emergencyMonths, shortTermAssets, monthlyExp 
-    };
-  }, [accounts, selectedMonth, monthsList, budget]);
-
-  // Personal Statistics for Selected Member
-  const personalStats = useMemo(() => {
-    const targetUserId = selectedPersonalUserId || authUser?.uid || roomMembers[0]?.uid || roomMembers[0]?.id;
-    const rawUserAccs = isSingleMember ? accounts : accounts.filter(a => a.ownerId === targetUserId);
-    const userAccs = sortAccountsByDataEntryOrder(rawUserAccs);
-    const baseMonth = monthsList[0] || selectedMonth;
-    const currentTotals = getAccountTotalsForMonth(userAccs, selectedMonth);
-    const baseTotals = getAccountTotalsForMonth(userAccs, baseMonth);
-
-    const monthIndex = monthsList.indexOf(selectedMonth);
-    const monthsElapsed = Math.max(1, monthIndex > 0 ? monthIndex : monthsList.length - 1);
-
-    const totalGrowthAmount = currentTotals.netWorth - baseTotals.netWorth;
-    const liquidGrowthAmount = currentTotals.liquid - baseTotals.liquid;
-    
-    const growthPct = baseTotals.netWorth ? (totalGrowthAmount / baseTotals.netWorth) * 100 : 0;
-
-    const avgMonthlyTotalGrowth = totalGrowthAmount / monthsElapsed;
-    const avgMonthlyLiquidGrowth = liquidGrowthAmount / monthsElapsed;
-
-    return { 
-      short: currentTotals.short, 
-      medium: currentTotals.medium, 
-      long: currentTotals.long, 
-      liability: currentTotals.liabilities, 
-      liquid: currentTotals.liquid, 
-      netWorth: currentTotals.netWorth, 
-      userAccs, 
-      totalGrowthAmount,
-      liquidGrowthAmount,
-      growthPct,
-      avgMonthlyTotalGrowth, 
-      avgMonthlyLiquidGrowth 
-    };
-  }, [accounts, selectedPersonalUserId, selectedMonth, monthsList, roomMembers, isSingleMember, authUser?.uid]);
-
-  // Budget Aggregates
-  const budgetTotals = useMemo(() => {
-    const totalIncome = (budget.incomes || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const totalFixed = (budget.fixedExpenses || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const totalVar = (budget.variableExpenses || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const totalSavings = (budget.savings || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-
-    const fixedPct = totalIncome > 0 ? (totalFixed / totalIncome) * 100 : 0;
-    const varPct = totalIncome > 0 ? (totalVar / totalIncome) * 100 : 0;
-    const savingsPct = totalIncome > 0 ? (totalSavings / totalIncome) * 100 : 0;
-
-    return { totalIncome, totalFixed, totalVar, totalSavings, fixedPct, varPct, savingsPct };
-  }, [budget]);
-
-  const handleRemoveAccountFromMonth = (accId, month) => {
-    setAccounts(prev => prev.map(a => {
-      if (a.id === accId) {
-        const updatedBalances = { ...a.balances };
-        delete updatedBalances[month];
-        const updatedAcc = { ...a, balances: updatedBalances };
-        syncAccountToCloud(updatedAcc);
-        return updatedAcc;
-      }
-      return a;
-    }));
+  const onAddAccount = (category, targetOwnerId) => {
+    handleAddAccount(
+      category, 
+      targetOwnerId, 
+      selectedMonth, 
+      authUser?.uid || roomMembers[0]?.uid || 'default_user'
+    );
   };
 
-  const handleDeleteAccountCompletely = (accId) => {
-    setAccounts(prev => prev.filter(a => a.id !== accId));
-    deleteAccountFromCloud(accId);
+  // Shared context payload
+  const financialContextValue = {
+    accounts,
+    budget,
+    monthsList,
+    selectedMonth,
+    setSelectedMonth,
+    calculatorsData,
+    tasks,
+    roomStats,
+    personalStats,
+    budgetTotals,
+    users: roomMembers,
+    isSingleMember,
+    isCloudSynced,
+    authUser
   };
 
-  const handleDeleteMonth = (monthToDelete) => {
-    if (monthsList.length <= 1) return;
-    const newMonths = monthsList.filter(m => m !== monthToDelete);
-    setMonthsList(newMonths);
-    syncMonthsToCloud(newMonths);
-
-    if (selectedMonth === monthToDelete) {
-      setSelectedMonth(newMonths[newMonths.length - 1]);
-    }
-    setAccounts(prev => prev.map(a => {
-      const updatedBalances = { ...a.balances };
-      delete updatedBalances[monthToDelete];
-      const updatedFlagged = { ...(a.flaggedMonths || {}) };
-      delete updatedFlagged[monthToDelete];
-      const updatedAcc = { ...a, balances: updatedBalances, flaggedMonths: updatedFlagged };
-      syncAccountToCloud(updatedAcc);
-      return updatedAcc;
-    }));
-  };
-
-  const handleToggleFlagAccount = (accId, month) => {
-    setAccounts(prev => prev.map(a => {
-      if (a.id === accId) {
-        const currentFlagged = a.flaggedMonths || {};
-        const isFlagged = Boolean(currentFlagged[month]);
-        const updatedFlagged = { ...currentFlagged };
-        if (isFlagged) {
-          delete updatedFlagged[month];
-        } else {
-          updatedFlagged[month] = true;
-        }
-        const updatedAcc = { ...a, flaggedMonths: updatedFlagged };
-        syncAccountToCloud(updatedAcc);
-        return updatedAcc;
-      }
-      return a;
-    }));
-  };
-
-  const handleBalanceChange = (accId, month, value) => {
-    setAccounts(prev => prev.map(a => {
-      if (a.id === accId) {
-        const updatedAcc = { ...a, balances: { ...a.balances, [month]: value } };
-        syncAccountToCloud(updatedAcc);
-        return updatedAcc;
-      }
-      return a;
-    }));
-  };
-
-  const handleAccountNameChange = (accId, name) => {
-    setAccounts(prev => prev.map(a => {
-      if (a.id === accId) {
-        const updatedAcc = { ...a, name };
-        syncAccountToCloud(updatedAcc);
-        return updatedAcc;
-      }
-      return a;
-    }));
-  };
-
-  const handleAccountCategoryChange = (accId, newCategory) => {
-    setAccounts(prev => {
-      const targetAcc = prev.find(a => a.id === accId);
-      if (!targetAcc || targetAcc.category === newCategory) return prev;
-      
-      const newCategoryAccs = prev.filter(a => a.category === newCategory);
-      const maxOrder = newCategoryAccs.reduce((max, a) => Math.max(max, a.order ?? 0), -1);
-      
-      const updated = { ...targetAcc, category: newCategory, order: maxOrder + 1 };
-      syncAccountToCloud(updated);
-      
-      const newAccs = prev.map(a => a.id === accId ? updated : a);
-      return sortAccountsByDataEntryOrder(newAccs);
-    });
-  };
-
-  const handleReorderAccount = (accId, direction, targetOwnerId) => {
-    setAccounts(prev => {
-      const targetAcc = prev.find(a => a.id === accId);
-      if (!targetAcc) return prev;
-
-      const owner = targetOwnerId || targetAcc.ownerId;
-      const catAccs = prev
-        .filter(a => a.category === targetAcc.category && (!owner || a.ownerId === owner))
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-      const idx = catAccs.findIndex(a => a.id === accId);
-      if (idx === -1) return prev;
-      if (direction === 'up' && idx === 0) return prev;
-      if (direction === 'down' && idx === catAccs.length - 1) return prev;
-
-      const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-      const otherAcc = catAccs[swapIdx];
-
-      const newCatAccs = [...catAccs];
-      newCatAccs[idx] = otherAcc;
-      newCatAccs[swapIdx] = targetAcc;
-
-      const updatedMap = new Map();
-      newCatAccs.forEach((a, i) => {
-        const updated = { ...a, order: i };
-        syncAccountToCloud(updated);
-        updatedMap.set(a.id, updated);
-      });
-
-      const newAccounts = prev.map(a => updatedMap.get(a.id) || a);
-      return sortAccountsByDataEntryOrder(newAccounts);
-    });
-  };
-
-  const handleMoveAccountToPosition = (accId, targetCategory, targetIndex, targetOwnerId) => {
-    setAccounts(prev => {
-      const targetAcc = prev.find(a => a.id === accId);
-      if (!targetAcc) return prev;
-
-      const owner = targetOwnerId || targetAcc.ownerId;
-      const isSameCategory = targetAcc.category === targetCategory;
-      const targetCatAccs = prev
-        .filter(a => a.category === targetCategory && (!owner || a.ownerId === owner) && a.id !== accId)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-      const validIndex = Math.max(0, Math.min(targetIndex, targetCatAccs.length));
-      targetCatAccs.splice(validIndex, 0, { ...targetAcc, category: targetCategory });
-
-      const updatedCategoryAccs = targetCatAccs.map((a, idx) => {
-        const updated = { ...a, order: idx };
-        syncAccountToCloud(updated);
-        return updated;
-      });
-
-      let updatedPrevCatAccs = [];
-      if (!isSameCategory) {
-        const prevCatAccs = prev
-          .filter(a => a.category === targetAcc.category && (!owner || a.ownerId === owner) && a.id !== accId)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        updatedPrevCatAccs = prevCatAccs.map((a, idx) => {
-          const updated = { ...a, order: idx };
-          syncAccountToCloud(updated);
-          return updated;
-        });
-      }
-
-      const updatedMap = new Map();
-      updatedCategoryAccs.forEach(a => updatedMap.set(a.id, a));
-      updatedPrevCatAccs.forEach(a => updatedMap.set(a.id, a));
-
-      const updatedAccounts = prev.map(a => updatedMap.get(a.id) || a);
-      return sortAccountsByDataEntryOrder(updatedAccounts);
-    });
-  };
-
-  const handleAddAccount = (category, targetOwnerId) => {
-    const owner = targetOwnerId || authUser?.uid || roomMembers[0]?.uid || 'default_user';
-    const catAccounts = accounts.filter(a => a.category === category && (!owner || a.ownerId === owner));
-    const maxOrder = catAccounts.reduce((max, a) => Math.max(max, a.order ?? 0), -1);
-
-    const newAcc = {
-      id: 'acc_' + Date.now(),
-      ownerId: owner,
-      category,
-      name: 'חשבון חדש',
-      balances: { [selectedMonth]: 0 },
-      order: maxOrder + 1
-    };
-    setAccounts(prev => sortAccountsByDataEntryOrder([...prev, newAcc]));
-    syncAccountToCloud(newAcc);
-  };
-
-  const handleAddNewMonth = (newMonthName) => {
-    if (!newMonthName || monthsList.includes(newMonthName)) return;
-    const latestMonth = monthsList[monthsList.length - 1];
-    const newMonths = sortMonths([...monthsList, newMonthName]);
-    
-    setMonthsList(newMonths);
-    setSelectedMonth(newMonths[newMonths.length - 1]);
-    syncMonthsToCloud(newMonths);
-
-    setAccounts(prev => prev.map(a => {
-      const updatedAcc = {
-        ...a,
-        balances: {
-          ...a.balances,
-          [newMonthName]: latestMonth ? (a.balances[latestMonth] ?? 0) : 0
-        }
-      };
-      syncAccountToCloud(updatedAcc);
-      return updatedAcc;
-    }));
-  };
-
-  const updateCalculatorData = (module, newData) => {
-    const updated = { ...calculatorsData, [module]: newData };
-    setCalculatorsData(updated);
-    syncCalculatorsToCloud(updated);
-  };
-
-  // Loading Screen
+  // Loading Screen with Shimmer Skeleton
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center font-sans">
-        <div className="text-center space-y-3">
-          <div className="w-12 h-12 border-4 border-[#2E7D32] border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-stone-600 font-bold text-sm">טוען נתונים...</p>
+      <div className="min-h-screen bg-[#FAF7F2] font-sans p-4 sm:p-8 dir-rtl text-right" dir="rtl">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Top Navbar Skeleton */}
+          <div className="bg-white border border-[#E8E2D8] rounded-2xl p-4 flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-stone-200 animate-shimmer"></div>
+              <div className="space-y-2">
+                <div className="w-36 h-4 rounded-md bg-stone-200 animate-shimmer"></div>
+                <div className="w-24 h-3 rounded-md bg-stone-100 animate-shimmer"></div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-20 h-8 rounded-xl bg-stone-200 animate-shimmer"></div>
+              <div className="w-8 h-8 rounded-full bg-stone-200 animate-shimmer"></div>
+            </div>
+          </div>
+
+          {/* Metric Cards Skeleton Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-white border border-[#E8E2D8] rounded-2xl p-4 space-y-3 shadow-xs">
+                <div className="w-24 h-3 rounded bg-stone-200 animate-shimmer"></div>
+                <div className="w-32 h-6 rounded bg-stone-200 animate-shimmer"></div>
+                <div className="w-16 h-2.5 rounded bg-stone-100 animate-shimmer"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Central Content Skeleton & Spinner */}
+          <div className="bg-white border border-[#E8E2D8] rounded-2xl p-8 shadow-xs flex flex-col items-center justify-center min-h-[300px] space-y-4">
+            <div className="w-12 h-12 border-4 border-[#2E7D32] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-stone-600 font-bold text-sm">טוען נתונים...</p>
+            <div className="w-48 h-2.5 rounded-full bg-stone-200 animate-shimmer mt-2"></div>
+          </div>
         </div>
       </div>
     );
@@ -895,171 +404,202 @@ export default function App() {
   return (
     <ThemeContext.Provider value={{ isDarkMode, setIsDarkMode, toggleDarkMode: () => setIsDarkMode(prev => !prev) }}>
       <PrivacyContext.Provider value={{ isPrivacyMode, setIsPrivacyMode }}>
-        <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
-          <Header
-            authUser={authUser}
-            isCloudSynced={isCloudSynced}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            onLogout={logoutGoogle}
-            currentRoom={currentRoom}
-            onSwitchRoom={() => setCurrentRoom(null)}
-            onOpenManageRoom={() => setShowManageRoomModal(true)}
-            isPrivacyMode={isPrivacyMode}
-            onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
-            isDarkMode={isDarkMode}
-            onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
-          />
-
-        {/* Main Content Area offset by right sidebar on desktop */}
-        <div className="md:mr-64 transition-all duration-300">
-          <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 pb-24 md:pb-12">
-            {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
-              <MonthSelector
-                selectedMonth={selectedMonth}
-                setSelectedMonth={setSelectedMonth}
-                monthsList={monthsList}
+        <ToastProvider>
+          <FinancialDataProvider value={financialContextValue}>
+            <div className={`min-h-screen bg-[#FAF7F2] text-stone-800 font-sans dir-rtl text-right select-none ${isPrivacyMode ? 'privacy-active' : ''}`} dir="rtl">
+              <Header
+                authUser={authUser}
+                isCloudSynced={isCloudSynced}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                onLogout={logoutGoogle}
+                currentRoom={currentRoom}
+                onSwitchRoom={() => setCurrentRoom(null)}
+                onOpenManageRoom={() => setShowManageRoomModal(true)}
+                isPrivacyMode={isPrivacyMode}
+                onTogglePrivacyMode={() => setIsPrivacyMode(prev => !prev)}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
               />
-            )}
 
-          {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
-            <DashboardModule
-              subTab={
-                activeTab === 'shared_dash' ? 'shared' :
-                activeTab === 'personal_dash' ? 'personal' :
-                activeTab === 'budget' ? 'budget' :
-                dashboardSubTab
-              }
-              onSubTabChange={(newSub) => {
-                setActiveTab('dashboard');
-                setDashboardSubTab(newSub);
-              }}
-              isSingleMember={isSingleMember}
-              roomStats={roomStats}
-              budgetTotals={budgetTotals}
-              isPrivacyMode={isPrivacyMode}
-              personalStats={personalStats}
-              selectedPersonalUserId={selectedPersonalUserId}
-              setSelectedPersonalUserId={setSelectedPersonalUserId}
-              selectedMonth={selectedMonth}
-              monthsList={monthsList}
-              accounts={accounts}
-              users={roomMembers}
-              activeUserId={authUser?.uid}
-              budget={budget}
-              onUpdateBudget={(updated) => {
-                setBudget(updated);
-                syncBudgetToCloud(updated);
-              }}
-            />
-          )}
+              {/* Main Content Area offset by right sidebar on desktop */}
+              <div className="md:mr-64 transition-all duration-300">
+                <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 pb-24 md:pb-12">
+                  <ErrorBoundary title="אירעה שגיאה בטעינת המסך">
+                    {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
+                      <MonthSelector
+                        selectedMonth={selectedMonth}
+                        setSelectedMonth={setSelectedMonth}
+                        monthsList={monthsList}
+                      />
+                    )}
 
-          {activeTab === 'calculators' && (
-            <CalculatorsModule 
-              calculatorsData={calculatorsData}
-              onUpdateData={updateCalculatorData}
-              accounts={accounts}
-              selectedMonth={selectedMonth}
-              monthsList={monthsList}
-              users={roomMembers}
-              roomStats={roomStats}
-              budgetTotals={budgetTotals}
-              isSingleMember={isSingleMember}
-              activeUserId={authUser?.uid}
-              isPrivacyMode={isPrivacyMode}
-            />
-          )}
+                    {(activeTab === 'dashboard' || activeTab === 'shared_dash' || activeTab === 'personal_dash' || activeTab === 'budget') && (
+                      <DashboardModule
+                        subTab={
+                          activeTab === 'shared_dash' ? 'shared' :
+                          activeTab === 'personal_dash' ? 'personal' :
+                          activeTab === 'budget' ? 'budget' :
+                          dashboardSubTab
+                        }
+                        onSubTabChange={(newSub) => {
+                          setActiveTab('dashboard');
+                          setDashboardSubTab(newSub);
+                        }}
+                        isSingleMember={isSingleMember}
+                        roomStats={roomStats}
+                        budgetTotals={budgetTotals}
+                        isPrivacyMode={isPrivacyMode}
+                        personalStats={personalStats}
+                        selectedPersonalUserId={selectedPersonalUserId}
+                        setSelectedPersonalUserId={setSelectedPersonalUserId}
+                        selectedMonth={selectedMonth}
+                        monthsList={monthsList}
+                        accounts={accounts}
+                        users={roomMembers}
+                        activeUserId={authUser?.uid}
+                        budget={budget}
+                        onUpdateBudget={(updated) => {
+                          setBudget(updated);
+                          syncBudgetToCloud(updated);
+                        }}
+                      />
+                    )}
 
-          {activeTab === 'ai_advisor' && (
-            <AIAdvisorTab 
-              roomStats={roomStats} 
-              budgetTotals={budgetTotals} 
-              accounts={accounts} 
-              selectedMonth={selectedMonth}
-              users={roomMembers}
-              isPrivacyMode={isPrivacyMode}
-              tasks={tasks}
-              onUpdateTasks={handleUpdateTasks}
-            />
-          )}
+                    {activeTab === 'calculators' && (
+                      <CalculatorsModule 
+                        calculatorsData={calculatorsData}
+                        onUpdateData={updateCalculatorData}
+                        accounts={accounts}
+                        selectedMonth={selectedMonth}
+                        monthsList={monthsList}
+                        users={roomMembers}
+                        roomStats={roomStats}
+                        budgetTotals={budgetTotals}
+                        isSingleMember={isSingleMember}
+                        activeUserId={authUser?.uid}
+                        isPrivacyMode={isPrivacyMode}
+                      />
+                    )}
 
-          {activeTab === 'data_entry' && (
-            <DataEntryModule 
-              selectedMonth={selectedMonth}
-              setSelectedMonth={setSelectedMonth}
-              monthsList={monthsList}
-              onAddNewMonth={handleAddNewMonth}
-              onDeleteMonth={handleDeleteMonth}
-              activeRoomAccounts={accounts}
-              users={roomMembers}
-              activeUserId={authUser?.uid}
-              isSingleMember={isSingleMember}
-              handleAccountNameChange={handleAccountNameChange}
-              handleAccountCategoryChange={handleAccountCategoryChange}
-              handleReorderAccount={handleReorderAccount}
-              handleMoveAccountToPosition={handleMoveAccountToPosition}
-              handleBalanceChange={handleBalanceChange}
-              handleRemoveAccountFromMonth={handleRemoveAccountFromMonth}
-              handleDeleteAccountCompletely={handleDeleteAccountCompletely}
-              handleAddAccount={handleAddAccount}
-              setAccounts={setAccounts}
-              syncAccountToCloud={syncAccountToCloud}
-              handleToggleFlagAccount={handleToggleFlagAccount}
-              isPrivacyMode={isPrivacyMode}
-            />
-          )}
+                    {activeTab === 'ai_advisor' && (
+                      <AIAdvisorTab 
+                        roomStats={roomStats} 
+                        budgetTotals={budgetTotals} 
+                        accounts={accounts} 
+                        selectedMonth={selectedMonth}
+                        users={roomMembers}
+                        isPrivacyMode={isPrivacyMode}
+                        tasks={tasks}
+                        onUpdateTasks={handleUpdateTasks}
+                      />
+                    )}
 
-          {activeTab === 'export' && (
-            <DataExport 
-              accounts={accounts} 
-              budget={budget} 
-              monthsList={monthsList} 
-              users={roomMembers}
-              syncAccountToCloud={syncAccountToCloud}
-              deleteAccountFromCloud={deleteAccountFromCloud}
-              syncBudgetToCloud={syncBudgetToCloud}
-              syncMonthsToCloud={syncMonthsToCloud}
-              setAccounts={setAccounts}
-              setBudget={setBudget}
-              setMonthsList={setMonthsList}
-              setSelectedPersonalUserId={setSelectedPersonalUserId}
-              authUser={authUser}
-              calculatorsData={calculatorsData}
-              setCalculatorsData={setCalculatorsData}
-              syncCalculatorsToCloud={syncCalculatorsToCloud}
-              tasks={tasks}
-              setTasks={setTasks}
-              syncTasksToCloud={syncTasksToCloud}
-              roomName={currentRoom?.name}
-              currentRoom={currentRoom}
-              selectedMonth={selectedMonth}
-              setSelectedMonth={setSelectedMonth}
-              isPrivacyMode={isPrivacyMode}
-              isDarkMode={isDarkMode}
-            />
-          )}
-        </main>
-        </div>
+                    {activeTab === 'data_entry' && (
+                      <DataEntryModule 
+                        selectedMonth={selectedMonth}
+                        setSelectedMonth={setSelectedMonth}
+                        monthsList={monthsList}
+                        onAddNewMonth={handleAddNewMonth}
+                        onDeleteMonth={handleDeleteMonth}
+                        activeRoomAccounts={accounts}
+                        users={roomMembers}
+                        activeUserId={authUser?.uid}
+                        isSingleMember={isSingleMember}
+                        handleAccountNameChange={handleAccountNameChange}
+                        handleAccountCurrencyChange={handleAccountCurrencyChange}
+                        handleAccountCategoryChange={handleAccountCategoryChange}
+                        handleReorderAccount={handleReorderAccount}
+                        handleMoveAccountToPosition={handleMoveAccountToPosition}
+                        handleBalanceChange={handleBalanceChange}
+                        handleRemoveAccountFromMonth={handleRemoveAccountFromMonth}
+                        handleDeleteAccountCompletely={handleDeleteAccountCompletely}
+                        handleAddAccount={onAddAccount}
+                        setAccounts={setAccounts}
+                        syncAccountToCloud={syncAccountToCloud}
+                        handleToggleFlagAccount={handleToggleFlagAccount}
+                        isPrivacyMode={isPrivacyMode}
+                      />
+                    )}
 
-        {/* Room Settings Modal */}
-        {showManageRoomModal && (
-          <RoomSettingsModal
-            currentRoom={currentRoom}
-            authUser={authUser}
-            onClose={() => setShowManageRoomModal(false)}
-            onUpdateRoom={(updated) => setCurrentRoom(updated)}
-            onDeleteRoom={() => {
-              setCurrentRoom(null);
-              setShowManageRoomModal(false);
-            }}
-            onLeaveRoom={() => {
-              setCurrentRoom(null);
-              setShowManageRoomModal(false);
-            }}
-          />
-        )}
-      </div>
-    </PrivacyContext.Provider>
+                    {activeTab === 'export' && (
+                      <DataExport 
+                        accounts={accounts} 
+                        budget={budget} 
+                        monthsList={monthsList} 
+                        users={roomMembers}
+                        syncAccountToCloud={syncAccountToCloud}
+                        deleteAccountFromCloud={deleteAccountFromCloud}
+                        syncBudgetToCloud={syncBudgetToCloud}
+                        syncMonthsToCloud={syncMonthsToCloud}
+                        setAccounts={setAccounts}
+                        setBudget={setBudget}
+                        setMonthsList={setMonthsList}
+                        setSelectedPersonalUserId={setSelectedPersonalUserId}
+                        authUser={authUser}
+                        calculatorsData={calculatorsData}
+                        setCalculatorsData={setCalculatorsData}
+                        syncCalculatorsToCloud={syncCalculatorsToCloud}
+                        tasks={tasks}
+                        setTasks={setTasks}
+                        syncTasksToCloud={syncTasksToCloud}
+                        roomName={currentRoom?.name}
+                        currentRoom={currentRoom}
+                        selectedMonth={selectedMonth}
+                        setSelectedMonth={setSelectedMonth}
+                        isPrivacyMode={isPrivacyMode}
+                        isDarkMode={isDarkMode}
+                      />
+                    )}
+                  </ErrorBoundary>
+                </main>
+              </div>
+
+              {/* Floating Action Button for Quick Log (Active Room) */}
+              <FloatingActionButton
+                onClick={() => setShowQuickLogModal(true)}
+                label="הזנה מהירה"
+              />
+
+              {/* Quick Log Modal */}
+              <QuickLogModal
+                isOpen={showQuickLogModal}
+                onClose={() => setShowQuickLogModal(false)}
+                accounts={accounts}
+                selectedMonth={selectedMonth}
+                onUpdateAccountBalance={handleBalanceChange}
+                onToggleFlagAccount={handleToggleFlagAccount}
+                budget={budget}
+                onUpdateBudget={(updated) => {
+                  setBudget(updated);
+                  syncBudgetToCloud(updated);
+                }}
+                users={roomMembers}
+                activeUserId={authUser?.uid}
+                isSingleMember={isSingleMember}
+              />
+
+              {/* Room Settings Modal */}
+              {showManageRoomModal && (
+                <RoomSettingsModal
+                  currentRoom={currentRoom}
+                  authUser={authUser}
+                  onClose={() => setShowManageRoomModal(false)}
+                  onUpdateRoom={(updated) => setCurrentRoom(updated)}
+                  onDeleteRoom={() => {
+                    setCurrentRoom(null);
+                    setShowManageRoomModal(false);
+                  }}
+                  onLeaveRoom={() => {
+                    setCurrentRoom(null);
+                    setShowManageRoomModal(false);
+                  }}
+                />
+              )}
+            </div>
+          </FinancialDataProvider>
+        </ToastProvider>
+      </PrivacyContext.Provider>
     </ThemeContext.Provider>
   );
 }

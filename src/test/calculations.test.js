@@ -6,9 +6,10 @@ import {
   getAccountTotalsForMonth,
   sortMonths,
   getNextMonth,
-  getLatestExistingMonth
+  getLatestExistingMonth,
+  DEFAULT_EXCHANGE_RATES
 } from '../utils/calculations';
-import { fmtILS, fmtNum, fmtPct } from '../utils/formatters';
+import { fmtILS, fmtNum, fmtPct, fmtCurrency, SUPPORTED_CURRENCIES } from '../utils/formatters';
 
 describe('Calculations Utility', () => {
   describe('getDynamicHistoricalReturn', () => {
@@ -202,5 +203,44 @@ describe('Formatters Utility', () => {
     expect(fmtPct(12.345)).toBe('12.3%');
     expect(fmtPct(0)).toBe('0.0%');
     expect(fmtPct(null)).toBe('0.0%');
+  });
+
+  describe('Multi-Currency Support', () => {
+    it('formats currencies according to their native symbols', () => {
+      expect(fmtCurrency(1500, 'USD')).toContain('$');
+      expect(fmtCurrency(1500, 'USD')).toContain('1,500');
+      expect(fmtCurrency(2500, 'EUR')).toContain('€');
+      expect(fmtCurrency(2500, 'EUR')).toContain('2');
+      expect(fmtCurrency(2500, 'EUR')).toContain('500');
+      expect(fmtCurrency(3500, 'ILS')).toContain('₪');
+      expect(fmtCurrency(3500, 'ILS')).toContain('3,500');
+    });
+
+    it('masks currency values in privacy mode while preserving currency symbol', () => {
+      expect(fmtCurrency(1500, 'USD', true)).toBe('$ ••••••');
+      expect(fmtCurrency(2500, 'EUR', true)).toBe('€ ••••••');
+      expect(fmtCurrency(3500, 'ILS', true)).toBe('₪ ••••••');
+    });
+
+    it('correctly converts foreign currency balances into ILS in getAccountTotalsForMonth', () => {
+      const month = '01/2026';
+      const accounts = [
+        { id: 'acc1', category: 'short', currency: 'ILS', balances: { [month]: 1000 } },
+        { id: 'acc2', category: 'short', currency: 'USD', balances: { [month]: 100 } },
+        { id: 'acc3', category: 'medium', currency: 'EUR', balances: { [month]: 200 } },
+        { id: 'acc4', category: 'liability', currency: 'USD', balances: { [month]: 50 } },
+      ];
+
+      const totals = getAccountTotalsForMonth(accounts, month);
+      const expectedUsdShort = 100 * DEFAULT_EXCHANGE_RATES.USD;
+      const expectedEurMedium = 200 * DEFAULT_EXCHANGE_RATES.EUR;
+      const expectedUsdLiability = 50 * DEFAULT_EXCHANGE_RATES.USD;
+
+      expect(totals.short).toBeCloseTo(1000 + expectedUsdShort);
+      expect(totals.medium).toBeCloseTo(expectedEurMedium);
+      expect(totals.liabilities).toBeCloseTo(expectedUsdLiability);
+      expect(totals.liquid).toBeCloseTo(1000 + expectedUsdShort + expectedEurMedium);
+      expect(totals.netWorth).toBeCloseTo((1000 + expectedUsdShort + expectedEurMedium) - expectedUsdLiability);
+    });
   });
 });

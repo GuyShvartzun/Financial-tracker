@@ -33,10 +33,18 @@ export const sortAccountsByDataEntryOrder = (accs) => {
   });
 };
 
-export const getAccountTotalsForMonth = (accs, month) => {
+export const DEFAULT_EXCHANGE_RATES = { USD: 3.70, EUR: 4.05, ILS: 1 };
+
+export const getAccountTotalsForMonth = (accs, month, rates = DEFAULT_EXCHANGE_RATES) => {
   let liquid = 0, nonLiquid = 0, liabilities = 0, short = 0, medium = 0, long = 0;
+  const safeRates = { ...DEFAULT_EXCHANGE_RATES, ...(rates || {}) };
+
   accs.forEach(acc => {
-    const bal = parseFloat(acc.balances?.[month]) || 0;
+    const rawBal = parseFloat(acc.balances?.[month]) || 0;
+    const currency = acc.currency || 'ILS';
+    const rate = safeRates[currency] ?? 1;
+    const bal = rawBal * rate;
+
     if (acc.category === 'short') { liquid += bal; short += bal; }
     else if (acc.category === 'medium') { liquid += bal; medium += bal; }
     else if (acc.category === 'long') { nonLiquid += bal; long += bal; }

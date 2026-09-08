@@ -72,42 +72,44 @@ export default function DashboardModule({
         </button>
       </div>
 
-      {/* Sub-view Content */}
-      {activeSub === 'shared' && !isSingleMember && (
-        <SharedDashboard
-          roomStats={roomStats}
-          budgetTotals={budgetTotals}
-          isPrivacyMode={isPrivacyMode}
-        />
-      )}
+      {/* Sub-view Content with smooth tab transition */}
+      <div key={activeSub} className="animate-fade-in space-y-6">
+        {activeSub === 'shared' && !isSingleMember && (
+          <SharedDashboard
+            roomStats={roomStats}
+            budgetTotals={budgetTotals}
+            isPrivacyMode={isPrivacyMode}
+          />
+        )}
 
-      {activeSub === 'personal' && (
-        <PersonalDashboard
-          personalStats={personalStats}
-          selectedPersonalUserId={selectedPersonalUserId}
-          setSelectedPersonalUserId={setSelectedPersonalUserId}
-          selectedMonth={selectedMonth}
-          monthsList={monthsList}
-          accounts={accounts}
-          users={users}
-          isSingleMember={isSingleMember}
-          roomStats={roomStats}
-          budgetTotals={budgetTotals}
-          activeUserId={activeUserId}
-          isPrivacyMode={isPrivacyMode}
-        />
-      )}
+        {activeSub === 'personal' && (
+          <PersonalDashboard
+            personalStats={personalStats}
+            selectedPersonalUserId={selectedPersonalUserId}
+            setSelectedPersonalUserId={setSelectedPersonalUserId}
+            selectedMonth={selectedMonth}
+            monthsList={monthsList}
+            accounts={accounts}
+            users={users}
+            isSingleMember={isSingleMember}
+            roomStats={roomStats}
+            budgetTotals={budgetTotals}
+            activeUserId={activeUserId}
+            isPrivacyMode={isPrivacyMode}
+          />
+        )}
 
-      {activeSub === 'budget' && (
-        <BudgetTab
-          budget={budget}
-          budgetTotals={budgetTotals}
-          users={users}
-          isSingleMember={isSingleMember}
-          onUpdateBudget={onUpdateBudget}
-          isPrivacyMode={isPrivacyMode}
-        />
-      )}
+        {activeSub === 'budget' && (
+          <BudgetTab
+            budget={budget}
+            budgetTotals={budgetTotals}
+            users={users}
+            isSingleMember={isSingleMember}
+            onUpdateBudget={onUpdateBudget}
+            isPrivacyMode={isPrivacyMode}
+          />
+        )}
+      </div>
     </div>
   );
 }

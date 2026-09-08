@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { fmtILS } from '../../utils/formatters';
-import { getNextMonth } from '../../utils/calculations';
+import { Wallet, PlusCircle } from 'lucide-react';
+import { fmtILS, fmtCurrency, SUPPORTED_CURRENCIES } from '../../utils/formatters';
+import { getNextMonth, DEFAULT_EXCHANGE_RATES } from '../../utils/calculations';
 import { usePrivacy } from '../../context/PrivacyContext';
 
 export default function DataEntryModule({
@@ -15,6 +16,7 @@ export default function DataEntryModule({
   activeUserId = '',
   isSingleMember = false,
   handleAccountNameChange,
+  handleAccountCurrencyChange,
   handleAccountCategoryChange,
   handleReorderAccount,
   handleMoveAccountToPosition,
@@ -281,7 +283,7 @@ export default function DataEntryModule({
 
       {/* Flagged Accounts Notification Banner & Filter */}
       {flaggedCount > 0 && (
-        <div className="bg-amber-50/90 border border-amber-300 p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="bg-amber-50/90 border border-amber-300 p-3.5 sm:p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-pulse-subtle">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-xl shrink-0">🚩</span>
             <div>
@@ -319,7 +321,10 @@ export default function DataEntryModule({
           ? allCategoryAccounts.filter(a => Boolean(a.flaggedMonths?.[selectedMonth]))
           : allCategoryAccounts;
 
-        const groupTotal = groupAccounts.reduce((s, a) => s + (parseFloat(a.balances?.[selectedMonth]) || 0), 0);
+        const groupTotal = groupAccounts.reduce((s, a) => {
+          const rate = a.currency && DEFAULT_EXCHANGE_RATES[a.currency] ? DEFAULT_EXCHANGE_RATES[a.currency] : 1;
+          return s + (parseFloat(a.balances?.[selectedMonth]) || 0) * rate;
+        }, 0);
         const groupTotalFlagged = allCategoryAccounts.filter(a => Boolean(a.flaggedMonths?.[selectedMonth])).length;
         const isDragOverThisGroup = dragOverGroupId === group.key;
 
@@ -341,7 +346,7 @@ export default function DataEntryModule({
                   <span className="privacy-blur">{isPrivacyMode ? '••' : groupAccounts.length}</span> חשבונות
                 </span>
                 {groupTotalFlagged > 0 && (
-                  <span className="text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                  <span className="text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs animate-pulse">
                     <span>🚩</span>
                     <span>{groupTotalFlagged} דורש עדכון</span>
                   </span>
@@ -355,13 +360,35 @@ export default function DataEntryModule({
             {/* Empty state or Accounts List */}
             {groupAccounts.length === 0 ? (
               <div 
-                className="py-8 text-center bg-[#FAF7F2] border border-dashed border-[#DDD6CA] rounded-xl text-stone-500 text-xs"
+                className="py-8 px-4 text-center bg-[#FAF7F2] dark:bg-stone-900/40 border border-dashed border-[#DDD6CA] dark:border-stone-800 rounded-2xl text-stone-500 dark:text-stone-400 text-xs space-y-3"
               >
-                {filterOnlyFlagged
-                  ? `אין חשבונות המסומנים כדורשים עדכון בקטגוריה זו לחודש ${selectedMonth}.`
-                  : isMultiUser
-                  ? `אין חשבונות עבור ${currentSelectedUser?.displayName || currentSelectedUser?.name} בקטגוריה זו. לחץ על הכפתור למטה להוספת חשבון.`
-                  : 'אין חשבונות בקטגוריה זו. לחץ על הכפתור למטה או גרור לכאן חשבון מקבוצה אחרת.'}
+                <div className="w-10 h-10 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 mx-auto flex items-center justify-center shadow-xs">
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-stone-800 dark:text-stone-200 text-xs sm:text-sm">
+                    {filterOnlyFlagged
+                      ? `אין חשבונות המסומנים כדורשים עדכון בקטגוריה זו לחודש ${selectedMonth}.`
+                      : isMultiUser
+                      ? `אין חשבונות עבור ${currentSelectedUser?.displayName || currentSelectedUser?.name} בקטגוריה זו.`
+                      : 'אין עדיין חשבונות בקטגוריה זו.'}
+                  </p>
+                  {!filterOnlyFlagged && (
+                    <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
+                      לחצו על הכפתור למטה להוספת חשבון חדש, או גררו לכאן חשבון מקבוצה אחרת.
+                    </p>
+                  )}
+                </div>
+                {!filterOnlyFlagged && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddAccount(group.key, currentUserId)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#2E7D32] dark:bg-emerald-950/50 dark:text-emerald-300 border border-[#A5D6A7] dark:border-emerald-800/50 transition cursor-pointer shadow-2xs"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    <span>+ הוסף חשבון לקבוצה זו</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -488,10 +515,28 @@ export default function DataEntryModule({
                           </select>
                         </div>
 
-                        {/* Balance in ILS with Flag Button */}
-                        <div className="w-40">
+                        {/* Currency Selector */}
+                        <div className="w-24">
+                          <label className="text-[10px] text-stone-500 font-bold block mb-1">מטבע</label>
+                          <select
+                            value={acc.currency || 'ILS'}
+                            onChange={(e) => handleAccountCurrencyChange && handleAccountCurrencyChange(acc.id, e.target.value)}
+                            className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs font-bold rounded-lg px-2 py-2 outline-none cursor-pointer focus:border-[#4A90E2]"
+                          >
+                            {Object.entries(SUPPORTED_CURRENCIES).map(([code, cur]) => (
+                              <option key={code} value={code}>
+                                {cur.symbol} {cur.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Balance in currency with Flag Button */}
+                        <div className="w-44">
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-[10px] text-stone-500 font-bold block">סכום ב-₪ ({selectedMonth})</label>
+                            <label className="text-[10px] text-stone-500 font-bold block">
+                              סכום ב-{SUPPORTED_CURRENCIES[acc.currency || 'ILS']?.symbol || '₪'} ({selectedMonth})
+                            </label>
                             {isFlagged && (
                               <span className="text-[9px] font-black text-amber-800 bg-amber-100/90 border border-amber-300 px-1.5 py-0.2 rounded-md">
                                 דורש עדכון
@@ -527,6 +572,14 @@ export default function DataEntryModule({
                               )}
                             </button>
                           </div>
+                          {acc.currency && acc.currency !== 'ILS' && (
+                            <div className="mt-1 text-[10px] text-stone-500 font-medium flex items-center justify-between">
+                              <span>שווה ערך:</span>
+                              <span className="font-bold text-stone-700 privacy-blur">
+                                ≈ {fmtILS((parseFloat(acc.balances?.[selectedMonth]) || 0) * (DEFAULT_EXCHANGE_RATES[acc.currency] || 1), isPrivacyMode)}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Action buttons */}
@@ -594,8 +647,8 @@ export default function DataEntryModule({
                           </div>
                         </div>
 
-                        {/* Middle Grid: Category, Owner, Amount */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        {/* Middle Grid: Category, Owner, Currency, Amount */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                           <div>
                             <label className="text-[10px] text-stone-500 font-bold block mb-1">קטגוריה</label>
                             <select
@@ -641,9 +694,26 @@ export default function DataEntryModule({
                             </select>
                           </div>
 
+                          <div>
+                            <label className="text-[10px] text-stone-500 font-bold block mb-1">מטבע</label>
+                            <select
+                              value={acc.currency || 'ILS'}
+                              onChange={(e) => handleAccountCurrencyChange && handleAccountCurrencyChange(acc.id, e.target.value)}
+                              className="w-full bg-[#FFFFFF] border border-[#DDD6CA] text-stone-900 text-xs font-bold rounded-lg p-2 outline-none cursor-pointer focus:border-[#4A90E2]"
+                            >
+                              {Object.entries(SUPPORTED_CURRENCIES).map(([code, cur]) => (
+                                <option key={code} value={code}>
+                                  {cur.symbol} {cur.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
                           <div className="col-span-2 sm:col-span-1">
                             <div className="flex items-center justify-between mb-1">
-                              <label className="text-[10px] text-stone-500 font-bold block">סכום ב-₪ ({selectedMonth})</label>
+                              <label className="text-[10px] text-stone-500 font-bold block">
+                                סכום ב-{SUPPORTED_CURRENCIES[acc.currency || 'ILS']?.symbol || '₪'} ({selectedMonth})
+                              </label>
                               {isFlagged && (
                                 <span className="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
                                   <span>🚩</span>
@@ -680,6 +750,14 @@ export default function DataEntryModule({
                                 )}
                               </button>
                             </div>
+                            {acc.currency && acc.currency !== 'ILS' && (
+                              <div className="mt-1 text-[10px] text-stone-500 font-medium flex items-center justify-between">
+                                <span>שווה ערך:</span>
+                                <span className="font-bold text-stone-700 privacy-blur">
+                                  ≈ {fmtILS((parseFloat(acc.balances?.[selectedMonth]) || 0) * (DEFAULT_EXCHANGE_RATES[acc.currency] || 1), isPrivacyMode)}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
 

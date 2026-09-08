@@ -214,6 +214,26 @@ export default function FinancialTaskList({
             </div>
           </div>
         )}
+
+        {/* Celebration Banner when 100% completed */}
+        {totalTasks > 0 && completionPercentage === 100 && (
+          <div className="bg-emerald-50 border border-emerald-300 p-3.5 rounded-xl shadow-xs flex items-center justify-between gap-3 text-xs animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl shrink-0 animate-bounce">🎉</span>
+              <div>
+                <span className="font-bold text-emerald-950 block text-xs sm:text-sm">
+                  כל הכבוד! כל המשימות הפיננסיות הושלמו בהצלחה!
+                </span>
+                <span className="text-emerald-800 text-[11px]">
+                  השגתם 100% ביצוע של היעדים והמשימות שהוגדרו. המשיכו כך!
+                </span>
+              </div>
+            </div>
+            <span className="text-xs font-black bg-emerald-600 text-white px-2.5 py-1 rounded-lg shadow-xs shrink-0">
+              100% הושלם 🏆
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Add / Edit Task Form Drawer/Card */}

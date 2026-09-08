@@ -58,6 +58,68 @@
     letter-spacing: 2px !important;
     user-select: auto !important;
   }
+
+  /* Smooth dynamic animations */
+  .animate-fade-in {
+    animation: fadeInSubtle 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmerWave 1.6s infinite;
+  }
+
+  .dark .animate-shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmerWave 1.6s infinite;
+  }
+
+  .animate-draw-line {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: drawLinePath 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .animate-pulse-subtle {
+    animation: pulseBeacon 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes pulseBeacon {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.01);
+  }
+}
+
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes drawLinePath {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 html {
@@ -87,10 +149,36 @@ button, input, select, textarea {
 }
 
 /* =========================================================================
+   Design Tokens & CSS Variables
+   ========================================================================= */
+:root {
+  --bg-page: #FAF7F2;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #FAF7F2;
+  --text-primary: #1C1917;
+  --text-secondary: #44403C;
+  --text-muted: #78716C;
+  --border-light: #E8E2D8;
+  --border-subtle: #DDD6CA;
+  --accent-green: #2E7D32;
+  --accent-green-bg: #E8F5E9;
+}
+
+/* =========================================================================
    Comprehensive Dark Mode Theme System
    ========================================================================= */
 html.dark {
   color-scheme: dark;
+  --bg-page: #0F1117;
+  --bg-card: #1A1D27;
+  --bg-subtle: #212532;
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --border-light: #2D3242;
+  --border-subtle: #353B4D;
+  --accent-green: #38A169;
+  --accent-green-bg: rgba(46, 125, 50, 0.22);
 }
 
 html.dark, body.dark {
