@@ -149,15 +149,106 @@ html.dark, body.dark {
   border-color: #2D3242 !important;
 }
 
-/* Hover States */
+/* Hover States - Surface Backgrounds */
 .dark [class*="hover:bg-[#FAF7F2]"]:hover,
 .dark [class*="hover:bg-[#F2ECE1]"]:hover,
+.dark [class*="hover:bg-[#F9F6F0]"]:hover,
+.dark [class*="hover:bg-[#E8E2D8]"]:hover,
 .dark [class*="hover:bg-stone-50"]:hover,
 .dark [class*="hover:bg-stone-100"]:hover,
+.dark [class*="hover:bg-stone-200"]:hover,
+.dark [class*="hover:bg-gray-50"]:hover,
+.dark [class*="hover:bg-gray-100"]:hover,
 .dark tr.hover\:bg-\[\#FAF7F2\]:hover,
 .dark tr:hover {
   background-color: #262B3A !important;
 }
+
+/* Hover States - Colored Buttons & Badges */
+.dark [class*="hover:bg-[#C8E6C9]"]:hover,
+.dark [class*="hover:bg-[#E8F5E9]"]:hover,
+.dark [class*="hover:bg-emerald-"]:hover,
+.dark [class*="hover:bg-green-"]:hover {
+  background-color: rgba(46, 125, 50, 0.32) !important;
+}
+
+.dark [class*="hover:bg-[#FFCDD2]"]:hover,
+.dark [class*="hover:bg-[#FFEBEE]"]:hover,
+.dark [class*="hover:bg-red-50"]:hover,
+.dark [class*="hover:bg-red-100"]:hover {
+  background-color: rgba(198, 40, 40, 0.32) !important;
+}
+
+.dark [class*="hover:bg-[#BBDEFB]"]:hover,
+.dark [class*="hover:bg-blue-"]:hover,
+.dark [class*="hover:bg-indigo-100"]:hover {
+  background-color: rgba(25, 118, 210, 0.32) !important;
+}
+
+.dark [class*="hover:bg-[#FFE0B2]"]:hover,
+.dark [class*="hover:bg-[#FFF3E0]"]:hover,
+.dark [class*="hover:bg-amber-50"]:hover,
+.dark [class*="hover:bg-amber-100"]:hover {
+  background-color: rgba(230, 81, 0, 0.32) !important;
+}
+
+.dark [class*="hover:bg-[#E1BEE7]"]:hover,
+.dark [class*="hover:bg-[#F3E5F5]"]:hover,
+.dark [class*="hover:bg-purple-"]:hover {
+  background-color: rgba(123, 31, 162, 0.32) !important;
+}
+
+/* Primary Solid Button Hovers */
+.dark [class*="hover:bg-[#1B5E20]"]:hover {
+  background-color: #2F855A !important;
+}
+
+.dark [class*="hover:bg-[#B71C1C]"]:hover,
+.dark [class*="hover:bg-[#D32F2F]"]:hover,
+.dark [class*="hover:bg-amber-700"]:hover {
+  filter: brightness(1.15) !important;
+}
+
+/* Hover Text Colors */
+.dark [class*="hover:text-[#1B5E20]"]:hover,
+.dark [class*="hover:text-[#2E7D32]"]:hover {
+  color: #81C784 !important;
+}
+
+.dark [class*="hover:text-[#C62828]"]:hover,
+.dark [class*="hover:text-red-"]:hover {
+  color: #F87171 !important;
+}
+
+.dark [class*="hover:text-amber-"]:hover {
+  color: #FDE68A !important;
+}
+
+.dark [class*="hover:text-indigo-"]:hover {
+  color: #C7D2FE !important;
+}
+
+.dark [class*="hover:text-stone-600"]:hover,
+.dark [class*="hover:text-stone-700"]:hover,
+.dark [class*="hover:text-stone-800"]:hover,
+.dark [class*="hover:text-stone-900"]:hover {
+  color: #F8FAFC !important;
+}
+
+/* Border Hover States */
+.dark [class*="hover:border-[#2E7D32]"]:hover,
+.dark [class*="hover:border-[#81C784]"]:hover {
+  border-color: #4CAF50 !important;
+}
+
+.dark [class*="hover:border-[#FFCDD2]"]:hover {
+  border-color: rgba(239, 83, 80, 0.5) !important;
+}
+
+.dark [class*="hover:border-[#DDD6CA]"]:hover {
+  border-color: #475569 !important;
+}
+
 
 /* Text Colors */
 .dark [class*="text-stone-900"],
@@ -216,24 +307,41 @@ html.dark, body.dark {
 .dark [class*="text-[#2E7D32]"] {
   color: #4CAF50 !important;
 }
+.dark [class*="text-emerald-700"],
+.dark .text-emerald-700 {
+  color: #66BB6A !important;
+}
 .dark [class*="border-[#C8E6C9]"],
 .dark [class*="border-[#A5D6A7]"],
 .dark .border-emerald-200 {
   border-color: rgba(76, 175, 80, 0.35) !important;
 }
 
-/* Blue */
+/* Blue & Indigo */
 .dark [class*="bg-[#E3F2FD]"],
 .dark [class*="bg-[#BBDEFB]"],
 .dark .bg-blue-50,
 .dark .bg-indigo-50 {
   background-color: rgba(25, 118, 210, 0.22) !important;
 }
+.dark [class*="text-[#1565C0]"],
 .dark [class*="text-[#1976D2]"] {
   color: #64B5F6 !important;
 }
+.dark [class*="text-[#455A64]"] {
+  color: #94A3B8 !important;
+}
+.dark [class*="text-indigo-600"],
+.dark [class*="text-indigo-700"],
+.dark .text-indigo-600,
+.dark .text-indigo-700 {
+  color: #A5B4FC !important;
+}
 .dark [class*="border-[#BBDEFB]"],
-.dark [class*="border-[#90CAF9]"] {
+.dark [class*="border-[#90CAF9]"],
+.dark [class*="border-indigo-100"],
+.dark [class*="border-indigo-200"],
+.dark [class*="border-indigo-300"] {
   border-color: rgba(25, 118, 210, 0.35) !important;
 }
 
@@ -260,7 +368,13 @@ html.dark, body.dark {
 }
 .dark [class*="text-[#C62828]"],
 .dark [class*="text-[#D32F2F]"],
-.dark [class*="text-[#B71C1C]"] {
+.dark [class*="text-[#B71C1C]"],
+.dark [class*="text-red-500"],
+.dark [class*="text-red-600"],
+.dark [class*="text-red-700"],
+.dark .text-red-500,
+.dark .text-red-600,
+.dark .text-red-700 {
   color: #EF5350 !important;
 }
 .dark [class*="border-[#FFCDD2]"],
@@ -291,14 +405,17 @@ html.dark, body.dark {
 }
 
 .dark [class*="text-[#E65100]"],
-.dark [class*="text-amber-950"],
-.dark [class*="text-amber-900"],
-.dark [class*="text-amber-800"],
+.dark [class*="text-[#F57F17]"],
+.dark [class*="text-amber-600"],
 .dark [class*="text-amber-700"],
-.dark .text-amber-950,
-.dark .text-amber-900,
+.dark [class*="text-amber-800"],
+.dark [class*="text-amber-900"],
+.dark [class*="text-amber-950"],
+.dark .text-amber-600,
+.dark .text-amber-700,
 .dark .text-amber-800,
-.dark .text-amber-700 {
+.dark .text-amber-900,
+.dark .text-amber-950 {
   color: #FCD34D !important;
 }
 
@@ -340,3 +457,42 @@ html.dark, body.dark {
 .dark .bg-stone-900\/40 {
   background-color: rgba(0, 0, 0, 0.8) !important;
 }
+
+/* SVG Charts & Visuals in Dark Mode */
+.dark svg circle[stroke="#F2ECE1"],
+.dark [stroke="#F2ECE1"] {
+  stroke: #262B3A !important;
+}
+
+.dark svg line[stroke="#F2ECE1"] {
+  stroke: #2D3242 !important;
+}
+
+.dark svg path[stroke="#2E7D32"] {
+  stroke: #4CAF50 !important;
+}
+
+.dark svg path[stroke="#1976D2"] {
+  stroke: #64B5F6 !important;
+}
+
+.dark svg circle[stroke="#2E7D32"] {
+  stroke: #4CAF50 !important;
+}
+
+.dark svg circle[stroke="#1976D2"] {
+  stroke: #64B5F6 !important;
+}
+
+.dark svg circle[fill="#FFFFFF"] {
+  fill: #1A1D27 !important;
+}
+
+.dark svg text[fill="#78716C"] {
+  fill: #94A3B8 !important;
+}
+
+.dark svg text[fill="#A8A29E"] {
+  fill: #64748B !important;
+}
+
