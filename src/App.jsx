@@ -31,6 +31,7 @@ import { PrivacyContext } from './context/PrivacyContext';
 import { ThemeContext } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { FinancialDataProvider } from './context/FinancialDataContext';
+import { DEFAULT_MONTHS } from './constants/initialData';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -49,7 +50,15 @@ export default function App() {
   const [currentRoom, setCurrentRoom] = useState(null);
   const [showManageRoomModal, setShowManageRoomModal] = useState(false);
   const [selectedPersonalUserId, setSelectedPersonalUserId] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('08/2026');
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    try {
+      const globalLatest = localStorage.getItem('fin_tracker_global_latest_month');
+      if (globalLatest && /^\d{2}\/\d{4}$/.test(globalLatest)) {
+        return globalLatest;
+      }
+    } catch {}
+    return DEFAULT_MONTHS[DEFAULT_MONTHS.length - 1] || '08/2026';
+  });
 
   // 2. Active Room Financial Data Hook (Firestore listeners & client-side encryption)
   const {
@@ -244,6 +253,12 @@ export default function App() {
         setActiveTab('dashboard');
         setDashboardSubTab(isSingle ? 'personal' : 'shared');
         setSelectedPersonalUserId(authUser?.uid || currentRoom.members?.[0]?.uid || '');
+        try {
+          const roomLatest = localStorage.getItem(`fin_tracker_latest_month_${currentRoom.id}`);
+          if (roomLatest) {
+            setSelectedMonth(roomLatest);
+          }
+        } catch {}
       }
     } else {
       lastEnteredRoomIdRef.current = null;
@@ -396,6 +411,12 @@ export default function App() {
           setActiveTab('dashboard');
           setDashboardSubTab(isSingle ? 'personal' : 'shared');
           setSelectedPersonalUserId(authUser?.uid || room?.members?.[0]?.uid || '');
+          try {
+            const roomLatest = localStorage.getItem(`fin_tracker_latest_month_${room.id}`);
+            if (roomLatest) {
+              setSelectedMonth(roomLatest);
+            }
+          } catch {}
           setCurrentRoom(room);
         }}
         onLogout={logoutGoogle}

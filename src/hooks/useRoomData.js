@@ -39,6 +39,14 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
   });
   const [isCloudSynced, setIsCloudSynced] = useState(false);
 
+  // Selected month ref for stale-closure-free access in Firestore callbacks
+  const selectedMonthRef = useRef(selectedMonth);
+  selectedMonthRef.current = selectedMonth;
+
+  // Track room initialization to ensure default month is ALWAYS the latest month available
+  const initializedRoomIdRef = useRef(null);
+  const prevLatestMonthRef = useRef(null);
+
   // Room Cryptographic Key Management (AES-GCM 256-bit with PBKDF2)
   const roomCryptoKeyRef = useRef(null);
   const [roomCryptoKey, setRoomCryptoKey] = useState(null);
@@ -71,6 +79,8 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
       setMonthsList(DEFAULT_MONTHS);
       setCalculatorsData(DEFAULT_CALCULATORS_DATA);
       setIsCloudSynced(false);
+      initializedRoomIdRef.current = null;
+      prevLatestMonthRef.current = null;
       return;
     }
 
@@ -113,16 +123,58 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
       if (docSnap.exists()) {
         const key = roomCryptoKeyRef.current || (await getRoomCryptoKey(roomId));
         const decrypted = await decryptSettingsFromCloud(docSnap.data(), key);
-        if (decrypted && decrypted.monthsList) {
+        if (decrypted && decrypted.monthsList && decrypted.monthsList.length > 0) {
           const sorted = sortMonths(decrypted.monthsList);
           setMonthsList(sorted);
-          if (selectedMonth && !sorted.includes(selectedMonth) && setSelectedMonth) {
-            setSelectedMonth(sorted[sorted.length - 1]);
+          const latestMonth = sorted[sorted.length - 1];
+
+          try {
+            localStorage.setItem(`fin_tracker_latest_month_${roomId}`, latestMonth);
+            localStorage.setItem('fin_tracker_global_latest_month', latestMonth);
+          } catch {}
+
+          // When entering a room or loading room data for the first time,
+          // the default displayed month must ALWAYS be the latest available month.
+          if (initializedRoomIdRef.current !== roomId) {
+            initializedRoomIdRef.current = roomId;
+            prevLatestMonthRef.current = latestMonth;
+            if (setSelectedMonth) {
+              setSelectedMonth(latestMonth);
+            }
+          } else if (
+            prevLatestMonthRef.current &&
+            latestMonth !== prevLatestMonthRef.current &&
+            selectedMonthRef.current === prevLatestMonthRef.current
+          ) {
+            // New latest month added while user was viewing the previous latest month
+            prevLatestMonthRef.current = latestMonth;
+            if (setSelectedMonth) {
+              setSelectedMonth(latestMonth);
+            }
+          } else if (selectedMonthRef.current && !sorted.includes(selectedMonthRef.current)) {
+            // Fallback if the active month was deleted
+            prevLatestMonthRef.current = latestMonth;
+            if (setSelectedMonth) {
+              setSelectedMonth(latestMonth);
+            }
           }
         }
       } else {
         setMonthsList(DEFAULT_MONTHS);
-        if (setSelectedMonth) setSelectedMonth(DEFAULT_MONTHS[0]);
+        const fallbackMonth = DEFAULT_MONTHS[DEFAULT_MONTHS.length - 1];
+        try {
+          localStorage.setItem(`fin_tracker_latest_month_${roomId}`, fallbackMonth);
+          localStorage.setItem('fin_tracker_global_latest_month', fallbackMonth);
+        } catch {}
+
+        if (initializedRoomIdRef.current !== roomId) {
+          initializedRoomIdRef.current = roomId;
+          prevLatestMonthRef.current = fallbackMonth;
+          if (setSelectedMonth) setSelectedMonth(fallbackMonth);
+        } else if (selectedMonthRef.current && !DEFAULT_MONTHS.includes(selectedMonthRef.current)) {
+          prevLatestMonthRef.current = fallbackMonth;
+          if (setSelectedMonth) setSelectedMonth(fallbackMonth);
+        }
       }
     }, (err) => console.warn("Firestore months sync notice:", err));
 
@@ -420,11 +472,23 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
   const handleDeleteMonth = useCallback((monthToDelete) => {
     if (monthsList.length <= 1) return;
     const newMonths = monthsList.filter(m => m !== monthToDelete);
-    setMonthsList(newMonths);
-    syncMonthsToCloud(newMonths);
+    const sorted = sortMonths(newMonths);
+    const newestMonth = sorted[sorted.length - 1];
+    setMonthsList(sorted);
+    syncMonthsToCloud(sorted);
+
+    prevLatestMonthRef.current = newestMonth;
+    if (currentRoom?.id) {
+      try {
+        localStorage.setItem(`fin_tracker_latest_month_${currentRoom.id}`, newestMonth);
+        localStorage.setItem('fin_tracker_global_latest_month', newestMonth);
+      } catch (e) {
+        console.warn("Could not persist latest month to localStorage:", e);
+      }
+    }
 
     if (selectedMonth === monthToDelete && setSelectedMonth) {
-      setSelectedMonth(newMonths[newMonths.length - 1]);
+      setSelectedMonth(newestMonth);
     }
     setAccounts(prev => prev.map(a => {
       const updatedBalances = { ...a.balances };
@@ -435,7 +499,7 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
       syncAccountToCloud(updatedAcc);
       return updatedAcc;
     }));
-  }, [monthsList, selectedMonth, setSelectedMonth, syncMonthsToCloud, syncAccountToCloud]);
+  }, [monthsList, selectedMonth, setSelectedMonth, syncMonthsToCloud, syncAccountToCloud, currentRoom?.id]);
 
   const handleToggleFlagAccount = useCallback((accId, month) => {
     setAccounts(prev => prev.map(a => {
@@ -460,10 +524,20 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
     if (!newMonthName || monthsList.includes(newMonthName)) return;
     const latestMonth = monthsList[monthsList.length - 1];
     const newMonths = sortMonths([...monthsList, newMonthName]);
+    const newestMonth = newMonths[newMonths.length - 1];
     
     setMonthsList(newMonths);
     if (setSelectedMonth) {
-      setSelectedMonth(newMonths[newMonths.length - 1]);
+      setSelectedMonth(newestMonth);
+    }
+    prevLatestMonthRef.current = newestMonth;
+    if (currentRoom?.id) {
+      try {
+        localStorage.setItem(`fin_tracker_latest_month_${currentRoom.id}`, newestMonth);
+        localStorage.setItem('fin_tracker_global_latest_month', newestMonth);
+      } catch (e) {
+        console.warn("Could not persist latest month to localStorage:", e);
+      }
     }
     syncMonthsToCloud(newMonths);
 
@@ -478,7 +552,7 @@ export function useRoomData(currentRoom, authUser, selectedMonth, setSelectedMon
       syncAccountToCloud(updatedAcc);
       return updatedAcc;
     }));
-  }, [monthsList, setSelectedMonth, syncMonthsToCloud, syncAccountToCloud]);
+  }, [monthsList, setSelectedMonth, syncMonthsToCloud, syncAccountToCloud, currentRoom?.id]);
 
   const updateCalculatorData = useCallback((module, newData) => {
     setCalculatorsData(prev => {
